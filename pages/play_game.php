@@ -3,6 +3,23 @@
 session_start();
 require_once '../includes/db.php';
 
+// --- 🛡️ GATEKEEPER SYSTEM (เพิ่มใหม่) ---
+// เช็คว่าระบบล็อกอยู่หรือไม่? (ยกเว้น Admin เข้าได้เสมอ)
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    $sql_check = "SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'";
+    $res_check = $conn->query($sql_check);
+    $status = $res_check->fetch_assoc()['setting_value'] ?? 'locked';
+
+    if ($status === 'locked') {
+        // ถ้าล็อกอยู่ ให้เด้งไปหน้าแจ้งเตือน หรือกลับหน้าเดิม
+        echo "<script>
+            alert('⛔ ยังไม่ได้รับอนุญาต!\\nคุณครูยังไม่เปิดให้เข้าเล่นด่านนี้ครับ รอสัญญาณนะครับ');
+            window.location.href = 'student_dashboard.php';
+        </script>";
+        exit(); // หยุดการทำงานทันที ห้ามโหลดเกม
+    }
+}
+
 // 1. ตรวจสอบว่าส่ง stage_id มาหรือไม่
 if (!isset($_GET['stage_id'])) {
     die("Error: Missing stage_id");
@@ -146,7 +163,7 @@ if (!$stage) {
                     if (data.status === 'success') {
                         // รอ 1.5 วินาที แล้วเด้งกลับหน้าเลือกด่าน
                         setTimeout(() => {
-                            window.location.href = `game_select.php?game_id=<?php echo $stage['game_id']; ?>`;
+                           window.location.href = `waiting_room.php?stage_id=${STAGE_ID}`;
                         }, 1500);
                     }
                 })
@@ -158,7 +175,7 @@ if (!$stage) {
     </script>
 
     <script src="../assets/js/logic_game/stage<?php echo $stage['stage_number']; ?>.js"></script>
-
+<?php include '../includes/class_control_script.php'; ?>
 </body>
 
 </html>

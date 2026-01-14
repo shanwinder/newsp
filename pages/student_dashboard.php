@@ -3,13 +3,15 @@
 session_start();
 require_once '../includes/db.php';
 
-// ตรวจสอบสิทธิ์ (ต้องเป็นนักเรียนเท่านั้น)
+// ตรวจสอบสิทธิ์
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: login.php");
     exit();
 }
 
-// ดึงข้อมูลเกมทั้งหมดจาก Database
+$user_id = $_SESSION['user_id'];
+
+// ดึงข้อมูลเกมทั้งหมด
 $sql = "SELECT * FROM games ORDER BY id ASC";
 $result = $conn->query($sql);
 ?>
@@ -27,7 +29,7 @@ $result = $conn->query($sql);
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #0f172a; /* Dark Blue Space Theme */
+            background-color: #0f172a;
             background-image: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 20%),
                               radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
             color: #fff;
@@ -46,7 +48,7 @@ $result = $conn->query($sql);
 
         .mission-card:hover {
             transform: translateY(-10px) scale(1.02);
-            border-color: #6366f1; /* Indigo glow */
+            border-color: #6366f1;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.3);
             background: rgba(30, 41, 59, 0.9);
         }
@@ -73,16 +75,17 @@ $result = $conn->query($sql);
         }
 
         .progress-bar-custom {
-            height: 8px;
+            height: 10px;
             border-radius: 10px;
             background-color: #334155;
             overflow: hidden;
+            position: relative;
         }
         .progress-fill {
             height: 100%;
-            background: #10b981; /* Emerald Green */
-            width: 0%; /* จะแก้ด้วย PHP ภายหลัง */
-            transition: width 1s ease-in-out;
+            background: linear-gradient(90deg, #34d399, #10b981);
+            width: 0%;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animation แบบสมูท */
         }
     </style>
 </head>
@@ -92,7 +95,7 @@ $result = $conn->query($sql);
 
     <div class="container py-5">
         <div class="text-center mb-5">
-            <h1 class="display-5 fw-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400" 
+            <h1 class="display-5 fw-bold" 
                 style="background: linear-gradient(to right, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                 เลือกภารกิจของคุณ
             </h1>
@@ -106,7 +109,30 @@ $result = $conn->query($sql);
             if ($result->num_rows > 0):
                 while($row = $result->fetch_assoc()):
                     $gameCode = $row['code'];
+                    $gameId = $row['id'];
                     $icon = isset($icons[$gameCode]) ? $icons[$gameCode] : '🎮';
+
+                    // -----------------------------------------------------
+                    // 🧠 Logic คำนวณ Progress Bar (เพิ่มใหม่ตรงนี้)
+                    // -----------------------------------------------------
+                    
+                    // 1. หาจำนวนด่านทั้งหมดของเกมนี้
+                    $sql_total = "SELECT COUNT(*) as total FROM stages WHERE game_id = $gameId";
+                    $res_total = $conn->query($sql_total);
+                    $total_stages = $res_total->fetch_assoc()['total'];
+                    $max_score = $total_stages * 3; // คะแนนเต็ม (3 ดาวต่อด่าน)
+
+                    // 2. หาคะแนนที่เด็กคนนี้ทำได้ในเกมนี้
+                    $sql_score = "SELECT SUM(p.score) as earned 
+                                  FROM progress p 
+                                  JOIN stages s ON p.stage_id = s.id 
+                                  WHERE p.user_id = $user_id AND s.game_id = $gameId";
+                    $res_score = $conn->query($sql_score);
+                    $current_score = $res_score->fetch_assoc()['earned'];
+                    if(!$current_score) $current_score = 0;
+
+                    // 3. คิดเป็นเปอร์เซ็นต์
+                    $percent = ($max_score > 0) ? ($current_score / $max_score) * 100 : 0;
             ?>
             <div class="col-md-6 col-lg-4">
                 <div class="mission-card p-4 h-100 d-flex flex-column">
@@ -119,12 +145,13 @@ $result = $conn->query($sql);
                     </div>
 
                     <div class="mt-auto">
-                        <div class="d-flex justify-content-between small text-muted mb-1">
+                        <div class="d-flex justify-content-between small text-info fw-bold mb-1">
                             <span>ความคืบหน้า</span>
-                            <span>0/10 ดาว</span>
+                            <span><?php echo $current_score; ?>/<?php echo $max_score; ?> ดาว</span>
                         </div>
-                        <div class="progress-bar-custom mb-4">
-                            <div class="progress-fill" style="width: 0%;"></div>
+                        
+                        <div class="progress-bar-custom mb-4" title="<?php echo number_format($percent, 0); ?>%">
+                            <div class="progress-fill" style="width: <?php echo $percent; ?>%;"></div>
                         </div>
 
                         <a href="game_select.php?game_id=<?php echo $row['id']; ?>" class="btn btn-play text-white">
@@ -137,12 +164,12 @@ $result = $conn->query($sql);
             <?php else: ?>
                 <div class="col-12 text-center text-muted py-5">
                     <h3>ยังไม่มีภารกิจในระบบครับครู!</h3>
-                    <p>รบกวน Seed Data ลง Database ก่อนนะครับ</p>
                 </div>
             <?php endif; ?>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include '../includes/class_control_script.php'; ?>
 </body>
 </html>

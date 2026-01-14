@@ -4,6 +4,11 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/student_navbar.php';
 
+// ... ต่อจาก require_once
+// เช็คสถานะล็อก
+$res_nav = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'");
+$global_lock = ($res_nav->fetch_assoc()['setting_value'] ?? 'locked') === 'locked';
+
 // 1. รับค่า game_id จาก URL
 if (!isset($_GET['game_id'])) {
     header("Location: student_dashboard.php");
@@ -130,21 +135,41 @@ $stages_result = $stmt_stages->get_result();
 
         <div class="row g-4">
             <?php
-            $is_previous_cleared = true; // ด่านแรกเปิดเสมอ
+            $is_previous_cleared = true;
             while ($stage = $stages_result->fetch_assoc()):
-                $is_locked = !$is_previous_cleared;
                 $stars = $stage['score'] ?? 0;
 
-                // Link ไปหน้าเล่นเกม (เราจะสร้างไฟล์นี้ในขั้นตอนหน้า)
-                // เช่น pages/play_game.php?stage_id=1
+                // Logic เดิม: ล็อกถ้ายังไม่ผ่านด่านก่อนหน้า
+                $is_locked_sequence = !$is_previous_cleared;
+
+                // Logic ใหม่: ล็อกถ้าครูสั่งปิด (Global Lock)
+                // แต่ถ้าเป็น Admin ให้มองเห็นเสมอ
+                $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'admin');
+                $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
+
                 $link = "play_game.php?stage_id=" . $stage['id'];
+
+                // ถ้าล็อกเพราะครูสั่ง ให้เปลี่ยน Link เป็น Alert
+                $onclick = "window.location.href='$link'";
+                if ($global_lock && !$is_admin) {
+                    $onclick = "alert('⛔ คุณครูยังล็อกระบบอยู่ครับ รอสัญญาณนะ!');";
+                }
+                if ($is_locked_sequence) {
+                    $onclick = ""; // กดไม่ได้เลยถ้ายังเล่นไม่ถึง
+                }
             ?>
                 <div class="col-md-4 col-sm-6">
                     <div class="card stage-card h-100 p-4 text-center <?php echo $is_locked ? 'stage-locked' : ''; ?>"
-                        onclick="<?php echo $is_locked ? '' : "window.location.href='$link'"; ?>">
+                        onclick="<?php echo $onclick; ?>">
 
                         <?php if ($is_locked): ?>
-                            <div class="lock-icon"><i class="bi bi-lock-fill"></i></div>
+                            <div class="lock-icon">
+                                <?php if ($global_lock && !$is_locked_sequence): ?>
+                                    <i class="bi bi-sign-stop-fill text-danger"></i>
+                                <?php else: ?>
+                                    <i class="bi bi-lock-fill"></i>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
 
                         <h1 class="display-4 fw-bold text-info mb-3"><?php echo $stage['stage_number']; ?></h1>
@@ -173,7 +198,27 @@ $stages_result = $stmt_stages->get_result();
             ?>
         </div>
     </div>
-
+    <script>
+        // เช็คสถานะทุก 3 วินาที เพื่อปลดล็อกปุ่มอัตโนมัติ
+        setInterval(() => {
+            fetch('../api/check_nav_status.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'unlocked') {
+                        // ถ้าครูปลดล็อกแล้ว ให้ Reload หน้าจอเพื่อเปิดการ์ด
+                        // (ทำแบบง่ายๆ คือรีโหลด ถ้าทำแบบยากคือต้องแก้ DOM class)
+                        if (document.querySelector('.bi-sign-stop-fill')) {
+                            location.reload();
+                        }
+                    } else {
+                        // ถ้าครูล็อกกลับคืน
+                        if (!document.querySelector('.bi-sign-stop-fill') && !document.querySelector('.stage-locked')) {
+                            location.reload();
+                        }
+                    }
+                });
+        }, 3000);
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

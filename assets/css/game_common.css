@@ -1,0 +1,110 @@
+/* --- 🏆 CUSTOM RANK BADGES 🏆 --- */
+
+/* Base Style: พื้นฐานของทุกป้าย */
+.rank-badge {
+  padding: 6px 15px !important;
+  border-radius: 50px !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Rank 1: Starter (ไม้/กระดาษ - ดูเรียบง่าย) */
+.rank-starter {
+  background: #a8a495 !important;
+  color: #fff !important;
+  border-color: #dcdcdc !important;
+}
+
+/* Rank 2: Explorer (เขียวพาสเทล - เริ่มผจญภัย) */
+.rank-explorer {
+  background: linear-gradient(135deg, #81fbb8 0%, #28c76f 100%) !important;
+  color: #0d381e !important;
+}
+
+/* Rank 3: Logic (ฟ้าไฮเทค - เริ่มใช้สมอง) */
+.rank-logic {
+  background: linear-gradient(135deg, #5efce8 10%, #736efe 100%) !important;
+  color: #fff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Rank 4: Coder (หน้าจอ Terminal - ดูโปร) */
+.rank-coder {
+  background: #000 !important;
+  color: #0f0 !important;
+  border: 1px solid #0f0 !important;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4) !important;
+  font-family: "Courier New", Courier, monospace !important;
+}
+
+/* Rank 5: Pattern (ม่วงลึกลับ - ผู้หยั่งรู้) */
+.rank-pattern {
+  background: linear-gradient(45deg, #8e44ad, #c0392b) !important;
+  color: #fff !important;
+  border: 1px solid #ff9ff3 !important;
+}
+
+/* Rank 6: Engineer (ส้มเมทัลลิค - วิศวกร) */
+.rank-engineer {
+  background: linear-gradient(to bottom, #f1c40f, #e67e22) !important;
+  color: #fff !important;
+  border-bottom: 3px solid #d35400 !important; /* ให้ดูหนาๆ แข็งแรง */
+}
+
+/* Rank 7: Architect (น้ำเงินพิมพ์เขียว - สถาปนิก) */
+.rank-architect {
+  background: #0984e3 !important;
+  background-image: radial-gradient(#74b9ff 15%, transparent 16%) !important;
+  background-size: 4px 4px !important; /* ลายตาราง */
+  color: #fff !important;
+  border: 2px solid #fff !important;
+}
+
+/* Rank 8: Master (ชมพู/แดง - ปรมาจารย์) */
+.rank-master {
+  background: linear-gradient(to right, #ff416c, #ff4b2b) !important;
+  color: #fff !important;
+  box-shadow: 0 0 15px rgba(255, 75, 43, 0.6) !important;
+}
+
+/* Rank 9: Grandmaster (เพชร/โฮโลแกรม - ยอดฝีมือ) */
+.rank-grandmaster {
+  background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%) !important;
+  color: #2c3e50 !important;
+  animation: gradient-shift 3s infinite alternate !important;
+}
+
+/* Rank 10: LEGEND (ทองคำวิบวับ - ตำนาน) */
+.rank-legend {
+  background: linear-gradient(45deg, #ffd700, #fdb931, #ffd700, #fdb931) !important;
+  color: #5d4037 !important;
+  border: 2px solid #fff !important;
+  box-shadow: 0 0 20px #ffd700 !important;
+  animation: shine 2s infinite linear !important; /* แสงวิ่งวูบวาบ */
+}
+
+/* --- ANIMATIONS --- */
+@keyframes gradient-shift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(30deg);
+  }
+}
+
+@keyframes shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}

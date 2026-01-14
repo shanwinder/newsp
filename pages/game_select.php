@@ -50,6 +50,7 @@ $stages_result = $stmt_stages->get_result();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/game_common.css">
 
     <style>
         body {
@@ -147,15 +148,22 @@ $stages_result = $stmt_stages->get_result();
                 $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'admin');
                 $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
 
-                $link = "play_game.php?stage_id=" . $stage['id'];
+                // แก้ไข Link: ให้ไปหน้า instruction ก่อนเข้าเล่นเกม
+                // ส่งทั้ง game_id (เพื่อดึงเนื้อหา) และ stage_id (เพื่อส่งต่อเข้าเกม)
+                // -------------------------------------------------------------
+                $link = "instruction.php?game_id=" . $game_id . "&stage_id=" . $stage['id'];
 
-                // ถ้าล็อกเพราะครูสั่ง ให้เปลี่ยน Link เป็น Alert
+                // หมายเหตุ: เรายังคงใช้ Logic การ Lock ด่านตามเลเวลเหมือนเดิม
+                // แต่ Global Lock ของครู จะไปมีผลที่หน้า instruction แทน (ปุ่มกดไม่ได้)
+                // ดังนั้นตรงนี้เราปล่อยให้กดเข้าไปดู Instruction ได้เลย จะได้ไม่เสียเวลาโหลด
+
+                // เดิม:
+                // if ($global_lock && !$is_admin) { $onclick = "alert(...)"; }
+                // แก้ไขเป็น: (ลบเงื่อนไข Global Lock ออก ให้เด็กกดเข้าไปรอในห้องเรียนรู้ได้เลย)
                 $onclick = "window.location.href='$link'";
-                if ($global_lock && !$is_admin) {
-                    $onclick = "alert('⛔ คุณครูยังล็อกระบบอยู่ครับ รอสัญญาณนะ!');";
-                }
+                // คงเหลือแค่เงื่อนไข Locked Sequence (ด่านที่ยังเล่นไม่ถึง)
                 if ($is_locked_sequence) {
-                    $onclick = ""; // กดไม่ได้เลยถ้ายังเล่นไม่ถึง
+                    $onclick = "";
                 }
             ?>
                 <div class="col-md-4 col-sm-6">

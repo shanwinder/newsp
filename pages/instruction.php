@@ -4,22 +4,21 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/student_navbar.php';
 
-// รับค่า game_id และ stage_id (เพื่อส่งต่อ)
-if (!isset($_GET['game_id']) || !isset($_GET['stage_id'])) {
+// รับค่า game_id เท่านั้น (เพราะยังไม่ได้เลือก stage)
+if (!isset($_GET['game_id'])) {
     header("Location: student_dashboard.php");
     exit();
 }
 
 $game_id = intval($_GET['game_id']);
-$stage_id = intval($_GET['stage_id']);
 $user_id = $_SESSION['user_id'];
 
-// ดึงข้อมูลเนื้อหาการสอน
+// ดึงข้อมูลเนื้อหาการสอนของ Game นั้นๆ
 $sql = "SELECT * FROM games WHERE id = $game_id";
 $res = $conn->query($sql);
 $game = $res->fetch_assoc();
 
-// เช็คสถานะการล็อกปัจจุบัน
+// เช็คสถานะการล็อกของครู
 $res_nav = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'");
 $status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
 ?>
@@ -34,13 +33,11 @@ $status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/game_common.css">
 
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
-            /* Deep Space Theme */
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
             min-height: 100vh;
             display: flex;
@@ -78,13 +75,11 @@ $status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
             letter-spacing: 1px;
         }
 
-        /* สถานะปุ่ม */
         .btn-locked {
             background-color: #636e72;
             border-color: #636e72;
             cursor: not-allowed;
             pointer-events: none;
-            /* ห้ามกด */
             opacity: 0.7;
         }
 
@@ -114,7 +109,7 @@ $status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
         <div class="instruction-card p-5 w-100" style="max-width: 900px;">
 
             <div class="text-center mb-4">
-                <span class="topic-badge shadow">Pre-Game Briefing</span>
+                <span class="topic-badge shadow">ห้องเรียนรู้ (Pre-Game Briefing)</span>
                 <h1 class="display-5 fw-bold mt-3 text-white"><?php echo $game['learning_topic']; ?></h1>
                 <div style="height: 4px; width: 100px; background: #fff; margin: 20px auto; border-radius: 2px;"></div>
             </div>
@@ -126,41 +121,39 @@ $status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
             <div class="text-center mt-5">
                 <div id="locked-msg" class="<?php echo ($status == 'unlocked') ? 'd-none' : ''; ?>">
                     <i class="bi bi-lock-fill fs-1 text-danger mb-2 d-block"></i>
-                    <h4 class="text-warning pulse-text">กรุณาตั้งใจฟังคุณครูอธิบาย...</h4>
-                    <p class="text-white-50 small">เมื่อคุณครูอธิบายเสร็จแล้ว ปุ่มจะปลดล็อกอัตโนมัติ</p>
+                    <h4 class="text-warning pulse-text">กรุณาฟังคุณครูสอนก่อนนะครับ...</h4>
+                    <p class="text-white-50 small">เมื่อครูสอนเสร็จแล้ว ปุ่มจะปลดล็อกอัตโนมัติ</p>
                 </div>
 
-                <a href="play_game.php?stage_id=<?php echo $stage_id; ?>"
-                    id="btn-start"
+                <a href="game_select.php?game_id=<?php echo $game_id; ?>"
+                    id="btn-next"
                     class="btn btn-success btn-lg px-5 py-3 rounded-pill fw-bold fs-4 shadow-lg <?php echo ($status == 'locked') ? 'btn-locked' : ''; ?>">
-                    <i class="bi bi-controller me-2"></i> เริ่มปฏิบัติภารกิจ!
+                    <i class="bi bi-grid-fill me-2"></i> ไปเลือกด่านฝึกฝน
                 </a>
             </div>
         </div>
     </div>
 
     <script>
-        // Script สำหรับรอสัญญาณจากครู
+        // Script รอสัญญาณจากครู (เหมือนเดิม)
         setInterval(() => {
             fetch('../api/check_nav_status.php')
                 .then(res => res.json())
                 .then(data => {
-                    const btnStart = document.getElementById('btn-start');
+                    const btnNext = document.getElementById('btn-next');
                     const lockedMsg = document.getElementById('locked-msg');
 
                     if (data.status === 'unlocked') {
-                        // ถ้าครูปลดล็อก: เปิดปุ่ม, ซ่อนข้อความเตือน
-                        btnStart.classList.remove('btn-locked');
-                        btnStart.classList.remove('btn-secondary');
-                        btnStart.classList.add('btn-success');
+                        btnNext.classList.remove('btn-locked');
+                        btnNext.classList.remove('btn-secondary');
+                        btnNext.classList.add('btn-success');
                         lockedMsg.classList.add('d-none');
                     } else {
-                        // ถ้าครูล็อก: ปิดปุ่ม, โชว์ข้อความเตือน
-                        btnStart.classList.add('btn-locked');
+                        btnNext.classList.add('btn-locked');
                         lockedMsg.classList.remove('d-none');
                     }
                 });
-        }, 2000); // เช็คทุก 2 วินาที
+        }, 2000);
     </script>
 
 </body>

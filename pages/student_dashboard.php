@@ -160,8 +160,8 @@ $result = $conn->query($sql);
                                     <div class="progress-fill" style="width: <?php echo $percent; ?>%;"></div>
                                 </div>
 
-                                <a href="game_select.php?game_id=<?php echo $row['id']; ?>" class="btn btn-play text-white">
-                                    🚀 เริ่มภารกิจ
+                                <a href="instruction.php?game_id=<?php echo $row['id']; ?>" class="btn btn-play text-white">
+                                    🚀 เข้าสู่บทเรียน
                                 </a>
                             </div>
                         </div>

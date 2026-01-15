@@ -140,32 +140,31 @@ $stages_result = $stmt_stages->get_result();
             while ($stage = $stages_result->fetch_assoc()):
                 $stars = $stage['score'] ?? 0;
 
-                // Logic เดิม: ล็อกถ้ายังไม่ผ่านด่านก่อนหน้า
+                // Logic การล็อกด่านตามลำดับ (Sequential Lock)
                 $is_locked_sequence = !$is_previous_cleared;
 
-                // Logic ใหม่: ล็อกถ้าครูสั่งปิด (Global Lock)
-                // แต่ถ้าเป็น Admin ให้มองเห็นเสมอ
+                // ⚠️ Global Lock ของครู: 
+                // ใน Flow ใหม่นี้ ครูจะปลดล็อกตั้งแต่หน้า Instruction แล้ว 
+                // ดังนั้นหน้าเลือกด่านควรจะ "เปิด" ให้เด็กกดเข้าด่านได้เลย (ถ้าผ่านเงื่อนไขด่านก่อนหน้า)
+                // แต่ถ้าครูกลับมาล็อกอีกที เราก็ควรกันไว้เหมือนเดิม
                 $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'admin');
                 $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
 
-                // แก้ไข Link: ให้ไปหน้า instruction ก่อนเข้าเล่นเกม
-                // ส่งทั้ง game_id (เพื่อดึงเนื้อหา) และ stage_id (เพื่อส่งต่อเข้าเกม)
-                // -------------------------------------------------------------
-                $link = "instruction.php?game_id=" . $game_id . "&stage_id=" . $stage['id'];
+                // ⚠️ แก้ไข Link: ให้วิ่งตรงเข้า play_game.php เลย (ไม่ต้องแวะ instruction แล้ว)
+                $link = "play_game.php?stage_id=" . $stage['id'];
 
-                // หมายเหตุ: เรายังคงใช้ Logic การ Lock ด่านตามเลเวลเหมือนเดิม
-                // แต่ Global Lock ของครู จะไปมีผลที่หน้า instruction แทน (ปุ่มกดไม่ได้)
-                // ดังนั้นตรงนี้เราปล่อยให้กดเข้าไปดู Instruction ได้เลย จะได้ไม่เสียเวลาโหลด
-
-                // เดิม:
-                // if ($global_lock && !$is_admin) { $onclick = "alert(...)"; }
-                // แก้ไขเป็น: (ลบเงื่อนไข Global Lock ออก ให้เด็กกดเข้าไปรอในห้องเรียนรู้ได้เลย)
+                // Event Onclick
                 $onclick = "window.location.href='$link'";
-                // คงเหลือแค่เงื่อนไข Locked Sequence (ด่านที่ยังเล่นไม่ถึง)
+
+                // ถ้าโดนล็อก
+                if ($global_lock && !$is_admin) {
+                    $onclick = "alert('⛔ คุณครูยังล็อกระบบอยู่ครับ');";
+                }
                 if ($is_locked_sequence) {
-                    $onclick = "";
+                    $onclick = ""; // กดไม่ได้
                 }
             ?>
+
                 <div class="col-md-4 col-sm-6">
                     <div class="card stage-card h-100 p-4 text-center <?php echo $is_locked ? 'stage-locked' : ''; ?>"
                         onclick="<?php echo $onclick; ?>">

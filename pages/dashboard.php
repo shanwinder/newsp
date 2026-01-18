@@ -115,6 +115,9 @@ $nav_status = $res_nav->fetch_assoc()['setting_value'] ?? 'locked';
                     </h5>
 
                     <div class="d-flex gap-2">
+                        <a href="review_work.php" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark">
+                            <i class="bi bi-easel2-fill"></i> ตรวจชิ้นงาน
+                        </a>
                         <a href="add_user.php" class="btn btn-primary btn-sm rounded-pill px-3">
                             <i class="bi bi-person-plus-fill"></i> เพิ่มรายคน
                         </a>

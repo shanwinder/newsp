@@ -227,6 +227,54 @@ $stages_result = $stmt_stages->get_result();
         }, 3000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php
+    // เช็คว่าผ่านครบ 3 ด่านหรือยัง?
+    // (นับจำนวนด่านที่คะแนน > 0 ในเกมนี้)
+    $check_progress = $conn->query("SELECT COUNT(*) as passed FROM progress p 
+                                JOIN stages s ON p.stage_id = s.id 
+                                WHERE p.user_id = {$_SESSION['user_id']} 
+                                AND s.game_id = $game_id 
+                                AND p.score > 0");
+    $passed_count = $check_progress->fetch_assoc()['passed'];
+    $total_stages = 3; // กำหนดตายตัวว่าบทนี้มี 3 ด่าน
+
+    if ($passed_count >= $total_stages):
+    ?>
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <div class="card border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); border-radius: 20px;">
+                    <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! คุณพิชิตครบทุกด่านแล้ว</h2>
+                    <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้างโจทย์ของตัวเองแล้ว!</p>
+                    <a href="create_project.php?game_id=<?php echo $game_id; ?>" class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
+                        <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน
+                    </a>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <style>
+        .pulse-anim {
+            animation: pulse-btn 2s infinite;
+        }
+
+        @keyframes pulse-btn {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+            }
+
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+            }
+        }
+    </style>
 </body>
 
 </html>

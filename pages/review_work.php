@@ -5,6 +5,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit();
 }
+
+// ดึงรายชื่อเกมทั้งหมดมาใส่ Dropdown (ถ้ามีตาราง games)
+// หรือถ้ายังไม่มีตาราง games ที่สมบูรณ์ ผมจะ Hardcode ไว้ให้ก่อนเป็นตัวอย่าง
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -24,7 +27,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             color: #e0e0e0;
             height: 100vh;
             overflow: hidden;
-            /* ซ่อน Scrollbar ของ Body หลัก */
         }
 
         .layout-container {
@@ -35,7 +37,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
         /* --- Sidebar (ซ้าย) --- */
         .sidebar {
-            width: 320px;
+            width: 340px;
+            /* ขยายหน่อยให้ใส่ Dropdown พอ */
             background: #1e1e2f;
             border-right: 1px solid #333;
             display: flex;
@@ -70,28 +73,23 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         .main-stage {
             flex-grow: 1;
             background: #000;
-            /* พื้นหลังดำสนิทเพื่อให้งานเด่น */
             background-image: radial-gradient(#333 1px, transparent 1px);
             background-size: 20px 20px;
-            /* จุด Dot จางๆ ที่พื้นหลังใหญ่ */
             display: flex;
             flex-direction: column;
             overflow-y: auto;
-            /* ✅ อนุญาตให้ Scroll แนวตั้งได้ */
             position: relative;
         }
 
-        /* Container เนื้อหา (แนวตั้ง) */
         .content-wrapper {
             max-width: 1000px;
             margin: 0 auto;
             width: 100%;
             padding: 40px 20px;
             padding-bottom: 100px;
-            /* เผื่อที่ด้านล่าง */
         }
 
-        /* 1. ส่วนแสดงภาพ (Canvas) */
+        /* Canvas */
         .canvas-container {
             display: flex;
             justify-content: center;
@@ -102,12 +100,10 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             width: 800px;
             height: 500px;
             background-color: white;
-            /* ✅ เส้นกริด (Grid Lines) ตามที่ขอ */
             background-image:
                 linear-gradient(#e0e0e0 1px, transparent 1px),
                 linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
             background-size: 50px 50px;
-
             position: relative;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
@@ -125,7 +121,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             filter: drop-shadow(2px 4px 5px rgba(0, 0, 0, 0.2));
         }
 
-        /* 2. ส่วนข้อมูล (Info Card) ด้านล่าง */
+        /* Info Card */
         .info-card {
             background: #1e1e2f;
             border-radius: 20px;
@@ -147,7 +143,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             }
         }
 
-        /* Status Badges */
         .status-badge {
             font-size: 0.75rem;
             padding: 4px 10px;
@@ -184,6 +179,21 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 opacity: 1;
             }
         }
+
+        /* Custom Select */
+        .game-selector {
+            background-color: #2a2a3e;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 10px;
+        }
+
+        .game-selector:focus {
+            background-color: #2a2a3e;
+            color: white;
+            border-color: #E91E63;
+            box-shadow: none;
+        }
     </style>
 </head>
 
@@ -191,13 +201,23 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
     <div class="layout-container">
         <div class="sidebar">
-            <div class="p-4 bg-dark text-white border-bottom border-secondary">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-collection-fill me-2"></i>รายชื่อผลงาน</h5>
-                <small class="text-white-50">เลือกรายชื่อเพื่อตรวจงาน</small>
+            <div class="p-3 bg-dark text-white border-bottom border-secondary">
+                <h5 class="mb-3 fw-bold"><i class="bi bi-collection-fill me-2"></i>เลือกบทเรียน</h5>
+
+                <select id="game-filter" class="form-select game-selector mb-2" onchange="changeGame()">
+                    <option value="1">บทที่ 1: Pattern Logic</option>
+                    <option value="2">บทที่ 2: Algorithms</option>
+                </select>
+
+                <small class="text-white-50 d-block mt-2">
+                    <i class="bi bi-info-circle"></i> เลือกบทเรียนเพื่อดูผลงาน
+                </small>
             </div>
+
             <div id="student-list" class="student-list-container">
                 <div class="text-center p-4 text-secondary">Loading...</div>
             </div>
+
             <div class="p-3 border-top border-secondary text-center">
                 <a href="dashboard.php" class="btn btn-outline-secondary w-100 rounded-pill">กลับ Dashboard</a>
             </div>
@@ -210,10 +230,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             </div>
 
             <div id="presentation-panel" class="content-wrapper" style="display:none;">
-
                 <div class="canvas-container">
-                    <div id="preview-stage">
-                    </div>
+                    <div id="preview-stage"></div>
                 </div>
 
                 <div class="info-card">
@@ -249,7 +267,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -258,17 +275,46 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         const ASSET_PATH = '../assets/img/';
         let currentWorkId = null;
         let currentStudentId = null;
+        let currentGameId = 1; // Default บทที่ 1
 
-        // 1. Load Data
+        // Mapping ชื่อไฟล์ (ต้องตรงกับหน้า Create)
+        const fileMapping = {
+            'dog': 'dog',
+            'cat': 'cat',
+            'rabbit': 'rabbit',
+            'sq_red': 'red_square',
+            'ci_green': 'green_circle',
+            'tri_blue': 'blue_triangle',
+            'sq_yellow': 'yellow_square'
+        };
+
+        function changeGame() {
+            currentGameId = document.getElementById('game-filter').value;
+
+            // Reset หน้าจอขวา
+            document.getElementById('empty-state').style.display = 'flex';
+            document.getElementById('presentation-panel').style.display = 'none';
+            currentStudentId = null;
+            currentWorkId = null;
+
+            loadStudents();
+        }
+
         function loadStudents() {
             const scrollEl = document.querySelector('.student-list-container');
             const scrollPos = scrollEl ? scrollEl.scrollTop : 0;
 
-            fetch('../api/get_works_list.php')
+            // ✅ ส่ง param game_id ไปด้วย
+            fetch(`../api/get_works_list.php?game_id=${currentGameId}`)
                 .then(res => res.json())
                 .then(data => {
                     const listContainer = document.getElementById('student-list');
                     listContainer.innerHTML = '';
+
+                    if (data.length === 0) {
+                        listContainer.innerHTML = '<div class="text-center p-4 text-white-50">ไม่มีนักเรียนในรายวิชานี้</div>';
+                        return;
+                    }
 
                     data.forEach(std => {
                         const div = document.createElement('div');
@@ -300,7 +346,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 });
         }
 
-        // 2. Select Student
         function selectStudent(data, el) {
             currentStudentId = data.id;
             currentWorkId = data.work_id;
@@ -308,13 +353,11 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('presentation-panel').style.display = 'block';
 
-            // Update Text
             document.getElementById('display-name').innerText = data.name;
             document.getElementById('display-id').innerText = data.student_id;
             document.getElementById('display-desc').innerText = data.description || "-";
             document.getElementById('display-time').innerText = data.submitted_at;
 
-            // Button State
             const btn = document.getElementById('btn-approve');
             if (data.work_status === 'reviewed') {
                 btn.className = 'btn btn-secondary w-100 btn-lg rounded-pill disabled py-3';
@@ -326,10 +369,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 btn.disabled = false;
             }
 
-            // Render Canvas
             renderCanvas(data.work_data);
 
-            // UI Active State
             document.querySelectorAll('.student-item').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
         }
@@ -338,44 +379,28 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             const stage = document.getElementById('preview-stage');
             stage.innerHTML = '';
 
-            // ✅ 1. สร้าง Dictionary เพื่อแปลง Key เป็นชื่อไฟล์จริง
-            const fileMapping = {
-                'dog': 'dog',
-                'cat': 'cat',
-                'rabbit': 'rabbit',
-                'sq_red': 'red_square', // แปลง sq_red -> red_square
-                'ci_green': 'green_circle', // แปลง ci_green -> green_circle
-                'tri_blue': 'blue_triangle', // เผื่อมีสามเหลี่ยม
-                'sq_yellow': 'yellow_square' // เผื่อมีสี่เหลี่ยมเหลือง
-            };
-
             try {
                 const items = JSON.parse(jsonData);
                 items.forEach((obj, i) => {
                     const img = document.createElement('img');
-
-                    // ✅ 2. ใช้ชื่อไฟล์จาก Mapping (ถ้าไม่มีให้ใช้ชื่อเดิม)
-                    const realFileName = fileMapping[obj.type] || obj.type;
-
-                    img.src = ASSET_PATH + realFileName + '.webp'; // โหลดไฟล์ที่ถูกต้อง
+                    // ✅ ใช้ Mapping แก้ปัญหารูปไม่ขึ้น
+                    const realName = fileMapping[obj.type] || obj.type;
+                    img.src = ASSET_PATH + realName + '.webp';
 
                     img.className = 'preview-item';
                     img.style.left = obj.x + 'px';
                     img.style.top = obj.y + 'px';
 
-                    // Animation Pop-in
                     img.style.animation = `popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${i*0.05}s both`;
-
                     stage.appendChild(img);
                 });
             } catch (e) {
-                console.error("JSON Error", e);
+                console.error("JSON Error");
             }
 
             setTimeout(adjustScale, 50);
         }
 
-        // 3. Update API
         function markAsReviewed() {
             if (!currentWorkId) return;
 
@@ -405,14 +430,12 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                 });
         }
 
-        // Resize Logic
         function adjustScale() {
             const stage = document.getElementById('preview-stage');
             const container = document.querySelector('.canvas-container');
             if (!stage || !container) return;
 
             const containerWidth = container.clientWidth;
-            // ถ้าย่อจอเล็กกว่า 800px ให้ Scale ลง
             if (containerWidth < 820) {
                 const scale = containerWidth / 820;
                 stage.style.transform = `scale(${scale})`;
@@ -421,7 +444,6 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             }
         }
 
-        // Add CSS Animation
         const style = document.createElement('style');
         style.innerHTML = `@keyframes popIn { from {transform: translate(-50%, -50%) scale(0);} to {transform: translate(-50%, -50%) scale(1);} }`;
         document.head.appendChild(style);

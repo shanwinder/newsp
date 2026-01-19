@@ -115,6 +115,26 @@ $stages_result = $stmt_stages->get_result();
             background-color: #ff4757;
             color: white;
         }
+
+        .pulse-icon i {
+            animation: trophy-pulse 2s infinite;
+            display: inline-block;
+        }
+
+        @keyframes trophy-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3) rotate(10deg);
+                color: #b45309;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 
@@ -126,7 +146,11 @@ $stages_result = $stmt_stages->get_result();
                 <a href="student_dashboard.php" class="btn-back">
                     <i class="bi bi-arrow-left me-2"></i> กลับหน้าหลัก
                 </a>
+                <a href="showcase.php?game_id=<?php echo $game_id; ?>" class="btn btn-warning rounded-pill shadow fw-bold px-4 pulse-icon">
+                    <i class="bi bi-trophy-fill me-2"></i> ดูผลงานเพื่อนๆ
+                </a>
             </div>
+
             <div class="text-center">
                 <h1 class="fw-bold text-primary mb-0"><?php echo $game['title']; ?></h1>
                 <p class="text-muted"><?php echo $game['description']; ?></p>
@@ -239,13 +263,23 @@ $stages_result = $stmt_stages->get_result();
     $total_stages = 3; // กำหนดตายตัวว่าบทนี้มี 3 ด่าน
 
     if ($passed_count >= $total_stages):
+
+        $project_pages = [
+            1 => 'create_project.php',          // บทที่ 1: แบบเดิม
+            2 => 'create_project_algo.php',     // บทที่ 2: ไฟล์ใหม่ (เดี๋ยวสร้าง)
+            3 => 'create_project_coding.php'    // บทที่ 3: ไฟล์ใหม่
+        ];
+
+        // เลือกไฟล์ปลายทาง (ถ้าไม่มีให้ Default ไปไฟล์แรก)
+        $target_page = $project_pages[$game_id] ?? 'create_project.php';
     ?>
         <div class="row mt-5">
             <div class="col-12 text-center">
                 <div class="card border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); border-radius: 20px;">
                     <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! คุณพิชิตครบทุกด่านแล้ว</h2>
                     <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้างโจทย์ของตัวเองแล้ว!</p>
-                    <a href="create_project.php?game_id=<?php echo $game_id; ?>" class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
+                    <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
+                        class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
                         <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน
                     </a>
                 </div>

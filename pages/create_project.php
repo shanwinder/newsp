@@ -184,6 +184,16 @@ $game_id = $_GET['game_id'] ?? 1;
                 key: 'ci_green',
                 img: '../assets/img/green_circle.webp',
                 label: 'วงกลม'
+            },
+            {
+                key: 'tri_blue',
+                img: '../assets/img/blue_triangle.webp',
+                label: 'สามเหลี่ยม'
+            },
+            {
+                key: 'sq_yellow',
+                img: '../assets/img/yellow_square.webp',
+                label: 'สี่เหลี่ยมเหลือง'
             }
         ];
 
@@ -236,7 +246,8 @@ $game_id = $_GET['game_id'] ?? 1;
             this.load.image("rabbit", "assets/img/rabbit.webp");
             this.load.image("sq_red", "assets/img/red_square.webp");
             this.load.image("ci_green", "assets/img/green_circle.webp");
-
+            this.load.image("tri_blue", "assets/img/blue_triangle.webp");
+            this.load.image("sq_yellow", "assets/img/yellow_square.webp");
             // โหลดภาพพื้นหลังกระดาษ (Optional: วาด Grid เอา)
         }
 

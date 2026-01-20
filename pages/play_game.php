@@ -1,150 +1,173 @@
 <?php
-// pages/play_game.php - หน้าจอหลักสำหรับเล่นเกม
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/student_navbar.php';
 
-// --- 🛡️ GATEKEEPER SYSTEM (เพิ่มใหม่) ---
-// เช็คว่าระบบล็อกอยู่หรือไม่? (ยกเว้น Admin เข้าได้เสมอ)
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    $sql_check = "SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'";
-    $res_check = $conn->query($sql_check);
-    $status = $res_check->fetch_assoc()['setting_value'] ?? 'locked';
-
-    if ($status === 'locked') {
-        // ถ้าล็อกอยู่ ให้เด้งไปหน้าแจ้งเตือน หรือกลับหน้าเดิม
-        echo "<script>
-            alert('⛔ ยังไม่ได้รับอนุญาต!\\nคุณครูยังไม่เปิดให้เข้าเล่นด่านนี้ครับ รอสัญญาณนะครับ');
-            window.location.href = 'student_dashboard.php';
-        </script>";
-        exit(); // หยุดการทำงานทันที ห้ามโหลดเกม
-    }
-}
-
-// 1. ตรวจสอบว่าส่ง stage_id มาหรือไม่
+// 1. รับค่า Stage ID
 if (!isset($_GET['stage_id'])) {
-    die("Error: Missing stage_id");
+    header("Location: student_dashboard.php");
+    exit();
 }
 
 $stage_id = intval($_GET['stage_id']);
 $user_id = $_SESSION['user_id'];
 
-// 2. ดึงข้อมูลด่าน (และตรวจสอบว่ามีสิทธิ์เล่นไหม เช่น ต้องผ่านด่านก่อนหน้าก่อน)
-// ในที่นี้เราดึงข้อมูลง่ายๆ ก่อน
-$sql = "SELECT s.*, g.code as game_code 
+// 2. ดึงข้อมูลด่าน และ Game ID
+$sql = "SELECT s.*, g.title as game_title 
         FROM stages s 
         JOIN games g ON s.game_id = g.id 
-        WHERE s.id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $stage_id);
-$stmt->execute();
-$stage = $stmt->get_result()->fetch_assoc();
+        WHERE s.id = $stage_id";
+$result = $conn->query($sql);
 
-if (!$stage) {
-    die("ไม่พบด่านนี้ในระบบ");
+if ($result->num_rows == 0) {
+    die("ไม่พบด่านนี้");
 }
 
-// (Optional) Logic ป้องกันการข้ามด่าน สามารถเพิ่มตรงนี้ได้
+$stage = $result->fetch_assoc();
+$game_id = $stage['game_id'];
+$stage_num = $stage['stage_number'];
+
+// 3. LOGIC เลือกไฟล์เกม
+$game_script = "stage{$stage_num}.js"; // Default
+
+if ($game_id == 2) {
+    $game_script = "stage{$stage_num}_algo.js";
+} elseif ($game_id == 3) {
+    $game_script = "stage{$stage_num}_code.js";
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $stage['title']; ?> - Coding Hero</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title><?php echo $stage['title']; ?> - <?php echo $stage['game_title']; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/game_common.css">
 
-<style>
-        html, body {
-            height: 100%;       /* ต้องสูงเต็มจอ 100% */
-            margin: 0;
-            padding: 0;
-            overflow: hidden;   /* ห้าม Scroll */
-            background-color: #202c33; 
-        }
-
+    <style>
         body {
-            display: flex;
-            flex-direction: column; /* เรียงบนลงล่าง */
-        }
-        
-        /* 1. ส่วนหัว (สูง 60px) */
-        .game-header {
-            height: 60px;       /* ความสูงตายตัว */
-            flex-shrink: 0;     /* ห้ามหด */
-            background: #ffffff;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            z-index: 10;
+            background-color: #f0f9ff;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            min-height: 100vh;
         }
 
-        /* 2. พื้นที่เกม (สูงเต็มที่ - 60px ของหัว) */
-        #game-container {
-            width: 100vw;
-            height: calc(100vh - 60px); /* คำนวณความสูงที่เหลือเป๊ะๆ */
-            display: flex;              /* เปิดโหมดจัดระเบียบ */
-            justify-content: center;    /* จัดกึ่งกลางแนวนอน */
-            align-items: center;        /* จัดกึ่งกลางแนวตั้ง */
-            background-color: #2b3a42;
-            overflow: hidden;
+        /* กล่องเกม */
+        .game-wrapper {
+            background: white;
+            border-radius: 25px;
+            /* เงาฟุ้งๆ ให้ดูลอยออกมา */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+
+            /* ✅ จัดกึ่งกลางหน้าจอ */
+            margin: 0 auto;
+            max-width: 1000px;
+            /* จำกัดความกว้างไม่ให้ยืดจนน่าเกลียด */
+            width: fit-content;
+            /* ให้กว้างเท่าเนื้อหาเกม */
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 6px solid #fff;
+            outline: 2px dashed #dceeff;
+            /* เส้นประตกแต่ง */
         }
-        
-        /* สไตล์ปุ่มกด */
-        .btn-exit {
-            background-color: #ef4444;
-            color: white;
-            border-radius: 20px;
-            padding: 5px 15px;
-            text-decoration: none;
+
+        #game-container canvas {
+            border-radius: 15px;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* หัวข้อด่าน */
+        .stage-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .stage-title {
+            font-weight: 800;
+            color: #2c3e50;
+            text-shadow: 2px 2px 0px rgba(255, 255, 255, 1);
+            position: relative;
+            display: inline-block;
+            z-index: 1;
+        }
+
+        /* เส้นขีดหลังชื่อด่าน */
+        .stage-title::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 10px;
+            background: #ffeaa7;
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            z-index: -1;
+            opacity: 0.6;
+            border-radius: 5px;
+        }
+
+        /* ปุ่มย้อนกลับ */
+        .btn-back-float {
+            transition: all 0.2s;
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #555;
             font-weight: bold;
-            font-size: 0.9rem;
-            transition: 0.3s;
         }
-        .btn-exit:hover { background-color: #dc2626; color: white; }
+
+        .btn-back-float:hover {
+            transform: translateX(-5px);
+            border-color: #333;
+            color: #333;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="game-header">
-        <div class="d-flex align-items-center">
-            <a href="game_select.php?game_id=<?php echo $stage['game_id']; ?>" class="btn-exit me-3">
-                < ออก
-                    </a>
-                    <div>
-                        <h5 class="m-0 fw-bold text-primary"><?php echo $stage['title']; ?></h5>
-                        <small class="text-muted">ด่านที่ <?php echo $stage['stage_number']; ?></small>
-                    </div>
+    <div class="container py-4">
+
+        <div class="row align-items-center mb-4">
+
+            <div class="col-md-3 text-start">
+                <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn rounded-pill px-4 py-2 btn-back-float shadow-sm">
+                    <i class="bi bi-arrow-left me-2"></i> ออกจากด่าน
+                </a>
+            </div>
+
+            <div class="col-md-6 text-center">
+                <span class="badge bg-primary bg-opacity-10 text-primary mb-2 rounded-pill px-3">
+                    <i class="bi bi-controller me-1"></i> <?php echo $stage['game_title']; ?>
+                </span>
+                <h2 class="display-6 stage-title m-0"><?php echo $stage['title']; ?></h2>
+            </div>
+
+            <div class="col-md-3"></div>
         </div>
-        <div>
-            <span class="badge bg-warning text-dark">⭐ เป้าหมาย: 3 ดาว</span>
+
+        <div class="game-wrapper">
+            <div id="game-container"></div>
         </div>
+
     </div>
 
-    <div id="game-container"></div>
-
     <script>
-        // ตัวแปร Global ที่รับค่าจาก PHP
-        const STAGE_ID = <?php echo $stage_id; ?>;
-        const USER_ID = <?php echo $user_id; ?>;
+        window.STAGE_ID = <?php echo $stage_id; ?>;
+        window.GAME_ID = <?php echo $game_id; ?>;
 
-        // ฟังก์ชันสำหรับส่งคะแนน (เรียกใช้เมื่อจบเกมใน Phaser)
         window.sendResult = function(stageId, stars, duration, attempts) {
-            console.log("Sending Result...", {
-                stageId,
-                stars,
-                duration,
-                attempts
-            });
-
             fetch('../api/submit_score.php', {
                     method: 'POST',
                     headers: {
@@ -153,29 +176,28 @@ if (!$stage) {
                     body: JSON.stringify({
                         stage_id: stageId,
                         score: stars,
-                        duration: duration,
+                        time_taken: duration,
                         attempts: attempts
                     })
                 })
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
-                    console.log("Success:", data);
-                    if (data.status === 'success') {
-                        // รอ 1.5 วินาที แล้วเด้งกลับหน้าเลือกด่าน
-                        setTimeout(() => {
-                           window.location.href = `waiting_room.php?stage_id=${STAGE_ID}`;
-                        }, 1500);
+                    if (data.success) {
+                        window.location.href = 'waiting_room.php?stage_id=' + stageId;
+                    } else {
+                        alert('เกิดข้อผิดพลาดในการบันทึกคะแนน');
                     }
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกคะแนน");
                 });
         };
     </script>
 
-    <script src="../assets/js/logic_game/stage<?php echo $stage['stage_number']; ?>.js"></script>
-<?php include '../includes/class_control_script.php'; ?>
+    <?php if ($game_id == 2): ?>
+        <script src="../assets/js/logic_game/asset_generator.js"></script>
+    <?php endif; ?>
+
+    <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

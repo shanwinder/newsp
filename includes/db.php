@@ -2,7 +2,7 @@
 // includes/db.php
 $host = 'localhost';
 $user = 'root';
-$pass = 'root'; // ⚠️ เปลี่ยนให้ตรงกับ Server ของคุณ
+$pass = ''; // ⚠️ เปลี่ยนให้ตรงกับ Server ของคุณ
 $db   = 'new_learning_game';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // เปิด Strict Mode เพื่อให้จับ Error ได้ง่ายขึ้น

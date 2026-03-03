@@ -18,15 +18,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $driver_pw = trim($_POST['driver_pw']);
         $is_solo = isset($_POST['is_solo']) ? true : false;
 
-        // ตรวจสอบ Driver (แก้จาก id เป็น user_id)
+        // ตรวจสอบ Driver (กลับมาใช้ user_id ตามโครงสร้างจริงของคุณครู)
         $stmt = $conn->prepare("SELECT user_id, student_id, name, password FROM users WHERE user_id = ? AND role = 'student'");
         $stmt->bind_param("i", $driver_id);
         $stmt->execute();
         $driver = $stmt->get_result()->fetch_assoc();
 
         if ($driver && password_verify($driver_pw, $driver['password'])) {
-            $pair_id = time() . rand(100, 999); // สร้าง ID สำหรับ Session คู่นี้
-
+            
             if (!$is_solo) {
                 $nav_id = intval($_POST['nav_id']);
                 $nav_pw = trim($_POST['nav_pw']);
@@ -34,24 +33,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($driver_id === $nav_id) {
                     $message = "❌ ไม่สามารถเลือกตัวเองเป็นคู่หูได้!";
                 } else {
-                    // ตรวจสอบ Navigator (แก้จาก id เป็น user_id)
+                    // ตรวจสอบ Navigator
                     $stmt2 = $conn->prepare("SELECT user_id, name, password FROM users WHERE user_id = ? AND role = 'student'");
                     $stmt2->bind_param("i", $nav_id);
                     $stmt2->execute();
                     $nav = $stmt2->get_result()->fetch_assoc();
 
                     if ($nav && password_verify($nav_pw, $nav['password'])) {
-                        // อัปเดตฐานข้อมูลจับคู่
-                        $conn->query("UPDATE users SET pair_id = $pair_id, pair_role = 'driver' WHERE user_id = $driver_id");
-                        $conn->query("UPDATE users SET pair_id = $pair_id, pair_role = 'navigator' WHERE user_id = $nav_id");
+                        // อัปเดตฐานข้อมูลจับคู่ (ใช้ partner_id และ current_role)
+                        $conn->query("UPDATE users SET partner_id = $nav_id, current_role = 'driver' WHERE user_id = $driver_id");
+                        $conn->query("UPDATE users SET partner_id = $driver_id, current_role = 'navigator' WHERE user_id = $nav_id");
 
                         session_regenerate_id(true);
-                        $_SESSION['user_id'] = $driver['user_id']; // ยึด Driver เป็นหลักในการควบคุม
+                        $_SESSION['user_id'] = $driver['user_id']; // ยึด Driver เป็นหลักในการควบคุม Session
                         $_SESSION['student_id'] = $driver['student_id'];
                         $_SESSION['name'] = $driver['name'] . " & " . $nav['name']; // แสดงชื่อคู่
                         $_SESSION['role'] = 'student';
-                        $_SESSION['pair_id'] = $pair_id;
-                        $_SESSION['pair_role'] = 'driver';
+                        $_SESSION['partner_id'] = $nav['user_id'];
+                        $_SESSION['current_role'] = 'driver';
 
                         header("Location: student_dashboard.php");
                         exit();
@@ -61,14 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } else {
                 // ลุยเดี่ยว (Solo)
-                $conn->query("UPDATE users SET pair_id = $pair_id, pair_role = 'driver' WHERE user_id = $driver_id");
+                $conn->query("UPDATE users SET partner_id = NULL, current_role = 'driver' WHERE user_id = $driver_id");
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $driver['user_id'];
                 $_SESSION['student_id'] = $driver['student_id'];
                 $_SESSION['name'] = $driver['name'] . " (ลุยเดี่ยว)";
                 $_SESSION['role'] = 'student';
-                $_SESSION['pair_id'] = $pair_id;
-                $_SESSION['pair_role'] = 'driver';
+                $_SESSION['partner_id'] = null;
+                $_SESSION['current_role'] = 'driver';
 
                 header("Location: student_dashboard.php");
                 exit();
@@ -80,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
 
-        // แก้จาก id เป็น user_id
         $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE student_id = ? AND role = 'admin'");
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -99,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ดึงรายชื่อนักเรียน (แก้จาก id เป็น user_id)
+// ดึงรายชื่อนักเรียนมาแสดงใน Dropdown
 $students = [];
 $res = $conn->query("SELECT user_id, name FROM users WHERE role = 'student' ORDER BY name ASC");
 if ($res) {

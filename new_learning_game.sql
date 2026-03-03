@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Mar 03, 2026 at 04:05 AM
+-- Generation Time: Mar 03, 2026 at 05:13 AM
 -- Server version: 8.0.40
 -- PHP Version: 8.3.14
 
@@ -242,12 +242,14 @@ INSERT INTO `titles` (`id`, `title_name`, `min_stars_required`, `css_class`) VAL
 --
 
 CREATE TABLE `users` (
-  `id` int NOT NULL,
+  `user_id` int NOT NULL,
   `student_id` varchar(20) NOT NULL,
   `name` varchar(100) NOT NULL,
   `class_level` varchar(10) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('student','admin') DEFAULT 'student',
+  `pair_id` int DEFAULT NULL,
+  `pair_role` enum('driver','navigator') DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `last_seen` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -256,10 +258,10 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `student_id`, `name`, `class_level`, `password`, `role`, `created_at`, `last_seen`) VALUES
-(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', '2026-01-11 17:22:45', NULL),
-(3, 'ทดสอบ', 'เด็กชายทดสอบ ลองดู', 'ป.4/1', '$2y$10$cwrGNkq9jO0/QWv7AdmsD.Vp5LGeJYBLslEyng90xyLOAViSNFzMa', 'student', '2026-01-14 17:20:24', '2026-01-19 17:30:55'),
-(4, '001', 'ปาล์มมี่', 'ป.4/1', '$2y$10$mxXannVyUI2ioC.W.IjUh.oaghIGAByLFxyKTdOFO.8Gjk0eWxWVO', 'student', '2026-01-14 17:21:06', '2026-01-19 15:27:39');
+INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `pair_id`, `pair_role`, `created_at`, `last_seen`) VALUES
+(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', NULL, NULL, '2026-01-11 17:22:45', NULL),
+(3, 'ทดสอบ', 'เด็กชายทดสอบ ลองดู', 'ป.4/1', '$2y$10$cwrGNkq9jO0/QWv7AdmsD.Vp5LGeJYBLslEyng90xyLOAViSNFzMa', 'student', NULL, NULL, '2026-01-14 17:20:24', '2026-01-19 17:30:55'),
+(4, '001', 'ปาล์มมี่', 'ป.4/1', '$2y$10$mxXannVyUI2ioC.W.IjUh.oaghIGAByLFxyKTdOFO.8Gjk0eWxWVO', 'student', NULL, NULL, '2026-01-14 17:21:06', '2026-01-19 15:27:39');
 
 --
 -- Indexes for dumped tables
@@ -326,7 +328,7 @@ ALTER TABLE `titles`
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
+  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `student_id` (`student_id`);
 
 --
@@ -379,7 +381,7 @@ ALTER TABLE `titles`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
@@ -389,14 +391,14 @@ ALTER TABLE `users`
 -- Constraints for table `game_logs`
 --
 ALTER TABLE `game_logs`
-  ADD CONSTRAINT `game_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `game_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `game_logs_ibfk_2` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `progress`
 --
 ALTER TABLE `progress`
-  ADD CONSTRAINT `progress_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `progress_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `progress_ibfk_2` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE CASCADE;
 
 --

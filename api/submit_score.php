@@ -4,66 +4,81 @@ header('Content-Type: application/json');
 session_start();
 require_once '../includes/db.php';
 
-// 1. ตรวจสอบสิทธิ์
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+// 1. ตรวจสอบสิทธิ์ (ต้อง Login)
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
-// 2. รับข้อมูล JSON
+// 2. รับข้อมูล JSON ที่ส่งมาจากเกม (JS)
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input) {
-    echo json_encode(['success' => false, 'message' => 'Invalid Input']);
+    echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Invalid Input']);
     exit();
 }
 
-$primary_user_id = $_SESSION['user_id'];
-$pair_id = $_SESSION['pair_id'] ?? null;
+$user_id = $_SESSION['user_id'];
 $stage_id = intval($input['stage_id']);
-$score = intval($input['score'] ?? 0);
-$duration = intval($input['time_taken'] ?? $input['duration'] ?? 0); // ⚠️ แก้บั๊ก Frontend กับ Backend ชื่อตัวแปรไม่ตรงกัน
-$attempts = intval($input['attempts'] ?? 0);
+$score = intval($input['score']); // จำนวนดาว (1-3)
 
-// 3. หารายชื่อคนที่จะได้คะแนน (ถ้ามีคู่ก็ดึงมา 2 คน, ถ้าลุยเดี่ยวก็ดึงคนเดียว)
-$users_to_update = [$primary_user_id];
-if ($pair_id) {
-    $stmt = $conn->prepare("SELECT id FROM users WHERE pair_id = ? AND id != ?");
-    $stmt->bind_param("ii", $pair_id, $primary_user_id);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    while ($row = $res->fetch_assoc()) {
-        $users_to_update[] = $row['id'];
-    }
-    $stmt->close();
-}
+// รองรับทั้งคีย์ duration และ time_taken เผื่อไว้
+$duration = intval($input['duration'] ?? $input['time_taken'] ?? 0); 
+$attempts = intval($input['attempts']); // จำนวนครั้งที่ลองผิด
 
-// 4. บันทึกคะแนนให้ทุกคนในกลุ่มด้วย Transaction เพื่อป้องกันข้อผิดพลาด
-$conn->begin_transaction();
 try {
-    $sql = "INSERT INTO progress (user_id, stage_id, score, duration_seconds, attempts, completed_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
-            ON DUPLICATE KEY UPDATE 
-            score = GREATEST(score, VALUES(score)), 
-            duration_seconds = VALUES(duration_seconds),
-            attempts = VALUES(attempts),
-            completed_at = NOW()";
-    $stmt = $conn->prepare($sql);
+    // 3. ดึงข้อมูลคู่หู (Partner) และบทบาทปัจจุบัน (Role) ของคนที่กำลังกดส่งคะแนน
+    $stmt_user = $conn->prepare("SELECT partner_id, current_role FROM users WHERE id = ?");
+    $stmt_user->bind_param("i", $user_id);
+    $stmt_user->execute();
+    $user_data = $stmt_user->get_result()->fetch_assoc();
+    
+    $partner_id = $user_data['partner_id'];
+    $role = $user_data['current_role']; // 'navigator' หรือ 'driver'
 
-    foreach ($users_to_update as $uid) {
-        // บันทึกตาราง progress
-        $stmt->bind_param("iiiii", $uid, $stage_id, $score, $duration, $attempts);
-        $stmt->execute();
+    // 4. บันทึก/อัปเดตคะแนนลงตาราง `progress` ให้ทั้งตัวเองและคู่หู
+    $sql_progress = "INSERT INTO progress (user_id, stage_id, score, duration_seconds, attempts, completed_at) 
+                     VALUES (?, ?, ?, ?, ?, NOW())
+                     ON DUPLICATE KEY UPDATE 
+                     score = GREATEST(score, VALUES(score)), 
+                     duration_seconds = VALUES(duration_seconds),
+                     attempts = VALUES(attempts),
+                     completed_at = NOW()";
+    $stmt_prog = $conn->prepare($sql_progress);
 
-        // บันทึกตาราง game_logs แยกรายบุคคล
-        $action = ($score > 0) ? 'pass' : 'fail';
-        $detail = "Score: $score, Time: $duration s, Attempts: $attempts";
-        $conn->query("INSERT INTO game_logs (user_id, stage_id, action, detail) VALUES ($uid, $stage_id, '$action', '$detail')");
+    // 4.1 บันทึกคะแนนให้ตัวเอง
+    $stmt_prog->bind_param("iiiii", $user_id, $stage_id, $score, $duration, $attempts);
+    $stmt_prog->execute();
+
+    // 4.2 บันทึกคะแนนให้คู่หู (ถ้ามีการจับคู่ไว้)
+    if ($partner_id) {
+        $stmt_prog->bind_param("iiiii", $partner_id, $stage_id, $score, $duration, $attempts);
+        $stmt_prog->execute();
     }
 
-    $conn->commit();
-    echo json_encode(['success' => true, 'message' => 'Score saved for pair!']);
+    // 5. บันทึก Log การเล่น (ระบุบทบาทไว้สำหรับใช้วิเคราะห์ผล PA)
+    $action = ($score > 0) ? 'pass' : 'fail';
+    
+    // Log ของตัวเอง
+    $detail_self = "Score: $score, Time: $duration s, Attempts: $attempts, Role: $role";
+    $sql_log = "INSERT INTO game_logs (user_id, stage_id, action, detail) VALUES (?, ?, ?, ?)";
+    $stmt_log = $conn->prepare($sql_log);
+    $stmt_log->bind_param("iiss", $user_id, $stage_id, $action, $detail_self);
+    $stmt_log->execute();
+    
+    // Log ของคู่หู (สลับบทบาทใน Log ให้ถูกต้อง)
+    if ($partner_id) {
+        $partner_role = ($role === 'navigator') ? 'driver' : 'navigator';
+        $detail_partner = "Score: $score, Time: $duration s, Attempts: $attempts, Role: $partner_role";
+        $stmt_log->bind_param("iiss", $partner_id, $stage_id, $action, $detail_partner);
+        $stmt_log->execute();
+    }
+
+    // ส่ง success เป็น true กลับไปให้ JavaScript ทำงานต่อ
+    echo json_encode(['status' => 'success', 'success' => true, 'message' => 'Score saved for pair!']);
+
 } catch (Exception $e) {
-    $conn->rollback();
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log($e->getMessage()); // เก็บ error ลง log ของ server
+    echo json_encode(['status' => 'error', 'success' => false, 'message' => 'Database error']);
 }
+?>

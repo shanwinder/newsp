@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Mar 03, 2026 at 05:13 AM
+-- Generation Time: Mar 03, 2026 at 10:12 AM
 -- Server version: 8.0.40
 -- PHP Version: 8.3.14
 
@@ -63,29 +63,6 @@ CREATE TABLE `game_logs` (
   `logged_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
---
--- Dumping data for table `game_logs`
---
-
-INSERT INTO `game_logs` (`id`, `user_id`, `stage_id`, `action`, `detail`, `logged_at`) VALUES
-(31, 4, 1, 'pass', 'Score: 3, Time: 6 s, Attempts: 0', '2026-01-15 16:20:22'),
-(32, 4, 2, 'pass', 'Score: 3, Time: 6 s, Attempts: 0', '2026-01-15 16:20:49'),
-(33, 3, 1, 'pass', 'Score: 3, Time: 6 s, Attempts: 0', '2026-01-15 17:30:13'),
-(34, 3, 2, 'pass', 'Score: 3, Time: 12 s, Attempts: 0', '2026-01-15 17:30:40'),
-(35, 3, 1, 'pass', 'Score: 3, Time: 19 s, Attempts: 0', '2026-01-15 17:54:42'),
-(36, 3, 1, 'pass', 'Score: 3, Time: 47 s, Attempts: 0', '2026-01-15 17:55:50'),
-(37, 3, 2, 'pass', 'Score: 3, Time: 38 s, Attempts: 0', '2026-01-15 18:08:23'),
-(38, 3, 3, 'pass', 'Score: 1, Time: 139 s, Attempts: 5', '2026-01-15 18:36:17'),
-(39, 3, 3, 'pass', 'Score: 3, Time: 50 s, Attempts: 0', '2026-01-15 19:02:31'),
-(40, 3, 3, 'pass', 'Score: 2, Time: 22 s, Attempts: 1', '2026-01-18 17:36:11'),
-(41, 4, 3, 'pass', 'Score: 3, Time: 26 s, Attempts: 0', '2026-01-19 15:21:11'),
-(42, 3, 2, 'pass', 'Score: 3, Time: 0 s, Attempts: 0', '2026-01-19 17:20:20'),
-(43, 3, 2, 'pass', 'Score: 3, Time: 0 s, Attempts: 0', '2026-01-19 17:35:50'),
-(44, 3, 1, 'pass', 'Score: 3, Time: 0 s, Attempts: 0', '2026-01-19 17:37:45'),
-(45, 3, 1, 'pass', 'Score: 2, Time: 0 s, Attempts: 1', '2026-01-19 17:38:33'),
-(46, 3, 2, 'pass', 'Score: 3, Time: 0 s, Attempts: 0', '2026-01-19 17:40:46'),
-(47, 3, 1, 'pass', 'Score: 3, Time: 0 s, Attempts: 0', '2026-01-19 17:50:54');
-
 -- --------------------------------------------------------
 
 --
@@ -101,18 +78,6 @@ CREATE TABLE `progress` (
   `attempts` int DEFAULT '1' COMMENT 'จำนวนครั้งที่เล่น',
   `completed_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `progress`
---
-
-INSERT INTO `progress` (`id`, `user_id`, `stage_id`, `score`, `duration_seconds`, `attempts`, `completed_at`) VALUES
-(31, 4, 1, 3, 6, 0, '2026-01-15 23:20:22'),
-(32, 4, 2, 3, 6, 0, '2026-01-15 23:20:49'),
-(33, 3, 1, 3, 0, 0, '2026-01-20 00:50:54'),
-(34, 3, 2, 3, 0, 0, '2026-01-20 00:40:46'),
-(38, 3, 3, 3, 22, 1, '2026-01-19 00:36:11'),
-(41, 4, 3, 3, 26, 0, '2026-01-19 22:21:11');
 
 -- --------------------------------------------------------
 
@@ -248,20 +213,38 @@ CREATE TABLE `users` (
   `class_level` varchar(10) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('student','admin') DEFAULT 'student',
-  `pair_id` int DEFAULT NULL,
+  `pair_id` varchar(50) DEFAULT NULL,
   `pair_role` enum('driver','navigator') DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_seen` timestamp NULL DEFAULT NULL
+  `last_seen` timestamp NULL DEFAULT NULL,
+  `team_id` varchar(50) DEFAULT NULL COMMENT 'ID ของทีมในเซสชันนั้นๆ',
+  `mode` enum('solo','pair','group') DEFAULT NULL COMMENT 'รูปแบบการเรียน',
+  `team_role` varchar(20) DEFAULT NULL COMMENT 'บทบาทในทีม (เช่น driver, navigator)',
+  `group_number` int DEFAULT NULL COMMENT 'หมายเลขกลุ่ม (1-8)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `pair_id`, `pair_role`, `created_at`, `last_seen`) VALUES
-(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', NULL, NULL, '2026-01-11 17:22:45', NULL),
-(3, 'ทดสอบ', 'เด็กชายทดสอบ ลองดู', 'ป.4/1', '$2y$10$cwrGNkq9jO0/QWv7AdmsD.Vp5LGeJYBLslEyng90xyLOAViSNFzMa', 'student', NULL, NULL, '2026-01-14 17:20:24', '2026-01-19 17:30:55'),
-(4, '001', 'ปาล์มมี่', 'ป.4/1', '$2y$10$mxXannVyUI2ioC.W.IjUh.oaghIGAByLFxyKTdOFO.8Gjk0eWxWVO', 'student', NULL, NULL, '2026-01-14 17:21:06', '2026-01-19 15:27:39');
+INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `pair_id`, `pair_role`, `created_at`, `last_seen`, `team_id`, `mode`, `team_role`, `group_number`) VALUES
+(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', NULL, NULL, '2026-01-11 17:22:45', NULL, NULL, NULL, NULL, NULL),
+(5, 'test01', 'นักเรียนทดสอบ ที่ 1', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(6, 'test02', 'นักเรียนทดสอบ ที่ 2', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(7, 'test03', 'นักเรียนทดสอบ ที่ 3', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(8, 'test04', 'นักเรียนทดสอบ ที่ 4', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(9, 'test05', 'นักเรียนทดสอบ ที่ 5', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(10, 'test06', 'นักเรียนทดสอบ ที่ 6', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(11, 'test07', 'นักเรียนทดสอบ ที่ 7', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(12, 'test08', 'นักเรียนทดสอบ ที่ 8', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(13, 'test09', 'นักเรียนทดสอบ ที่ 9', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(14, 'test10', 'นักเรียนทดสอบ ที่ 10', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(15, 'test11', 'นักเรียนทดสอบ ที่ 11', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(16, 'test12', 'นักเรียนทดสอบ ที่ 12', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(17, 'test13', 'นักเรียนทดสอบ ที่ 13', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(18, 'test14', 'นักเรียนทดสอบ ที่ 14', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(19, 'test15', 'นักเรียนทดสอบ ที่ 15', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(20, 'test16', 'นักเรียนทดสอบ ที่ 16', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -381,7 +364,7 @@ ALTER TABLE `titles`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables

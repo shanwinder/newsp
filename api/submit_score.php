@@ -18,25 +18,21 @@ if (!$input) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
+$submitter_id = $_SESSION['user_id']; // คนที่ถือเมาส์และกดส่งคะแนน
 $stage_id = intval($input['stage_id']);
-$score = intval($input['score']); // จำนวนดาว (1-3)
+$score = intval($input['score']); // จำนวนดาว (0-3)
 
 // รองรับทั้งคีย์ duration และ time_taken เผื่อไว้
 $duration = intval($input['duration'] ?? $input['time_taken'] ?? 0); 
 $attempts = intval($input['attempts']); // จำนวนครั้งที่ลองผิด
+$mode = $_SESSION['mode'] ?? 'solo';
+
+// 3. ดึงรายชื่อสมาชิกในทีมจาก Session (เป็น Array ของ user_id)
+// หากไม่มีให้ยึดคนที่ล็อกอินเป็นหลักคนเดียว (ป้องกันกรณีเซสชันเก่าค้าง)
+$team_members = $_SESSION['team_members'] ?? [$submitter_id];
 
 try {
-    // 3. ดึงข้อมูลคู่หู (Partner) และบทบาทปัจจุบัน (Role) ของคนที่กำลังกดส่งคะแนน
-    $stmt_user = $conn->prepare("SELECT partner_id, current_role FROM users WHERE id = ?");
-    $stmt_user->bind_param("i", $user_id);
-    $stmt_user->execute();
-    $user_data = $stmt_user->get_result()->fetch_assoc();
-    
-    $partner_id = $user_data['partner_id'];
-    $role = $user_data['current_role']; // 'navigator' หรือ 'driver'
-
-    // 4. บันทึก/อัปเดตคะแนนลงตาราง `progress` ให้ทั้งตัวเองและคู่หู
+    // เตรียมคำสั่ง SQL สำหรับบันทึก/อัปเดตคะแนน (เตรียมไว้รันซ้ำในลูป)
     $sql_progress = "INSERT INTO progress (user_id, stage_id, score, duration_seconds, attempts, completed_at) 
                      VALUES (?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE 
@@ -46,36 +42,37 @@ try {
                      completed_at = NOW()";
     $stmt_prog = $conn->prepare($sql_progress);
 
-    // 4.1 บันทึกคะแนนให้ตัวเอง
-    $stmt_prog->bind_param("iiiii", $user_id, $stage_id, $score, $duration, $attempts);
-    $stmt_prog->execute();
-
-    // 4.2 บันทึกคะแนนให้คู่หู (ถ้ามีการจับคู่ไว้)
-    if ($partner_id) {
-        $stmt_prog->bind_param("iiiii", $partner_id, $stage_id, $score, $duration, $attempts);
-        $stmt_prog->execute();
-    }
-
-    // 5. บันทึก Log การเล่น (ระบุบทบาทไว้สำหรับใช้วิเคราะห์ผล PA)
+    // เตรียมคำสั่ง SQL สำหรับบันทึก Log การเล่น
     $action = ($score > 0) ? 'pass' : 'fail';
-    
-    // Log ของตัวเอง
-    $detail_self = "Score: $score, Time: $duration s, Attempts: $attempts, Role: $role";
     $sql_log = "INSERT INTO game_logs (user_id, stage_id, action, detail) VALUES (?, ?, ?, ?)";
     $stmt_log = $conn->prepare($sql_log);
-    $stmt_log->bind_param("iiss", $user_id, $stage_id, $action, $detail_self);
-    $stmt_log->execute();
-    
-    // Log ของคู่หู (สลับบทบาทใน Log ให้ถูกต้อง)
-    if ($partner_id) {
-        $partner_role = ($role === 'navigator') ? 'driver' : 'navigator';
-        $detail_partner = "Score: $score, Time: $duration s, Attempts: $attempts, Role: $partner_role";
-        $stmt_log->bind_param("iiss", $partner_id, $stage_id, $action, $detail_partner);
+
+    // เตรียมคำสั่ง SQL สำหรับดึงบทบาท (Role) ของแต่ละคนมาบันทึก Log
+    $stmt_role = $conn->prepare("SELECT team_role FROM users WHERE user_id = ?");
+
+    // 4. วนลูปบันทึกข้อมูลให้ "ทุกคน" ในทีม
+    foreach ($team_members as $member_id) {
+        
+        // 4.1 บันทึกคะแนนลงตาราง progress
+        $stmt_prog->bind_param("iiiii", $member_id, $stage_id, $score, $duration, $attempts);
+        $stmt_prog->execute();
+
+        // 4.2 หาบทบาท (team_role) ปัจจุบันของคนๆ นี้
+        $stmt_role->bind_param("i", $member_id);
+        $stmt_role->execute();
+        $role_result = $stmt_role->get_result()->fetch_assoc();
+        $team_role = $role_result['team_role'] ?? 'solo';
+
+        // 4.3 บันทึก Log การเล่น (ระบุด้วยว่าใครเป็นคนกดส่งข้อมูล)
+        $is_submitter = ($member_id == $submitter_id) ? " (คนกดส่งงาน)" : "";
+        $detail = "Mode: $mode, Role: $team_role{$is_submitter}, Score: $score, Time: $duration s, Attempts: $attempts";
+        
+        $stmt_log->bind_param("iiss", $member_id, $stage_id, $action, $detail);
         $stmt_log->execute();
     }
 
     // ส่ง success เป็น true กลับไปให้ JavaScript ทำงานต่อ
-    echo json_encode(['status' => 'success', 'success' => true, 'message' => 'Score saved for pair!']);
+    echo json_encode(['status' => 'success', 'success' => true, 'message' => 'Score saved for all team members!']);
 
 } catch (Exception $e) {
     error_log($e->getMessage()); // เก็บ error ลง log ของ server

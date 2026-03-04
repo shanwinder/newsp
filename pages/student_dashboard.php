@@ -10,11 +10,28 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 }
 
 $user_id = $_SESSION['user_id'];
-$pair_name = $_SESSION['name'] ?? 'นักเรียน';
-$current_role = $_SESSION['current_role'] ?? 'driver';
-$is_solo = !isset($_SESSION['partner_id']);
+$mode = $_SESSION['mode'] ?? 'solo';
+$team_members = $_SESSION['team_members'] ?? [$user_id];
+$display_name = $_SESSION['name'] ?? 'นักเรียน';
 
-// ดึงข้อมูลเกมทั้งหมด
+// ดึงชื่อและบทบาทของสมาชิกในทีมทุกคนมาเพื่อแสดงผล
+$team_data = [];
+if (!empty($team_members)) {
+    // แปลง Array ของ ID ให้เป็น String เพื่อใช้ใน SQL IN()
+    $ids = implode(',', array_map('intval', $team_members));
+    
+    // เรียงลำดับตามคนที่ล็อกอินเข้ามาก่อน
+    $sql_names = "SELECT name, team_role FROM users WHERE user_id IN ($ids) ORDER BY FIELD(user_id, $ids)";
+    $res_names = $conn->query($sql_names);
+    
+    if ($res_names) {
+        while ($row = $res_names->fetch_assoc()) {
+            $team_data[] = $row;
+        }
+    }
+}
+
+// ดึงข้อมูลเกมทั้งหมด (ตอนนี้มี 4 บทเรียนแล้ว)
 $sql = "SELECT * FROM games ORDER BY id ASC";
 $result = $conn->query($sql);
 ?>
@@ -34,27 +51,30 @@ $result = $conn->query($sql);
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background-color: #f0fdf4; /* พื้นหลังสีเขียวอ่อนสบายตา */
+            background-color: #f0fdf4;
             background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
             color: #334155;
             min-height: 100vh;
         }
 
-        /* ป้ายบอกสถานะคู่หู */
         .pair-status-banner {
             background: white;
             border-radius: 20px;
-            padding: 15px 30px;
+            padding: 20px 30px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             border: 3px dashed #a7f3d0;
             display: inline-block;
             margin-bottom: 2rem;
+            min-width: 50%;
         }
+        .pair-status-banner.mode-solo { border-color: #86efac; }
+        .pair-status-banner.mode-pair { border-color: #93c5fd; }
+        .pair-status-banner.mode-group { border-color: #fcd34d; }
 
         .farm-card {
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-bottom: 8px solid #8b4513; /* ขอบล่างสีน้ำตาลเหมือนดิน/ไม้ */
+            border-bottom: 8px solid #8b4513;
             border-radius: 20px;
             overflow: hidden;
             transition: all 0.3s ease;
@@ -127,18 +147,42 @@ $result = $conn->query($sql);
 
     <div class="container py-4 text-center">
         
-        <div class="pair-status-banner">
-            <h5 class="mb-1 text-secondary">ทีมเกษตรกรปัจจุบัน</h5>
-            <h3 class="fw-bold text-success mb-2">🧑‍🌾 <?php echo htmlspecialchars($pair_name); ?></h3>
-            <?php if(!$is_solo): ?>
-                <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
-                    <i class="bi bi-controller"></i> สิทธิ์คุมหน้าจอตอนนี้: 
-                    <?php echo ($current_role === 'driver') ? "ผู้คุมรถไถ (Driver)" : "ผู้วางแผน (Navigator)"; ?>
+        <div class="pair-status-banner mode-<?php echo $mode; ?>">
+            <h6 class="mb-2 text-secondary fw-bold">รูปแบบการเรียนรู้ปัจจุบัน</h6>
+            
+            <?php if ($mode === 'solo'): ?>
+                <h3 class="fw-bold text-success mb-3">🧑‍🌾 <?php echo htmlspecialchars($display_name); ?></h3>
+                <span class="badge bg-success rounded-pill px-4 py-2 fs-6 shadow-sm">
+                    <i class="bi bi-person-fill"></i> เกษตรกรฉายเดี่ยว (Solo)
                 </span>
-            <?php else: ?>
-                <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6">
-                    <i class="bi bi-person-fill"></i> โหมดลุยเดี่ยว (Solo)
+                
+            <?php elseif ($mode === 'pair'): ?>
+                <h3 class="fw-bold text-primary mb-3">👥 <?php echo htmlspecialchars($display_name); ?></h3>
+                <span class="badge bg-primary rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
+                    <i class="bi bi-people-fill"></i> คู่หูเกษตรกร (Pair Programming)
                 </span>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <?php 
+                    foreach($team_data as $member) {
+                        $role_icon = ($member['team_role'] === 'driver') ? '🚜 ผู้คุมรถไถ' : '🗺️ ผู้วางแผน';
+                        $role_color = ($member['team_role'] === 'driver') ? 'text-primary' : 'text-purple';
+                        echo "<div class='bg-light px-3 py-1 rounded-pill border'><span class='fw-bold'>{$member['name']}</span> <small class='{$role_color}'>($role_icon)</small></div>";
+                    }
+                    ?>
+                </div>
+
+            <?php elseif ($mode === 'group'): ?>
+                <h3 class="fw-bold mb-3" style="color:#d35400;">👨‍👩‍👧‍👦 ทีมเกษตรกร <?php echo htmlspecialchars($display_name); ?></h3>
+                <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
+                    <i class="bi bi-diagram-3-fill"></i> ทำงานเป็นกลุ่ม (Group)
+                </span>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <?php 
+                    foreach($team_data as $index => $member) {
+                        echo "<div class='bg-light px-3 py-1 rounded-pill border'><i class='bi bi-person-check-fill text-success'></i> <span class='fw-bold'>{$member['name']}</span></div>";
+                    }
+                    ?>
+                </div>
             <?php endif; ?>
         </div>
 
@@ -149,15 +193,14 @@ $result = $conn->query($sql);
             <p class="text-muted fs-5">สะสมดาวผลผลิตให้ครบเพื่อเป็นสุดยอด Young Smart Farmer!</p>
         </div>
 
-        <div class="row g-4 text-start">
+        <div class="row g-4 text-start justify-content-center">
             <?php
-            // ปรับไอคอนให้เข้ากับธีมเกษตร
+            // อัปเดตไอคอนให้ตรงกับ 4 เกมใหม่
             $icons = [
-                'logic' => '🌾',       // คัดแยกผลผลิต
-                'algorithm' => '🚜',   // รถไถเดินตามสั่ง
-                'text_algo' => '📋',   // จัดลำดับงานฟาร์ม
-                'pseudocode' => '💧',  // รดน้ำมีเงื่อนไข
-                'flowchart' => '🗺️'    // วางแผนผังฟาร์ม
+                'logic' => '🌾',       // บทที่ 1 คัดแยกผลผลิต
+                'algorithm' => '🚜',   // บทที่ 2 เส้นทางเดินรถไถ
+                'condition' => '💧',   // บทที่ 3 เครื่องรดน้ำอัจฉริยะ
+                'debugging' => '🕵️‍♂️'   // บทที่ 4 กู้วิกฤตฟาร์ม
             ];
 
             if ($result->num_rows > 0):
@@ -166,13 +209,13 @@ $result = $conn->query($sql);
                     $gameId = $row['id'];
                     $icon = isset($icons[$gameCode]) ? $icons[$gameCode] : '🌻';
 
-                    // 1. หาจำนวนด่านทั้งหมดของเกมนี้
+                    // หาจำนวนด่านทั้งหมดของเกมนี้
                     $sql_total = "SELECT COUNT(*) as total FROM stages WHERE game_id = $gameId";
                     $res_total = $conn->query($sql_total);
                     $total_stages = $res_total->fetch_assoc()['total'];
-                    $max_score = $total_stages * 3; // คะแนนเต็ม (3 ดาวต่อด่าน)
+                    $max_score = $total_stages * 3; 
 
-                    // 2. หาคะแนนที่เด็กคนนี้ทำได้ในเกมนี้
+                    // หาคะแนนที่ทำได้ (ดึงเฉพาะคนที่ล็อกอินหลัก)
                     $sql_score = "SELECT SUM(p.score) as earned 
                                   FROM progress p 
                                   JOIN stages s ON p.stage_id = s.id 
@@ -181,10 +224,9 @@ $result = $conn->query($sql);
                     $current_score = $res_score->fetch_assoc()['earned'];
                     if (!$current_score) $current_score = 0;
 
-                    // 3. คิดเป็นเปอร์เซ็นต์
                     $percent = ($max_score > 0) ? ($current_score / $max_score) * 100 : 0;
             ?>
-                    <div class="col-md-6 col-lg-4">
+                    <div class="col-md-6 col-lg-5">
                         <div class="farm-card p-4 h-100 d-flex flex-column">
                             <div class="text-center">
                                 <div class="mission-icon"><?php echo $icon; ?></div>
@@ -222,5 +264,4 @@ $result = $conn->query($sql);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <?php include '../includes/class_control_script.php'; ?>
 </body>
-
 </html>

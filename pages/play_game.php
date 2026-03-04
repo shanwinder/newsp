@@ -1,7 +1,7 @@
 <?php
+// pages/play_game.php
 session_start();
 require_once '../includes/db.php';
-require_once '../includes/student_navbar.php';
 
 // 1. รับค่า Stage ID
 if (!isset($_GET['stage_id'])) {
@@ -27,14 +27,30 @@ $stage = $result->fetch_assoc();
 $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
 
-// 3. LOGIC เลือกไฟล์เกม
-$game_script = "stage{$stage_num}.js"; // Default
-
-if ($game_id == 2) {
-    $game_script = "stage{$stage_num}_algo.js";
+// 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 บทเรียนฟาร์มอัจฉริยะ)
+$game_script = "";
+if ($game_id == 1) {
+    // บทที่ 1: คัดแยกผลผลิต (ไฟล์เดิมที่คุณครูมีอยู่แล้ว)
+    $game_script = "stage{$stage_num}.js"; 
+} elseif ($game_id == 2) {
+    // บทที่ 2: เส้นทางเดินรถไถ
+    $game_script = "stage{$stage_num}_algo.js"; 
 } elseif ($game_id == 3) {
-    $game_script = "stage{$stage_num}_code.js";
+    // บทที่ 3: เครื่องรดน้ำอัจฉริยะ (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
+    $game_script = "stage{$stage_num}_cond.js"; 
+} elseif ($game_id == 4) {
+    // บทที่ 4: กู้วิกฤตฟาร์ม (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
+    $game_script = "stage{$stage_num}_debug.js"; 
 }
+
+// 4. กำหนดสีธีมตามบทเรียน (ให้เข้ากับหน้าเลือกด่าน)
+$theme_colors = [
+    1 => ['bg' => '#e9f7ef', 'text' => 'text-success', 'border' => '#27ae60', 'line' => '#82e0aa'],
+    2 => ['bg' => '#ebf5fb', 'text' => 'text-primary', 'border' => '#3498db', 'line' => '#85c1e9'],
+    3 => ['bg' => '#e0f7fa', 'text' => 'text-info', 'border' => '#0dcaf0', 'line' => '#80deea'],
+    4 => ['bg' => '#fdf2e9', 'text' => 'text-warning', 'border' => '#f39c12', 'line' => '#f8c471']
+];
+$theme = $theme_colors[$game_id] ?? $theme_colors[1];
 ?>
 
 <!DOCTYPE html>
@@ -42,7 +58,7 @@ if ($game_id == 2) {
 
 <head>
     <meta charset="UTF-8">
-    <title><?php echo $stage['title']; ?> - <?php echo $stage['game_title']; ?></title>
+    <title>ด่านที่ <?php echo $stage_num; ?>: <?php echo htmlspecialchars($stage['title']); ?> - <?php echo htmlspecialchars($stage['game_title']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -53,7 +69,8 @@ if ($game_id == 2) {
 
     <style>
         body {
-            background-color: #f0f9ff;
+            font-family: 'Kanit', sans-serif;
+            background-color: <?php echo $theme['bg']; ?>;
             background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
             min-height: 100vh;
         }
@@ -62,24 +79,17 @@ if ($game_id == 2) {
         .game-wrapper {
             background: white;
             border-radius: 25px;
-            /* เงาฟุ้งๆ ให้ดูลอยออกมา */
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
             padding: 20px;
-
-            /* ✅ จัดกึ่งกลางหน้าจอ */
             margin: 0 auto;
             max-width: 1000px;
-            /* จำกัดความกว้างไม่ให้ยืดจนน่าเกลียด */
             width: fit-content;
-            /* ให้กว้างเท่าเนื้อหาเกม */
-
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             border: 6px solid #fff;
-            outline: 2px dashed #dceeff;
-            /* เส้นประตกแต่ง */
+            outline: 3px dashed <?php echo $theme['border']; ?>;
         }
 
         #game-container canvas {
@@ -88,12 +98,6 @@ if ($game_id == 2) {
         }
 
         /* หัวข้อด่าน */
-        .stage-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
         .stage-title {
             font-weight: 800;
             color: #2c3e50;
@@ -108,8 +112,8 @@ if ($game_id == 2) {
             content: '';
             display: block;
             width: 100%;
-            height: 10px;
-            background: #ffeaa7;
+            height: 12px;
+            background: <?php echo $theme['line']; ?>;
             position: absolute;
             bottom: 5px;
             left: 0;
@@ -118,7 +122,6 @@ if ($game_id == 2) {
             border-radius: 5px;
         }
 
-        /* ปุ่มย้อนกลับ */
         .btn-back-float {
             transition: all 0.2s;
             background: white;
@@ -129,18 +132,17 @@ if ($game_id == 2) {
 
         .btn-back-float:hover {
             transform: translateX(-5px);
-            border-color: #333;
-            color: #333;
+            border-color: <?php echo $theme['border']; ?>;
+            color: <?php echo $theme['border']; ?>;
         }
     </style>
 </head>
 
 <body>
+    <?php require_once '../includes/student_navbar.php'; ?>
 
     <div class="container py-4">
-
         <div class="row align-items-center mb-4">
-
             <div class="col-md-3 text-start">
                 <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn rounded-pill px-4 py-2 btn-back-float shadow-sm">
                     <i class="bi bi-arrow-left me-2"></i> ออกจากด่าน
@@ -148,10 +150,10 @@ if ($game_id == 2) {
             </div>
 
             <div class="col-md-6 text-center">
-                <span class="badge bg-primary bg-opacity-10 text-primary mb-2 rounded-pill px-3">
-                    <i class="bi bi-controller me-1"></i> <?php echo $stage['game_title']; ?>
+                <span class="badge bg-white text-dark mb-2 rounded-pill px-3 shadow-sm border">
+                    <i class="bi bi-controller me-1 <?php echo $theme['text']; ?>"></i> <?php echo htmlspecialchars($stage['game_title']); ?>
                 </span>
-                <h2 class="display-6 stage-title m-0"><?php echo $stage['title']; ?></h2>
+                <h2 class="display-6 stage-title m-0">ด่านที่ <?php echo $stage_num; ?>: <?php echo htmlspecialchars($stage['title']); ?></h2>
             </div>
 
             <div class="col-md-3"></div>
@@ -160,7 +162,6 @@ if ($game_id == 2) {
         <div class="game-wrapper">
             <div id="game-container"></div>
         </div>
-
     </div>
 
     <script>
@@ -183,21 +184,26 @@ if ($game_id == 2) {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        // เมื่อบันทึกสำเร็จ (ให้ทั้งกลุ่มเรียบร้อยแล้ว) ให้เด้งไปห้องรอ
                         window.location.href = 'waiting_room.php?stage_id=' + stageId;
                     } else {
                         alert('เกิดข้อผิดพลาดในการบันทึกคะแนน');
                     }
+                })
+                .catch(error => {
+                    console.error('Error submitting score:', error);
+                    alert('ไม่สามารถส่งคะแนนได้ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
                 });
         };
     </script>
 
-    <?php if ($game_id == 2): ?>
+    <?php if ($game_id == 2 || $game_id == 3 || $game_id == 4): ?>
         <script src="../assets/js/logic_game/asset_generator.js"></script>
     <?php endif; ?>
 
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include '../includes/class_control_script.php'; ?>
 </body>
-
 </html>

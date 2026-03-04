@@ -1,400 +1,304 @@
 // assets/js/logic_game/stage1.js
-(function () {
-  document.addEventListener("DOMContentLoaded", function () {
-    const STAGE_ID = window.STAGE_ID || 1;
 
-    const config = {
-      type: Phaser.AUTO,
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.NO_CENTER,
-        width: 900,
-        height: 600,
-      },
-      parent: "game-container",
-      backgroundColor: "#87CEEB", // สีฟ้าสดใส
-      scene: {
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    backgroundColor: '#87CEEB',
+    parent: 'game-container',
+    physics: {
+        default: 'arcade',
+        arcade: { debug: false }
+    },
+    scene: {
         preload: preload,
         create: create,
-      },
-    };
-
-    // ตัวแปร Global สำหรับจัดการด่านย่อย
-    let startTime;
-    let totalAttempts = 0; // นับจำนวนผิดรวมทุกด่านย่อย
-    let currentSubLevel = 0; // ด่านย่อยปัจจุบัน (0, 1, 2)
-    const totalSubLevels = 3;
-
-    // เก็บ Object ในฉากเพื่อลบออกเวลาเปลี่ยนด่านย่อย
-    let levelObjects = [];
-
-    function preload() {
-      this.load.setBaseURL("../");
-      this.load.image("cat", "assets/img/cat.webp");
-      this.load.image("dog", "assets/img/dog.webp");
-      this.load.image("rabbit", "assets/img/rabbit.webp");
-
-      // โหลดเสียง
-      this.load.audio("correct", "assets/sound/correct.mp3");
-      this.load.audio("wrong", "assets/sound/wrong.mp3");
+        update: update
     }
+};
 
-    function create() {
-      const scene = this;
-      startTime = Date.now();
-      totalAttempts = 0;
-      currentSubLevel = 0;
+const game = new Phaser.Game(config);
 
-      // --- สร้าง Texture ดาว (วาดสด) ---
-      if (!scene.textures.exists("star")) {
-        const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
-        graphics.fillStyle(0xffffff, 1);
-        const cx = 16,
-          cy = 16,
-          outer = 15,
-          inner = 7;
-        graphics.beginPath();
-        for (let i = 0; i < 5; i++) {
-          graphics.lineTo(
-            cx + Math.cos((18 + i * 72) * 0.01745) * outer,
-            cy - Math.sin((18 + i * 72) * 0.01745) * outer
-          );
-          graphics.lineTo(
-            cx + Math.cos((54 + i * 72) * 0.01745) * inner,
-            cy - Math.sin((54 + i * 72) * 0.01745) * inner
-          );
+// ==========================================
+// ⚙️ ตัวแปรปรับขนาดรูปภาพ (แยกอิสระ)
+// ==========================================
+// คุณครูสามารถปรับตัวเลขเหล่านี้แยกกันได้เลยเพื่อให้ขนาดพอดี
+const SCALES = {
+    seed: 0.2,    // ขนาดเมล็ด (newseed.webp) - ปรับให้น้อยลงถ้ายังใหญ่ไป
+    rock: 0.2,     // ขนาดก้อนหิน (rock.webp)
+    weed: 0.25,     // ขนาดวัชพืช (weed.webp)
+    sprout: 0.25,   // ขนาดต้นกล้า (sprout.webp) - ต้นกล้าเดิมอาจจะเล็ก เลยตั้งไว้เยอะหน่อย
+    plant: 0.25,    // ขนาดต้นไม้ (plant.webp)
+    basket: 0.4    // ขนาดตะกร้า (basket.webp)
+};
+
+// ตัวแปรสถานะเกม
+let currentSubLevel = 1;
+let score = 0;
+let mistakes = 0;
+let startTime;
+let levelGroup; 
+
+function preload() {
+    this.load.image('bg_farm', '../assets/img/bg_farm.webp'); 
+    this.load.image('seed', '../assets/img/newseed.webp'); 
+    this.load.image('basket', '../assets/img/basket.webp'); 
+    this.load.image('rock', '../assets/img/rock.webp'); 
+    this.load.image('weed', '../assets/img/weed.webp'); 
+    this.load.image('sprout', '../assets/img/newsprout.webp'); 
+    this.load.image('plant', '../assets/img/newplant.webp'); 
+    
+    this.load.audio('correct', '../assets/sound/correct.mp3');
+    this.load.audio('wrong', '../assets/sound/wrong.mp3');
+}
+
+function create() {
+    let bg = this.add.image(400, 300, 'bg_farm');
+    bg.setDisplaySize(800, 600); 
+    
+    levelGroup = this.add.group();
+    startTime = Date.now();
+    currentSubLevel = 1;
+
+    startLevel1(this);
+}
+
+function update() {}
+
+// ==========================================
+// 🔄 ระบบเปลี่ยนผ่านอัตโนมัติ
+// ==========================================
+function autoTransition(scene, nextLevelFunc) {
+    scene.input.off('drop'); 
+    currentSubLevel++;
+
+    let txt = scene.add.text(400, 300, '✨ ยอดเยี่ยม! ไปต่อกันเลย ✨', { 
+        fontSize: '40px', fontFamily: 'Kanit', color: '#f1c40f', 
+        fontWeight: 'bold', stroke: '#000', strokeThickness: 5 
+    }).setOrigin(0.5);
+    
+    scene.tweens.add({
+        targets: txt,
+        alpha: 0,
+        y: 250,
+        delay: 1000,
+        duration: 500,
+        onComplete: () => {
+            txt.destroy();
+            levelGroup.clear(true, true);
+            nextLevelFunc(scene);
         }
-        graphics.closePath();
-        graphics.fillPath();
-        graphics.generateTexture("star", 32, 32);
-      }
+    });
+}
 
-      // --- เตรียมข้อมูลด่านย่อย (Sub-Level Data) ---
-      scene.levelData = [
-        {
-          // Level 1/3: Pattern 2 ตัว (หมา, แมว) - หาย 1 ช่อง
-          sequence: ["dog", "cat", "dog", "cat", "dog", "cat"],
-          missing: [5], // หายตัวสุดท้าย
-          options: ["dog", "cat", "rabbit"],
-        },
-        {
-          // Level 2/3: Pattern 3 ตัว (หมา, แมว, กระต่าย) - หายตรงกลาง
-          sequence: ["dog", "cat", "rabbit", "dog", "cat", "rabbit"],
-          missing: [4], // หายตัวที่ 5 (Cat)
-          options: ["cat", "dog", "rabbit"],
-        },
-        {
-          // Level 3/3: Pattern 3 ตัว - หาย 2 ช่อง (หัวท้าย)
-          sequence: ["rabbit", "dog", "cat", "rabbit", "dog", "cat"],
-          missing: [0, 5], // หายตัวแรกและตัวสุดท้าย
-          options: ["rabbit", "cat", "dog"],
-        },
-      ];
+// ==========================================
+// 🌾 ระดับย่อย 1: Drag & Drop คัดแยกเมล็ด
+// ==========================================
+function startLevel1(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 1/3: ลาก "เมล็ดพันธุ์" ลงตะกร้า', {
+        fontSize: '28px', fontFamily: 'Kanit', color: '#166534', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
+    }).setOrigin(0.5);
+    levelGroup.add(title);
 
-      // Setup Emitter (พลุ)
-      scene.emitter = scene.add
-        .particles(0, 0, "star", {
-          speed: { min: 200, max: 500 },
-          angle: { min: 0, max: 360 },
-          scale: { start: 0.6, end: 0 },
-          blendMode: "ADD",
-          lifespan: 800,
-          gravityY: 200,
-          tint: [0xff0000, 0xffff00, 0x00ff00, 0x00ffff, 0xff00ff],
-          emitting: false,
-        })
-        .setDepth(100);
+    let basket = scene.add.image(400, 480, 'basket').setScale(SCALES.basket);
+    let dropZone = scene.add.zone(400, 480, 200, 150).setRectangleDropZone(200, 150);
+    levelGroup.add(basket);
 
-      // เริ่มรันด่านแรก
-      loadSubLevel(scene, 0);
-    }
+    let caughtSeeds = 0;
+    const itemsData = [
+        { type: 'seed', x: 200, y: 200, isTarget: true },
+        { type: 'rock', x: 350, y: 150, isTarget: false },
+        { type: 'seed', x: 450, y: 250, isTarget: true },
+        { type: 'rock', x: 600, y: 180, isTarget: false },
+    ];
 
-    // --- ฟังก์ชันโหลดด่านย่อย ---
-    function loadSubLevel(scene, index) {
-      // 1. ล้างของเก่า (ถ้ามี)
-      levelObjects.forEach((obj) => obj.destroy());
-      levelObjects = [];
-
-      const data = scene.levelData[index];
-
-      // 2. แสดง UI หัวข้อด่าน
-      const titleText = scene.add
-        .text(450, 50, `ด่านย่อยที่ ${index + 1} / 3`, {
-          fontSize: "32px",
-          color: "#ffffff",
-          fontFamily: "Kanit",
-          stroke: "#000",
-          strokeThickness: 4,
-        })
-        .setOrigin(0.5);
-      levelObjects.push(titleText);
-
-      // ProgressBar (หลอดความคืบหน้าด่านย่อย)
-      const barBg = scene.add.rectangle(450, 90, 300, 10, 0xffffff, 0.3);
-      const barFill = scene.add
-        .rectangle(
-          300,
-          90,
-          (300 / totalSubLevels) * (index + 1),
-          10,
-          0x00ff00,
-          1
-        )
-        .setOrigin(0, 0.5);
-      levelObjects.push(barBg, barFill);
-
-      // พื้นหลังโจทย์
-      const bg = scene.add.graphics();
-      bg.fillStyle(0xffffff, 0.8);
-      bg.fillRoundedRect(50, 120, 800, 160, 20);
-      levelObjects.push(bg);
-
-      // 3. สร้างโจทย์ (Sequence)
-      const dropZones = [];
-      let startX = 150;
-
-      data.sequence.forEach((animal, i) => {
-        const x = startX + i * 120;
-        const y = 200;
-
-        if (data.missing.includes(i)) {
-          // ช่องว่าง (Drop Zone)
-          const zone = scene.add
-            .zone(x, y, 100, 100)
-            .setRectangleDropZone(100, 100);
-          const graphics = scene.add.graphics();
-          graphics.lineStyle(2, 0x000000, 0.5);
-          graphics.strokeRect(x - 50, y - 50, 100, 100);
-
-          // ไอคอน ?
-          const qText = scene.add
-            .text(x, y, "?", { fontSize: "40px", color: "#555" })
-            .setOrigin(0.5);
-
-          zone.setData({ answer: animal, isFilled: false });
-          dropZones.push(zone);
-          levelObjects.push(zone, graphics, qText);
-        } else {
-          // โจทย์ที่มีอยู่แล้ว
-          const img = scene.add.image(x, y, animal).setDisplaySize(90, 90);
-          levelObjects.push(img);
-        }
-      });
-
-      // 4. สร้างตัวเลือก (Options)
-      const options = [...data.options]; // Copy array
-      // Phaser.Utils.Array.Shuffle(options); // (ถ้าอยากสุ่มตำแหน่งตัวเลือก ให้เปิดบรรทัดนี้)
-
-      options.forEach((animal, i) => {
-        const x = 300 + i * 150;
-        const y = 500;
-
-        const base = scene.add.circle(x, y, 60, 0xffffff, 0.5);
-        const item = scene.add
-          .image(x, y, animal)
-          .setDisplaySize(100, 100)
-          .setInteractive();
+    itemsData.forEach(data => {
+        let item = scene.add.image(data.x, data.y, data.type).setInteractive();
+        item.setScale(SCALES[data.type]); // ดึงสเกลตามประเภท
         scene.input.setDraggable(item);
+        item.isTarget = data.isTarget;
+        item.originalX = data.x;
+        item.originalY = data.y;
+        levelGroup.add(item);
+    });
 
-        const baseScale = item.scale;
-        item.setData({
-          type: animal,
-          originX: x,
-          originY: y,
-          baseScale: baseScale,
-        });
-
-        levelObjects.push(base, item);
-      });
-
-      // 5. Setup Logic การลาก (เฉพาะด่านนี้)
-      setupDragEvents(scene, dropZones);
-    }
-
-    function setupDragEvents(scene, dropZones) {
-      // ล้าง Event เก่าก่อนเพื่อกันเบิ้ล
-      scene.input.off("dragstart");
-      scene.input.off("drag");
-      scene.input.off("drop");
-      scene.input.off("dragend");
-
-      scene.input.on("dragstart", (pointer, gameObject) => {
-        scene.children.bringToTop(gameObject);
-        const startScale = gameObject.getData("baseScale");
-        scene.tweens.add({
-          targets: gameObject,
-          scale: startScale * 1.2,
-          duration: 100,
-          ease: "Power2",
-        });
-      });
-
-      scene.input.on("drag", (pointer, gameObject, dragX, dragY) => {
+    scene.input.on('drag', function (pointer, gameObject, dragX, dragY) {
         gameObject.x = dragX;
         gameObject.y = dragY;
-      });
+    });
 
-      scene.input.on("drop", (pointer, gameObject, dropZone) => {
-        const correctAnswer = dropZone.getData("answer");
-        const droppedType = gameObject.getData("type");
-        const startScale = gameObject.getData("baseScale");
+    scene.input.on('drop', (pointer, gameObject, target) => {
+        if (currentSubLevel !== 1) return;
 
-        if (droppedType === correctAnswer && !dropZone.getData("isFilled")) {
-          // ✅ ถูกต้อง
-          gameObject.disableInteractive();
-          dropZone.setData("isFilled", true);
+        if (gameObject.isTarget) {
+            scene.sound.play('correct');
+            gameObject.x = target.x;
+            gameObject.y = target.y;
+            gameObject.input.enabled = false;
+            caughtSeeds++;
+            
+            if (caughtSeeds >= 2) {
+                autoTransition(scene, startLevel2);
+            }
+        } else {
+            scene.sound.play('wrong');
+            mistakes++;
+            scene.tweens.add({ targets: gameObject, x: gameObject.originalX, y: gameObject.originalY, duration: 300 });
+        }
+    });
 
-          scene.tweens.add({
-            targets: gameObject,
-            x: dropZone.x,
-            y: dropZone.y,
-            scale: startScale * 0.9,
-            duration: 300,
-            ease: "Back.out",
+    scene.input.on('dragleave', function (pointer, gameObject, dropZone) {
+        gameObject.x = gameObject.originalX;
+        gameObject.y = gameObject.originalY;
+    });
+}
+
+// ==========================================
+// 🌱 ระดับย่อย 2: Clicker กำจัดวัชพืช (มีตัวหลอก)
+// ==========================================
+function startLevel2(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 2/3: กำจัดวัชพืช (ระวังอย่ากดโดนต้นกล้านะ!)', {
+        fontSize: '26px', fontFamily: 'Kanit', color: '#c0392b', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
+    }).setOrigin(0.5);
+    levelGroup.add(title);
+
+    let weedsKilled = 0;
+    let weedsToKill = 5;
+
+    function spawnTarget() {
+        if (currentSubLevel !== 2) return;
+        
+        // สุ่มว่าจะเป็นตัวหลอก (ต้นกล้า) หรือเป้าหมายจริง (วัชพืช) - โอกาสเป็นวัชพืช 60%
+        let isFake = Phaser.Math.Between(1, 10) > 6; 
+        let type = isFake ? 'sprout' : 'weed';
+
+        let x = Phaser.Math.Between(150, 650);
+        let y = Phaser.Math.Between(200, 500);
+        let target = scene.add.image(x, y, type).setInteractive();
+        target.setScale(0); 
+        levelGroup.add(target);
+
+        scene.tweens.add({
+            targets: target, 
+            scale: SCALES[type], // ขยายตามสเกลที่ตั้งไว้
+            duration: 200, 
             onComplete: () => {
-              scene.emitter.explode(20, dropZone.x, dropZone.y);
-              try {
-                scene.sound.play("correct");
-              } catch (e) {}
+                let hideTween = scene.tweens.add({
+                    targets: target, scale: 0, delay: 1500, duration: 200,
+                    onComplete: () => { 
+                        target.destroy(); 
+                        if (!isFake) mistakes++; // ถ้าปล่อยให้วัชพืชหายไปเอง โดนหักดาว
+                        spawnTarget(); 
+                    }
+                });
 
-              // ตรวจสอบว่าครบทุกช่องในด่านย่อยนี้ยัง?
-              const isSubLevelComplete = dropZones.every((z) =>
-                z.getData("isFilled")
-              );
-              if (isSubLevelComplete) {
-                handleSubLevelComplete(scene);
-              }
-            },
-          });
+                target.on('pointerdown', () => {
+                    hideTween.stop();
+                    
+                    if (isFake) {
+                        // กดโดนต้นกล้า (ตัวหลอก)
+                        scene.sound.play('wrong');
+                        mistakes++;
+                        // แสดงกากบาทสีแดง
+                        let cross = scene.add.text(target.x, target.y, '❌', { fontSize: '40px' }).setOrigin(0.5);
+                        scene.tweens.add({ targets: cross, alpha: 0, y: target.y - 50, duration: 1000, onComplete: () => cross.destroy() });
+                    } else {
+                        // กดโดนวัชพืช (ถูกต้อง)
+                        scene.sound.play('correct');
+                        weedsKilled++;
+                    }
+
+                    target.destroy();
+
+                    if (weedsKilled >= weedsToKill) {
+                        autoTransition(scene, startLevel3);
+                    } else {
+                        spawnTarget(); 
+                    }
+                });
+            }
+        });
+    }
+
+    spawnTarget();
+}
+
+// ==========================================
+// 🌳 ระดับย่อย 3: Sequence ลำดับการเติบโต (จัด Layout ใหม่)
+// ==========================================
+function startLevel3(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 3/3: ลากภาพวงจรชีวิตให้สมบูรณ์', {
+        fontSize: '28px', fontFamily: 'Kanit', color: '#2980b9', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
+    }).setOrigin(0.5);
+    levelGroup.add(title);
+
+    // จัดตำแหน่งใหม่ให้อยู่กึ่งกลางหน้าจอ (Y = 250)
+    scene.add.text(300, 250, '➡️', { fontSize: '40px', color: '#fff', shadow: { fill: true, blur: 2, color: '#000' } }).setOrigin(0.5);
+    scene.add.text(500, 250, '➡️', { fontSize: '40px', color: '#fff', shadow: { fill: true, blur: 2, color: '#000' } }).setOrigin(0.5);
+
+    let img1 = scene.add.image(200, 250, 'seed').setScale(SCALES.seed);
+    let img2 = scene.add.image(400, 250, 'sprout').setScale(SCALES.sprout);
+    
+    // ช่องว่างสำหรับคำตอบ (ปรับพิกัดให้พอดีที่ X=600, Y=250)
+    let graphics = scene.add.graphics();
+    graphics.lineStyle(4, 0xffffff, 1);
+    graphics.strokeRoundedRect(540, 190, 120, 120, 15); // กรอบสี่เหลี่ยม
+    let dropZone = scene.add.zone(600, 250, 120, 120).setRectangleDropZone(120, 120);
+    
+    levelGroup.addMultiple([img1, img2, graphics]);
+
+    // ตัวเลือกด้านล่าง (Y = 450)
+    let option1 = scene.add.image(300, 450, 'rock').setInteractive(); 
+    let option2 = scene.add.image(500, 450, 'plant').setInteractive(); 
+
+    [option1, option2].forEach(opt => {
+        // ใช้ชื่อ texture ค้นหาสเกลใน SCALES
+        opt.setScale(SCALES[opt.texture.key]);
+        scene.input.setDraggable(opt);
+        opt.originalX = opt.x;
+        opt.originalY = opt.y;
+        levelGroup.add(opt);
+    });
+
+    scene.input.on('drop', (pointer, gameObject, target) => {
+        if (currentSubLevel !== 3) return;
+
+        if (gameObject.texture.key === 'plant') {
+            scene.sound.play('correct');
+            gameObject.x = target.x;
+            gameObject.y = target.y;
+            gameObject.input.enabled = false;
+            
+            setTimeout(() => checkWinCondition(scene), 1000);
         } else {
-          // ❌ ผิด
-          totalAttempts++; // นับรวมความผิดพลาด
-
-          // Reset กลับที่เดิม
-          scene.tweens.add({
-            targets: gameObject,
-            x: gameObject.getData("originX"),
-            y: gameObject.getData("originY"),
-            scale: startScale,
-            duration: 500,
-            ease: "Cubic.out",
-          });
-
-          gameObject.setTint(0xff5555);
-          scene.time.delayedCall(500, () => gameObject.clearTint());
-          scene.cameras.main.shake(100, 0.01);
-          try {
-            scene.sound.play("wrong");
-          } catch (e) {}
+            scene.sound.play('wrong');
+            mistakes++;
+            scene.tweens.add({ targets: gameObject, x: gameObject.originalX, y: gameObject.originalY, duration: 300 });
         }
-      });
+    });
+}
 
-      scene.input.on("dragend", (pointer, gameObject, dropped) => {
-        if (!dropped) {
-          const startScale = gameObject.getData("baseScale");
-          scene.tweens.add({
-            targets: gameObject,
-            x: gameObject.getData("originX"),
-            y: gameObject.getData("originY"),
-            scale: startScale,
-            duration: 500,
-            ease: "Cubic.out",
-          });
+// ==========================================
+// 🏆 จบเกมและสรุปผล
+// ==========================================
+function checkWinCondition(scene) {
+    levelGroup.clear(true, true);
+
+    let duration = Math.floor((Date.now() - startTime) / 1000);
+    
+    let stars = 3;
+    if (mistakes >= 2 && mistakes <= 4) stars = 2;
+    if (mistakes >= 5) stars = 1; // ปรับเกณฑ์ดาวให้ใจดีขึ้นนิดนึง เพราะมีตัวหลอกเยอะ
+
+    let overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+    let t1 = scene.add.text(400, 250, '🏆 ภารกิจเสร็จสิ้น!', { fontSize: '52px', fontFamily: 'Kanit', color: '#f1c40f', fontWeight: 'bold' }).setOrigin(0.5);
+    let t2 = scene.add.text(400, 330, `ใช้เวลา: ${duration} วินาที | พลาด: ${mistakes} ครั้ง`, { fontSize: '24px', fontFamily: 'Kanit', color: '#ffffff' }).setOrigin(0.5);
+
+    scene.input.enabled = false;
+
+    setTimeout(() => {
+        if (typeof window.sendResult === 'function') {
+            window.sendResult(window.STAGE_ID, stars, duration, mistakes); 
         }
-      });
-    }
-
-    function handleSubLevelComplete(scene) {
-      // หน่วงเวลาเล็กน้อยก่อนไปด่านถัดไป
-      scene.time.delayedCall(1000, () => {
-        if (currentSubLevel < totalSubLevels - 1) {
-          // ยังไม่ครบ 3 ด่าน -> ไปด่านต่อไป
-          currentSubLevel++;
-
-          // เอฟเฟกต์เปลี่ยนฉาก (Fade out/in)
-          scene.cameras.main.fade(300, 0, 0, 0);
-          scene.cameras.main.once("camerafadeoutcomplete", () => {
-            loadSubLevel(scene, currentSubLevel);
-            scene.cameras.main.fadeIn(300);
-          });
-        } else {
-          // ครบ 3 ด่านแล้ว -> จบเกม!
-          checkGlobalWin(scene);
-        }
-      });
-    }
-
-    function checkGlobalWin(scene) {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-
-      // ⭐ คำนวณดาว (รวม 3 ด่านย่อย)
-      // 3 ดาว: ห้ามผิดเลย (attempts=0) และต้องเร็ว (เช่น < 60 วิ สำหรับ 3 ด่าน)
-      // 2 ดาว: ผิดได้ไม่เกิน 2 ครั้ง
-      // 1 ดาว: ผ่านก็พอ
-      let stars = 1;
-      if (totalAttempts === 0 && duration < 60) stars = 3;
-      else if (totalAttempts <= 2) stars = 2;
-
-      showWinPopup(scene, stars, duration);
-    }
-
-    function showWinPopup(scene, stars, duration) {
-      const overlay = scene.add
-        .rectangle(450, 300, 900, 600, 0x000000, 0.8)
-        .setDepth(20)
-        .setAlpha(0);
-      scene.tweens.add({ targets: overlay, alpha: 0.8, duration: 300 });
-
-      // สุ่มคำชม
-      const phrases = [
-        "🎉 สุดยอดไปเลย! 🎉",
-        "🧩 นักสืบตัวจริง! 🧩",
-        "✨ สมบูรณ์แบบ! ✨",
-      ];
-      const textStr = Phaser.Utils.Array.GetRandom(phrases);
-
-      const text = scene.add
-        .text(450, 250, textStr, {
-          fontSize: "64px",
-          color: "#ffd700",
-          fontFamily: "Kanit",
-          stroke: "#fff",
-          strokeThickness: 6,
-        })
-        .setOrigin(0.5)
-        .setDepth(22)
-        .setScale(0);
-
-      scene.tweens.add({
-        targets: text,
-        scale: 1,
-        duration: 500,
-        ease: "Back.out",
-      });
-
-      let starStr = "";
-      for (let i = 0; i < stars; i++) starStr += "⭐";
-      const starText = scene.add
-        .text(450, 350, starStr, { fontSize: "48px" })
-        .setOrigin(0.5)
-        .setDepth(22)
-        .setAlpha(0);
-      scene.tweens.add({
-        targets: starText,
-        alpha: 1,
-        delay: 300,
-        duration: 500,
-      });
-
-      scene.time.delayedCall(2000, () => {
-        window.location.href = `waiting_room.php?stage_id=${STAGE_ID}`;
-      });
-
-      if (typeof window.sendResult === "function") {
-        window.sendResult(STAGE_ID, stars, duration, totalAttempts);
-      }
-    }
-
-    new Phaser.Game(config);
-  });
-})();
+    }, 2000);
+}

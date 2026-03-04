@@ -35,7 +35,7 @@ CREATE TABLE `games` (
   `learning_topic` varchar(255) DEFAULT NULL,
   `instruction_html` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `games`
@@ -60,7 +60,7 @@ CREATE TABLE `game_logs` (
   `action` enum('start','submit','hint','pass','fail') NOT NULL,
   `detail` text,
   `logged_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `game_logs`
@@ -91,7 +91,7 @@ CREATE TABLE `progress` (
   `duration_seconds` int DEFAULT '0' COMMENT 'เวลาที่ใช้เล่น (วินาที)',
   `attempts` int DEFAULT '1' COMMENT 'จำนวนครั้งที่เล่น',
   `completed_at` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `progress`
@@ -113,7 +113,7 @@ CREATE TABLE `project_likes` (
   `user_id` int NOT NULL,
   `work_id` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `project_likes`
@@ -138,7 +138,7 @@ CREATE TABLE `stages` (
   `title` varchar(255) DEFAULT NULL,
   `instruction` text,
   `content_json` json DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `stages`
@@ -192,7 +192,7 @@ INSERT INTO `student_works` (`id`, `user_id`, `game_id`, `work_data`, `descripti
 CREATE TABLE `system_settings` (
   `setting_key` varchar(50) NOT NULL,
   `setting_value` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `system_settings`
@@ -213,7 +213,7 @@ CREATE TABLE `titles` (
   `title_name` varchar(100) NOT NULL,
   `min_stars_required` int NOT NULL,
   `css_class` varchar(100) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `titles`
@@ -252,7 +252,7 @@ CREATE TABLE `users` (
   `mode` enum('solo','pair','group') DEFAULT NULL COMMENT 'รูปแบบการเรียน',
   `team_role` varchar(20) DEFAULT NULL COMMENT 'บทบาทในทีม (เช่น driver, navigator)',
   `group_number` int DEFAULT NULL COMMENT 'หมายเลขกลุ่ม (1-8)'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`

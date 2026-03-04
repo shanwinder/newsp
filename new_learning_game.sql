@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Mar 03, 2026 at 10:12 AM
+-- Generation Time: Mar 04, 2026 at 12:04 AM
 -- Server version: 8.0.40
 -- PHP Version: 8.3.14
 
@@ -42,11 +42,10 @@ CREATE TABLE `games` (
 --
 
 INSERT INTO `games` (`id`, `code`, `title`, `description`, `learning_topic`, `instruction_html`, `created_at`) VALUES
-(1, 'logic', 'นักสืบแพทเทิร์น', 'ฝึกทักษะการสังเกตและจับคู่รูปแบบ (Pattern Recognition)', 'ทักษะการหารูปแบบ (Pattern Recognition)', '\r\n        <div class=\"row align-items-center\">\r\n            <div class=\"col-md-4 text-center\">\r\n                <div style=\"font-size: 8rem;\">🕵️‍♂️</div>\r\n            </div>\r\n            <div class=\"col-md-8 text-start\">\r\n                <h4 class=\"text-warning\">Pattern Recognition คืออะไร?</h4>\r\n                <p class=\"fs-5\">มันคือความสามารถในการ <strong>\"มองหาจุดที่เหมือนกัน\"</strong> และ <strong>\"ทำนายสิ่งที่จะเกิดขึ้น\"</strong> ครับ</p>\r\n                \r\n                <div class=\"bg-white text-dark p-3 rounded-3 mt-3 shadow-sm\">\r\n                    <strong>ตัวอย่าง:</strong><br>\r\n                    🔴 🔵 🔴 🔵 ... ตัวต่อไปคือสีอะไร?<br>\r\n                    <span class=\"text-success fw-bold\">ตอบ: สีแดง 🔴 ไงล่ะ!</span>\r\n                </div>\r\n                \r\n                <p class=\"mt-3\">ในภารกิจนี้ น้องๆ ต้องช่วยกันสังเกตว่า <strong>สัตว์ตัวไหนหายไป</strong> หรือ <strong>รูปร่างไหนที่ต้องมาต่อแถว</strong> นะครับ!</p>\r\n            </div>\r\n        </div>', '2026-01-11 17:47:01'),
-(2, 'algorithm', 'หุ่นยนต์เดินตามสั่ง', 'เรียนรู้วิธีการเขียนคำสั่งเป็นลำดับขั้นตอน (Algorithm)', NULL, NULL, '2026-01-11 17:47:01'),
-(3, 'text_algo', 'จัดลำดับกิจวัตร', 'ฝึกเรียงลำดับข้อความและเหตุการณ์ในชีวิตประจำวัน', NULL, NULL, '2026-01-11 17:47:01'),
-(4, 'pseudocode', 'ห้องทดลองรหัสจำลอง', 'ฝึกคิดแบบเงื่อนไข If-Then ด้วยการ์ดคำสั่ง', NULL, NULL, '2026-01-11 17:47:01'),
-(5, 'flowchart', 'วิศวกรผังงาน', 'เรียนรู้สัญลักษณ์และลำดับการทำงานของ Flowchart', NULL, NULL, '2026-01-11 17:47:01');
+(1, 'logic', 'คัดแยกผลผลิต (Logic)', 'ฝึกความคิดเชิงตรรกะและการสังเกต (Pattern Recognition) โดยการแยกประเภทผลผลิตทางการเกษตร', 'ความคิดเชิงตรรกะ (Logical Thinking)', '<div class=\"text-center\"><h4>ภารกิจลุยเดี่ยว!</h4><p>สังเกตลักษณะของผลผลิตและจัดหมวดหมู่ให้ถูกต้อง</p></div>', '2026-03-03 19:33:20'),
+(2, 'algorithm', 'เส้นทางเดินรถไถ (Sequence)', 'เรียนรู้การเขียนคำสั่งเรียงลำดับขั้นตอน (Sequential Algorithm) พาพาหุ่นยนต์รถไถเดินตามเส้นทาง', 'อัลกอริทึมแบบลำดับ (Sequential Algorithm)', '<div class=\"text-center\"><h4>ภารกิจคู่หู (Driver & Navigator)!</h4><p>ช่วยกันวางแผนและเรียงบล็อกคำสั่งพารถไถเข้าเป้าหมาย</p></div>', '2026-03-03 19:33:20'),
+(3, 'condition', 'เครื่องรดน้ำอัจฉริยะ (Condition)', 'ฝึกการคิดแบบมีเงื่อนไข (If-Then-Else) ถ้าน้ำแห้งให้รดน้ำ ถ้าฝนตกให้หยุดพัก', 'อัลกอริทึมแบบมีเงื่อนไข (Conditional Algorithm)', '<div class=\"text-center\"><h4>ภารกิจคู่คิด!</h4><p>ใช้บล็อกเงื่อนไขเพื่อสร้างระบบรดน้ำอัตโนมัติ</p></div>', '2026-03-03 19:33:20'),
+(4, 'debugging', 'กู้วิกฤตฟาร์ม (Debugging)', 'ค้นหาข้อผิดพลาด (Bug) ในชุดคำสั่งที่ทำให้ฟาร์มวุ่นวาย แล้วแก้ไขให้ถูกต้อง', 'การตรวจสอบและแก้ไขข้อผิดพลาด (Debugging)', '<div class=\"text-center\"><h4>ภารกิจรวมพลัง (Group)!</h4><p>ช่วยกันวิเคราะห์โค้ดที่ผิดพลาดและสลับตำแหน่งให้ถูกต้อง</p></div>', '2026-03-03 19:33:20');
 
 -- --------------------------------------------------------
 
@@ -63,6 +62,21 @@ CREATE TABLE `game_logs` (
   `logged_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `game_logs`
+--
+
+INSERT INTO `game_logs` (`id`, `user_id`, `stage_id`, `action`, `detail`, `logged_at`) VALUES
+(48, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 16 s, Attempts: 3', '2026-03-03 20:20:58'),
+(49, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 76 s, Attempts: 5', '2026-03-03 20:36:40'),
+(50, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 34 s, Attempts: 2', '2026-03-03 21:19:49'),
+(51, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 71 s, Attempts: 9', '2026-03-03 22:53:49'),
+(52, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 89 s, Attempts: 3', '2026-03-03 22:55:56'),
+(53, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 64 s, Attempts: 10', '2026-03-03 23:43:39'),
+(54, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 47 s, Attempts: 0', '2026-03-03 23:50:30'),
+(55, 18, 1, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 26 s, Attempts: 0', '2026-03-03 23:51:28'),
+(56, 19, 1, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 26 s, Attempts: 0', '2026-03-03 23:51:28');
+
 -- --------------------------------------------------------
 
 --
@@ -78,6 +92,15 @@ CREATE TABLE `progress` (
   `attempts` int DEFAULT '1' COMMENT 'จำนวนครั้งที่เล่น',
   `completed_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`id`, `user_id`, `stage_id`, `score`, `duration_seconds`, `attempts`, `completed_at`) VALUES
+(48, 13, 1, 3, 47, 0, '2026-03-04 06:50:30'),
+(55, 18, 1, 3, 26, 0, '2026-03-04 06:51:28'),
+(56, 19, 1, 3, 26, 0, '2026-03-04 06:51:28');
 
 -- --------------------------------------------------------
 
@@ -122,10 +145,18 @@ CREATE TABLE `stages` (
 --
 
 INSERT INTO `stages` (`id`, `game_id`, `stage_number`, `title`, `instruction`, `content_json`) VALUES
-(1, 1, 1, 'เรียงลำดับสัตว์น้อย', 'ให้สังเกตและเรียงลำดับสัตว์ให้ถูกต้องตามแบบ', NULL),
-(2, 1, 2, 'รูปทรงหรรษา', 'สังเกตรูปทรงและสี แล้วเติมส่วนที่หายไปให้ถูกต้อง', NULL),
-(3, 1, 3, 'นักแยกแยะตรรกะ', 'ลากสิ่งของไปใส่กล่องให้ถูกต้องตามเงื่อนไขทางตรรกะ', NULL),
-(8, 2, 1, 'เส้นทางสายตรง', 'วางคำสั่งเดินหน้า เพื่อพาหุ่นยนต์ไปชาร์จแบตเตอรี่', NULL);
+(1, 1, 1, 'แยกแยะเมล็ดพันธุ์', 'สังเกตและลากเมล็ดพันธุ์ข้าวที่สมบูรณ์ลงในตะกร้า', NULL),
+(2, 1, 2, 'จัดหมวดหมู่ปุ๋ย', 'แยกประเภทปุ๋ยอินทรีย์และเคมีตามสีของกระสอบให้ถูกต้อง', NULL),
+(3, 1, 3, 'นักคัดกรองวัชพืช', 'มองหาและกำจัดวัชพืชที่ซ่อนตัวอยู่แปลงผักตามเงื่อนไขที่กำหนด', NULL),
+(4, 2, 1, 'เดินหน้าสู่แปลงนา', 'ต่อบล็อกคำสั่งเดินหน้า เพื่อพารถไถไปถึงแปลงนาที่กำหนด', NULL),
+(5, 2, 2, 'หลบหลีกกองฟาง', 'เขียนคำสั่งให้รถไถเดินและเลี้ยวหลบกองฟางไปให้ถึงเป้าหมาย', NULL),
+(6, 2, 3, 'เก็บเกี่ยวผลผลิต', 'วางแผนเส้นทางให้รถไถขับไปเก็บเกี่ยวผลผลิตให้ครบทุกจุด', NULL),
+(7, 3, 1, 'เช็คดินแห้งหรือเปียก', 'ใช้เงื่อนไข \"ถ้าดินแห้ง ให้รดน้ำ\" เพื่อดูแลต้นกล้า', NULL),
+(8, 3, 2, 'รับมือฝนฟ้าคะนอง', 'เพิ่มเงื่อนไข \"มิฉะนั้น (ถ้าฝนตก) ให้หยุดพัก\" เข้าไปในระบบ', NULL),
+(9, 3, 3, 'ระบบน้ำครอบจักรวาล', 'ประยุกต์ใช้เงื่อนไขตรวจสอบแปลงผักหลายๆ แปลงต่อเนื่องกัน', NULL),
+(10, 4, 1, 'ขั้นตอนที่ผิดเพี้ยน', 'มีคนเรียงลำดับการปลูกข้าวผิด! จงสลับตำแหน่งให้ถูกต้อง', NULL),
+(11, 4, 2, 'รถไถหลงทาง', 'แก้ไขบั๊ก (Bug) ในบล็อกคำสั่งที่ทำให้รถไถเดินตกคันนา', NULL),
+(12, 4, 3, 'วิกฤตน้ำท่วมฟาร์ม', 'ระบบเซ็นเซอร์ทำงานผิดพลาด ค้นหาและแก้บั๊กเพื่อกู้วิกฤติน้ำล้นแปลง', NULL);
 
 -- --------------------------------------------------------
 
@@ -229,22 +260,22 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `pair_id`, `pair_role`, `created_at`, `last_seen`, `team_id`, `mode`, `team_role`, `group_number`) VALUES
 (1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', NULL, NULL, '2026-01-11 17:22:45', NULL, NULL, NULL, NULL, NULL),
-(5, 'test01', 'นักเรียนทดสอบ ที่ 1', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(5, 'test01', 'นักเรียนทดสอบ ที่ 1', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7323594dfc', 'group', 'member', 7),
 (6, 'test02', 'นักเรียนทดสอบ ที่ 2', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(7, 'test03', 'นักเรียนทดสอบ ที่ 3', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(7, 'test03', 'นักเรียนทดสอบ ที่ 3', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7323594dfc', 'group', 'member', 7),
 (8, 'test04', 'นักเรียนทดสอบ ที่ 4', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(9, 'test05', 'นักเรียนทดสอบ ที่ 5', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
+(9, 'test05', 'นักเรียนทดสอบ ที่ 5', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7323594dfc', 'group', 'member', 7),
 (10, 'test06', 'นักเรียนทดสอบ ที่ 6', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
 (11, 'test07', 'นักเรียนทดสอบ ที่ 7', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
 (12, 'test08', 'นักเรียนทดสอบ ที่ 8', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(13, 'test09', 'นักเรียนทดสอบ ที่ 9', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(14, 'test10', 'นักเรียนทดสอบ ที่ 10', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(15, 'test11', 'นักเรียนทดสอบ ที่ 11', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(16, 'test12', 'นักเรียนทดสอบ ที่ 12', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(17, 'test13', 'นักเรียนทดสอบ ที่ 13', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(18, 'test14', 'นักเรียนทดสอบ ที่ 14', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(19, 'test15', 'นักเรียนทดสอบ ที่ 15', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(20, 'test16', 'นักเรียนทดสอบ ที่ 16', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL);
+(13, 'test09', 'นักเรียนทดสอบ ที่ 9', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7391267926', 'solo', 'solo', NULL),
+(14, 'test10', 'นักเรียนทดสอบ ที่ 10', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7318247d41', 'group', 'member', 8),
+(15, 'test11', 'นักเรียนทดสอบ ที่ 11', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7318247d41', 'group', 'member', 8),
+(16, 'test12', 'นักเรียนทดสอบ ที่ 12', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7318247d41', 'group', 'member', 8),
+(17, 'test13', 'นักเรียนทดสอบ ที่ 13', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a738cdc49d2', 'pair', 'driver', NULL),
+(18, 'test14', 'นักเรียนทดสอบ ที่ 14', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a773dd10d3e', 'pair', 'driver', NULL),
+(19, 'test15', 'นักเรียนทดสอบ ที่ 15', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a773dd10d3e', 'pair', 'navigator', NULL),
+(20, 'test16', 'นักเรียนทดสอบ ที่ 16', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a738cdc49d2', 'pair', 'navigator', NULL);
 
 --
 -- Indexes for dumped tables
@@ -322,19 +353,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `games`
 --
 ALTER TABLE `games`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `game_logs`
 --
 ALTER TABLE `game_logs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `project_likes`
@@ -346,7 +377,7 @@ ALTER TABLE `project_likes`
 -- AUTO_INCREMENT for table `stages`
 --
 ALTER TABLE `stages`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `student_works`

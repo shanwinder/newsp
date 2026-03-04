@@ -6,15 +6,8 @@ const config = {
     height: 600,
     backgroundColor: '#87CEEB',
     parent: 'game-container',
-    physics: {
-        default: 'arcade',
-        arcade: { debug: false }
-    },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    }
+    physics: { default: 'arcade', arcade: { debug: false } },
+    scene: { preload: preload, create: create, update: update }
 };
 
 const game = new Phaser.Game(config);
@@ -24,11 +17,10 @@ const game = new Phaser.Game(config);
 // ==========================================
 const SCALES = {
     basket: 0.3,
-    item: 0.3 // ขนาดของรูปทรงต่างๆ ที่ใช้แทนปุ๋ย
+    item: 0.2 // ขนาดของถุงปุ๋ยและเม็ดปุ๋ย
 };
 
 let currentSubLevel = 1;
-let score = 0;
 let mistakes = 0;
 let startTime;
 let levelGroup;
@@ -37,11 +29,13 @@ function preload() {
     this.load.image('bg_farm', '../assets/img/bg_farm.webp'); 
     this.load.image('basket', '../assets/img/basket.webp'); 
     
-    // โหลดรูปทรงมาใช้เป็นตัวแทน "ปุ๋ย" ชนิดต่างๆ
-    this.load.image('green_sq', '../assets/img/green_square.webp'); 
-    this.load.image('red_sq', '../assets/img/red_square.webp'); 
-    this.load.image('green_ci', '../assets/img/green_circle.webp'); 
-    this.load.image('red_ci', '../assets/img/red_circle.webp'); 
+    // โหลดรูปภาพปุ๋ยชนิดต่างๆ (ภาพใหม่ที่คุณครูจะไปหามา)
+    this.load.image('fert_green_bag', '../assets/img/fert_green_bag.webp'); 
+    this.load.image('fert_red_bag', '../assets/img/fert_red_bag.webp'); 
+    this.load.image('fert_green_round', '../assets/img/fert_green_round.webp'); 
+    this.load.image('fert_red_round', '../assets/img/fert_red_round.webp'); 
+    this.load.image('fert_green_square', '../assets/img/fert_green_square.webp'); 
+    this.load.image('fert_red_square', '../assets/img/fert_red_square.webp'); 
 
     this.load.audio('correct', '../assets/sound/correct.mp3');
     this.load.audio('wrong', '../assets/sound/wrong.mp3');
@@ -62,19 +56,29 @@ function create() {
 function update() {}
 
 // ==========================================
-// 🔄 ระบบเปลี่ยนผ่านอัตโนมัติ
+// 🧹 ล้าง Event ป้องกันการทำงานซ้ำซ้อน
+// ==========================================
+function clearInputEvents(scene) {
+    scene.input.removeAllListeners('dragstart');
+    scene.input.removeAllListeners('drag');
+    scene.input.removeAllListeners('drop');
+    scene.input.removeAllListeners('dragleave');
+}
+
+// ==========================================
+// 🔄 ระบบเปลี่ยนผ่านอัตโนมัติ (ไร้รอยต่อ)
 // ==========================================
 function autoTransition(scene, nextLevelFunc) {
-    scene.input.off('drop'); 
+    clearInputEvents(scene);
     currentSubLevel++;
 
-    let txt = scene.add.text(400, 300, '✨ เยี่ยมมาก! ไปด่านต่อไปกันเลย ✨', { 
-        fontSize: '36px', fontFamily: 'Kanit', color: '#f1c40f', 
+    let txt = scene.add.text(400, 300, '✨ เยี่ยมมาก! ไปกันต่อเลย ✨', { 
+        fontSize: '40px', fontFamily: 'Kanit', color: '#f1c40f', 
         fontWeight: 'bold', stroke: '#000', strokeThickness: 5 
     }).setOrigin(0.5);
     
     scene.tweens.add({
-        targets: txt, alpha: 0, y: 250, delay: 1500, duration: 500,
+        targets: txt, alpha: 0, y: 250, delay: 1000, duration: 500,
         onComplete: () => {
             txt.destroy();
             levelGroup.clear(true, true);
@@ -84,42 +88,42 @@ function autoTransition(scene, nextLevelFunc) {
 }
 
 // ==========================================
-// 🟢 ระดับย่อย 1: คัดแยกด้วย "สี"
+// 🟢 ระดับย่อย 1: คัดแยกด้วย "สี" 
 // ==========================================
 function startLevel1(scene) {
-    let title = scene.add.text(400, 50, 'ด่าน 1/3: คัดแยกปุ๋ยตาม "สี" (ไม่สนรูปทรง)', {
+    clearInputEvents(scene);
+
+    let title = scene.add.text(400, 50, 'ด่าน 1/3: คัดแยกกระสอบปุ๋ยตาม "สี"', {
         fontSize: '28px', fontFamily: 'Kanit', color: '#166534', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
     }).setOrigin(0.5);
     levelGroup.add(title);
 
-    // ตะกร้า 2 ใบ ซ้าย-ขวา
     let basketLeft = scene.add.image(250, 480, 'basket').setScale(SCALES.basket);
     let basketRight = scene.add.image(550, 480, 'basket').setScale(SCALES.basket);
     
-    // ป้ายบอกเงื่อนไข
-    let lblLeft = scene.add.text(250, 560, 'ปุ๋ยสีเขียว', { fontSize: '22px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#27ae60', padding: {x:10, y:5} }).setOrigin(0.5);
-    let lblRight = scene.add.text(550, 560, 'ปุ๋ยสีแดง', { fontSize: '22px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#c0392b', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblLeft = scene.add.text(250, 560, 'กระสอบสีเขียว', { fontSize: '22px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#27ae60', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblRight = scene.add.text(550, 560, 'กระสอบสีแดง', { fontSize: '22px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#c0392b', padding: {x:10, y:5} }).setOrigin(0.5);
     
     let zoneLeft = scene.add.zone(250, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneLeft.targetType = 'green';
+    zoneLeft.zoneName = 'green';
     let zoneRight = scene.add.zone(550, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneRight.targetType = 'red';
+    zoneRight.zoneName = 'red';
 
     levelGroup.addMultiple([basketLeft, basketRight, lblLeft, lblRight]);
 
     let itemsSorted = 0;
     const itemsData = [
-        { key: 'green_sq', type: 'green', x: 200, y: 200 },
-        { key: 'red_ci', type: 'red', x: 350, y: 150 },
-        { key: 'green_ci', type: 'green', x: 450, y: 250 },
-        { key: 'red_sq', type: 'red', x: 600, y: 180 }
+        { key: 'fert_green_bag', type: 'green', x: 200, y: 200 },
+        { key: 'fert_red_bag', type: 'red', x: 350, y: 150 },
+        { key: 'fert_green_bag', type: 'green', x: 450, y: 250 },
+        { key: 'fert_red_bag', type: 'red', x: 600, y: 180 }
     ];
 
     itemsData.forEach(data => {
         let item = scene.add.image(data.x, data.y, data.key).setInteractive();
         item.setScale(SCALES.item);
         scene.input.setDraggable(item);
-        item.itemType = data.type; // กำหนดประเภทเป็นสี
+        item.itemType = data.type; 
         item.originalX = data.x;
         item.originalY = data.y;
         levelGroup.add(item);
@@ -130,9 +134,7 @@ function startLevel1(scene) {
     });
 
     scene.input.on('drop', (pointer, gameObject, dropZone) => {
-        if (currentSubLevel !== 1) return;
-
-        if (gameObject.itemType === dropZone.targetType) {
+        if (gameObject.itemType === dropZone.zoneName) {
             scene.sound.play('correct');
             gameObject.x = dropZone.x; gameObject.y = dropZone.y - 20;
             gameObject.input.enabled = false;
@@ -144,12 +146,18 @@ function startLevel1(scene) {
             scene.tweens.add({ targets: gameObject, x: gameObject.originalX, y: gameObject.originalY, duration: 300 });
         }
     });
+
+    scene.input.on('dragleave', (pointer, gameObject, dropZone) => {
+        gameObject.x = gameObject.originalX; gameObject.y = gameObject.originalY;
+    });
 }
 
 // ==========================================
 // 🟦 ระดับย่อย 2: คัดแยกด้วย "รูปทรง"
 // ==========================================
 function startLevel2(scene) {
+    clearInputEvents(scene);
+
     let title = scene.add.text(400, 50, 'ด่าน 2/3: คัดแยกปุ๋ยตาม "รูปทรง" (ไม่สนสี)', {
         fontSize: '28px', fontFamily: 'Kanit', color: '#c0392b', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
     }).setOrigin(0.5);
@@ -158,38 +166,40 @@ function startLevel2(scene) {
     let basketLeft = scene.add.image(250, 480, 'basket').setScale(SCALES.basket);
     let basketRight = scene.add.image(550, 480, 'basket').setScale(SCALES.basket);
     
-    let lblLeft = scene.add.text(250, 560, 'ปุ๋ยสี่เหลี่ยม', { fontSize: '22px', fontFamily: 'Kanit', color: '#000', backgroundColor: '#fff', padding: {x:10, y:5} }).setOrigin(0.5);
-    let lblRight = scene.add.text(550, 560, 'ปุ๋ยวงกลม', { fontSize: '22px', fontFamily: 'Kanit', color: '#000', backgroundColor: '#fff', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblLeft = scene.add.text(250, 560, 'ปุ๋ยเม็ดกลม', { fontSize: '22px', fontFamily: 'Kanit', color: '#000', backgroundColor: '#fff', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblRight = scene.add.text(550, 560, 'ปุ๋ยอัดแท่งเหลี่ยม', { fontSize: '22px', fontFamily: 'Kanit', color: '#000', backgroundColor: '#fff', padding: {x:10, y:5} }).setOrigin(0.5);
     
     let zoneLeft = scene.add.zone(250, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneLeft.targetType = 'square';
+    zoneLeft.zoneName = 'round';
     let zoneRight = scene.add.zone(550, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneRight.targetType = 'circle';
+    zoneRight.zoneName = 'square';
 
     levelGroup.addMultiple([basketLeft, basketRight, lblLeft, lblRight]);
 
     let itemsSorted = 0;
     const itemsData = [
-        { key: 'red_sq', type: 'square', x: 150, y: 150 },
-        { key: 'green_ci', type: 'circle', x: 300, y: 250 },
-        { key: 'green_sq', type: 'square', x: 500, y: 150 },
-        { key: 'red_ci', type: 'circle', x: 650, y: 250 }
+        { key: 'fert_green_round', type: 'round', x: 150, y: 150 },
+        { key: 'fert_red_square', type: 'square', x: 300, y: 250 },
+        { key: 'fert_red_round', type: 'round', x: 500, y: 150 },
+        { key: 'fert_green_square', type: 'square', x: 650, y: 250 }
     ];
 
     itemsData.forEach(data => {
         let item = scene.add.image(data.x, data.y, data.key).setInteractive();
         item.setScale(SCALES.item);
         scene.input.setDraggable(item);
-        item.itemType = data.type; // กำหนดประเภทเป็นรูปทรง
+        item.itemType = data.type; 
         item.originalX = data.x;
         item.originalY = data.y;
         levelGroup.add(item);
     });
 
-    scene.input.on('drop', (pointer, gameObject, dropZone) => {
-        if (currentSubLevel !== 2) return;
+    scene.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+        gameObject.x = dragX; gameObject.y = dragY;
+    });
 
-        if (gameObject.itemType === dropZone.targetType) {
+    scene.input.on('drop', (pointer, gameObject, dropZone) => {
+        if (gameObject.itemType === dropZone.zoneName) {
             scene.sound.play('correct');
             gameObject.x = dropZone.x; gameObject.y = dropZone.y - 20;
             gameObject.input.enabled = false;
@@ -201,12 +211,18 @@ function startLevel2(scene) {
             scene.tweens.add({ targets: gameObject, x: gameObject.originalX, y: gameObject.originalY, duration: 300 });
         }
     });
+
+    scene.input.on('dragleave', (pointer, gameObject, dropZone) => {
+        gameObject.x = gameObject.originalX; gameObject.y = gameObject.originalY;
+    });
 }
 
 // ==========================================
-// 🧠 ระดับย่อย 3: คัดแยก "2 เงื่อนไข" (สี + รูปทรง)
+// 🧠 ระดับย่อย 3: บอส! 2 เงื่อนไข พร้อมปุ่มส่งคำตอบ
 // ==========================================
 function startLevel3(scene) {
+    clearInputEvents(scene);
+
     let title = scene.add.text(400, 50, 'ด่าน 3/3: ต้องตรงทั้ง "สี" และ "รูปทรง" !', {
         fontSize: '28px', fontFamily: 'Kanit', color: '#2980b9', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }
     }).setOrigin(0.5);
@@ -215,64 +231,71 @@ function startLevel3(scene) {
     let basketLeft = scene.add.image(250, 480, 'basket').setScale(SCALES.basket);
     let basketRight = scene.add.image(550, 480, 'basket').setScale(SCALES.basket);
     
-    // เงื่อนไขซับซ้อนขึ้น
-    let lblLeft = scene.add.text(250, 560, 'สี่เหลี่ยมสีเขียว เท่านั้น', { fontSize: '20px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#27ae60', padding: {x:10, y:5} }).setOrigin(0.5);
-    let lblRight = scene.add.text(550, 560, 'วงกลมสีแดง เท่านั้น', { fontSize: '20px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#c0392b', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblLeft = scene.add.text(250, 560, 'เม็ดกลม สีเขียว เท่านั้น', { fontSize: '20px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#27ae60', padding: {x:10, y:5} }).setOrigin(0.5);
+    let lblRight = scene.add.text(550, 560, 'แท่งเหลี่ยม สีแดง เท่านั้น', { fontSize: '20px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#c0392b', padding: {x:10, y:5} }).setOrigin(0.5);
     
     let zoneLeft = scene.add.zone(250, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneLeft.targetKey = 'green_sq'; // ต้องเป๊ะทั้งคีย์
+    zoneLeft.zoneName = 'zone_green_round'; 
     let zoneRight = scene.add.zone(550, 480, 200, 150).setRectangleDropZone(200, 150);
-    zoneRight.targetKey = 'red_ci';
+    zoneRight.zoneName = 'zone_red_square';
 
     levelGroup.addMultiple([basketLeft, basketRight, lblLeft, lblRight]);
 
-    let itemsSorted = 0;
-    // มีตัวหลอก (Distractors) ที่ใส่ตะกร้าไหนก็ไม่ได้ ต้องปล่อยทิ้งไว้
     const itemsData = [
-        { key: 'green_sq', isTarget: true, targetZone: 'green_sq', x: 150, y: 250 },
-        { key: 'red_ci', isTarget: true, targetZone: 'red_ci', x: 650, y: 150 },
-        { key: 'green_ci', isTarget: false, x: 300, y: 150 }, // ตัวหลอก (สีถูก ทรงผิด)
-        { key: 'red_sq', isTarget: false, x: 500, y: 250 }    // ตัวหลอก (ทรงถูก สีผิด)
+        { key: 'fert_green_round', isTarget: true, targetZone: 'zone_green_round', x: 150, y: 250 },
+        { key: 'fert_red_square', isTarget: true, targetZone: 'zone_red_square', x: 650, y: 150 },
+        { key: 'fert_green_square', isTarget: false, targetZone: null, x: 300, y: 150 }, // หลอก: เขียวแต่เหลี่ยม
+        { key: 'fert_red_round', isTarget: false, targetZone: null, x: 500, y: 250 }    // หลอก: แดงแต่กลม
     ];
 
     itemsData.forEach(data => {
         let item = scene.add.image(data.x, data.y, data.key).setInteractive();
         item.setScale(SCALES.item);
         scene.input.setDraggable(item);
-        item.targetKey = data.targetZone; 
+        
+        // แนบ property สำหรับระบบตรวจคำตอบ
+        item.isGameItem = true; 
         item.isTarget = data.isTarget;
+        item.targetZone = data.targetZone;
+        item.currentZone = null; // เก็บว่าตอนนี้วางอยู่ตะกร้าไหน
+        
         item.originalX = data.x;
         item.originalY = data.y;
         levelGroup.add(item);
     });
 
-    // ปุ่มกดส่งคำตอบ (เพราะมีตัวหลอก เลยต้องมีปุ่มยืนยัน)
+    // ปุ่มกดส่งคำตอบ
     let submitBtn = scene.add.text(400, 350, '✅ ส่งคำตอบ', { 
-        fontSize: '24px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#f39c12', padding: {x:20, y:10} 
+        fontSize: '26px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#f39c12', padding: {x:20, y:10} 
     }).setOrigin(0.5).setInteractive();
     levelGroup.add(submitBtn);
 
-    scene.input.on('drop', (pointer, gameObject, dropZone) => {
-        if (currentSubLevel !== 3) return;
-        // ด่านนี้ให้วางลงตะกร้าได้อิสระ แต่จะไปตรวจตอนกด "ส่งคำตอบ"
-        gameObject.x = dropZone.x + Phaser.Math.Between(-20, 20); 
-        gameObject.y = dropZone.y - 20;
-        gameObject.currentZone = dropZone.targetKey;
+    scene.input.on('dragstart', (pointer, gameObject) => {
+        gameObject.currentZone = null; // รีเซ็ตตำแหน่งตะกร้าเมื่อเริ่มลากใหม่
     });
 
+    scene.input.on('drag', (pointer, gameObject, dragX, dragY) => {
+        gameObject.x = dragX; gameObject.y = dragY;
+    });
+
+    scene.input.on('drop', (pointer, gameObject, dropZone) => {
+        gameObject.x = dropZone.x + Phaser.Math.Between(-15, 15); 
+        gameObject.y = dropZone.y - 15;
+        gameObject.currentZone = dropZone.zoneName; // บันทึกว่าถูกวางในโซนไหน
+    });
+
+    // การตรวจคำตอบที่แก้ไขใหม่ ทำงานแม่นยำ 100%
     submitBtn.on('pointerdown', () => {
         let isAllCorrect = true;
         
-        // ตรวจสอบไอเทมทุกชิ้น
         levelGroup.getChildren().forEach(child => {
-            if(child.texture && child.texture.key.includes('_')) {
-                // ถ้าเป็นตัวที่ต้องใส่ตะกร้า แต่ใส่ผิดตะกร้า หรือไม่ได้ใส่
-                if (child.isTarget && child.currentZone !== child.targetKey) {
-                    isAllCorrect = false;
-                }
-                // ถ้าเป็นตัวหลอก แต่ดันเอาไปใส่ตะกร้า
-                if (!child.isTarget && child.currentZone !== undefined) {
-                    isAllCorrect = false;
+            if (child.isGameItem) {
+                if (child.isTarget) {
+                    // ถ้าเป็นตัวจริง ต้องอยู่ในตะกร้าที่ถูกต้อง
+                    if (child.currentZone !== child.targetZone) isAllCorrect = false;
+                } else {
+                    // ถ้าเป็นตัวหลอก ห้ามอยู่ในตะกร้าเด็ดขาด
+                    if (child.currentZone !== null && child.currentZone !== undefined) isAllCorrect = false;
                 }
             }
         });
@@ -283,16 +306,16 @@ function startLevel3(scene) {
         } else {
             scene.sound.play('wrong');
             mistakes++;
-            // เด้งของทุกอย่างกลับที่เดิม
+            // เด้งกลับที่เดิม
             levelGroup.getChildren().forEach(child => {
-                if(child.texture && child.texture.key.includes('_')) {
+                if (child.isGameItem) {
                     scene.tweens.add({ targets: child, x: child.originalX, y: child.originalY, duration: 300 });
-                    child.currentZone = undefined;
+                    child.currentZone = null;
                 }
             });
             
-            let warn = scene.add.text(400, 300, '❌ ยังจัดปุ๋ยไม่ถูกต้อง ลองใหม่นะ!', { fontSize: '24px', fontFamily: 'Kanit', color: '#e74c3c', backgroundColor: '#fff' }).setOrigin(0.5);
-            setTimeout(() => warn.destroy(), 1500);
+            let warn = scene.add.text(400, 300, '❌ ยังคัดแยกไม่ถูกต้อง ลองดูใหม่นะ!', { fontSize: '24px', fontFamily: 'Kanit', color: '#e74c3c', backgroundColor: '#fff', padding: {x:10, y:5} }).setOrigin(0.5);
+            setTimeout(() => warn.destroy(), 2000);
         }
     });
 }

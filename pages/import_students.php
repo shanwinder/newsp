@@ -19,6 +19,11 @@ if (isset($_POST["import"])) {
         $count_fail = 0;
         $row = 0;
 
+        // 🟢 อัปเกรด: เตรียมคำสั่ง SQL ไว้ "นอกลูป" เพื่อความเร็วและปลอดภัย (Prepared Statements)
+        $check_stmt = $conn->prepare("SELECT user_id FROM users WHERE student_id = ?");
+        $insert_stmt = $conn->prepare("INSERT INTO users (student_id, name, class_level, password, role) VALUES (?, ?, ?, ?, ?)");
+        $role = 'student';
+
         while (($column = fgetcsv($file, 10000, ",")) !== FALSE) {
             $row++;
             if ($row == 1) continue; // ข้ามบรรทัดหัวตาราง (Header)
@@ -27,24 +32,28 @@ if (isset($_POST["import"])) {
             $student_id = trim($column[0] ?? '');
             $name = trim($column[1] ?? '');
             $class_level = trim($column[2] ?? '');
-            $raw_pass = trim($column[3] ?? '1234'); // ถ้าไม่ใส่รหัส ให้ default 1234
+            $raw_pass = trim($column[3] ?? ''); 
+            
+            if (empty($raw_pass)) {
+                $raw_pass = '1234'; // ถ้าไม่ใส่รหัส ให้ default 1234
+            }
 
             if (empty($student_id) || empty($name)) continue;
 
-            // เช็คซ้ำ
-            $check = $conn->query("SELECT id FROM users WHERE student_id = '$student_id'");
-            if ($check->num_rows > 0) {
+            // 1. เช็คซ้ำ
+            $check_stmt->bind_param("s", $student_id);
+            $check_stmt->execute();
+            if ($check_stmt->get_result()->num_rows > 0) {
                 $count_fail++; // ซ้ำ ข้ามไป
                 continue;
             }
 
+            // 2. เข้ารหัสผ่าน
             $password = password_hash($raw_pass, PASSWORD_DEFAULT);
-            $role = 'student';
 
-            $sql = "INSERT INTO users (student_id, name, class_level, password, role) 
-                    VALUES ('$student_id', '$name', '$class_level', '$password', '$role')";
-
-            if ($conn->query($sql)) {
+            // 3. บันทึกข้อมูล
+            $insert_stmt->bind_param("sssss", $student_id, $name, $class_level, $password, $role);
+            if ($insert_stmt->execute()) {
                 $count_success++;
             } else {
                 $count_fail++;
@@ -89,7 +98,7 @@ if (isset($_POST["import"])) {
                             <h5>📊 สรุปผลการนำเข้า</h5>
                             <ul class="mb-0">
                                 <li class="text-success">นำเข้าสำเร็จ: <strong><?php echo $report['success']; ?></strong> คน</li>
-                                <li class="text-danger">ล้มเหลว (รหัสซ้ำ): <strong><?php echo $report['fail']; ?></strong> คน</li>
+                                <li class="text-danger">ล้มเหลว (รหัสซ้ำ/ข้อมูลไม่ครบ): <strong><?php echo $report['fail']; ?></strong> คน</li>
                             </ul>
                         </div>
                     <?php endif; ?>

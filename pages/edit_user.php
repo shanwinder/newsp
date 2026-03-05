@@ -10,8 +10,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $id = $_GET['id'] ?? 0;
 $msg = "";
 
-// ดึงข้อมูลเก่า
-$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+// 🟢 แก้ไข: เปลี่ยน id เป็น user_id
+$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -29,11 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!empty($password)) {
         // กรณีเปลี่ยนรหัสผ่าน
         $hashed = password_hash($password, PASSWORD_DEFAULT);
-        $update = $conn->prepare("UPDATE users SET name=?, class_level=?, password=? WHERE id=?");
+        // 🟢 แก้ไข: เปลี่ยน WHERE id=? เป็น WHERE user_id=?
+        $update = $conn->prepare("UPDATE users SET name=?, class_level=?, password=? WHERE user_id=?");
         $update->bind_param("sssi", $name, $class_level, $hashed, $id);
     } else {
         // กรณีไม่เปลี่ยนรหัสผ่าน
-        $update = $conn->prepare("UPDATE users SET name=?, class_level=? WHERE id=?");
+        // 🟢 แก้ไข: เปลี่ยน WHERE id=? เป็น WHERE user_id=?
+        $update = $conn->prepare("UPDATE users SET name=?, class_level=? WHERE user_id=?");
         $update->bind_param("ssi", $name, $class_level, $id);
     }
 
@@ -75,15 +77,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <form method="POST">
                         <div class="mb-3">
                             <label class="form-label text-muted">รหัสนักเรียน (แก้ไขไม่ได้)</label>
-                            <input type="text" class="form-control bg-light" value="<?php echo $user['student_id']; ?>" disabled>
+                            <input type="text" class="form-control bg-light" value="<?php echo htmlspecialchars($user['student_id']); ?>" disabled>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">ชื่อ-นามสกุล</label>
-                            <input type="text" name="name" class="form-control" required value="<?php echo $user['name']; ?>">
+                            <input type="text" name="name" class="form-control" required value="<?php echo htmlspecialchars($user['name']); ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">ชั้นเรียน</label>
-                            <input type="text" name="class_level" class="form-control" required value="<?php echo $user['class_level']; ?>">
+                            <input type="text" name="class_level" class="form-control" required value="<?php echo htmlspecialchars($user['class_level']); ?>">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">เปลี่ยนรหัสผ่านใหม่</label>

@@ -1,461 +1,240 @@
-(function () {
-  "use strict";
+// assets/js/logic_game/stage3.js
 
-  document.addEventListener("DOMContentLoaded", function () {
-    console.log("🚀 Stage 3: Logic Sorter Loading...");
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    backgroundColor: '#87CEEB',
+    parent: 'game-container',
+    physics: { default: 'arcade', arcade: { debug: false } },
+    scene: { preload: preload, create: create, update: update }
+};
 
-    const STAGE_ID = window.STAGE_ID || 3;
+const game = new Phaser.Game(config);
 
-    const config = {
-      type: Phaser.AUTO,
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.NO_CENTER,
-        width: 900,
-        height: 600,
-      },
-      parent: "game-container",
-      backgroundColor: "#F3E5F5", // สีม่วงอ่อน (Theme Logic/Wisdom)
-      scene: {
-        preload: preload,
-        create: create,
-      },
-    };
+// ==========================================
+// ⚙️ ตัวแปรปรับขนาดรูปภาพ
+// ==========================================
+const SCALES = {
+    weed: 0.25,  // ขนาดของวัชพืช
+    bug: 0.2     // ขนาดของแมลง
+};
 
-    // ตัวแปร Global
-    let startTime;
-    let totalAttempts = 0;
-    let currentSubLevel = 0;
-    const totalSubLevels = 3;
-    let levelObjects = [];
+let currentSubLevel = 1;
+let mistakes = 0;
+let startTime;
+let levelGroup;
 
-    function preload() {
-      this.load.setBaseURL("../");
+function preload() {
+    // ใช้พื้นหลังแปลงผัก (ถ้าหาไม่ได้ใช้ bg_farm ตัวเดิมได้ครับ)
+    this.load.image('bg_farm_plot', '../assets/img/bg_farm.webp'); 
+    
+    // โหลดภาพเป้าหมายและตัวหลอก
+    this.load.image('weed_spiky', '../assets/img/weed_spiky.webp'); 
+    this.load.image('weed_round', '../assets/img/weed_round.webp'); 
+    this.load.image('bug_red', '../assets/img/bug_red.webp'); 
+    this.load.image('bug_blue', '../assets/img/bug_blue.webp'); 
 
-      // ใช้ Assets เดิมที่มีอยู่ (คุ้มค่ามาก!)
-      this.load.image("sq_red", "assets/img/red_square.webp");
-      this.load.image("sq_yellow", "assets/img/yellow_square.webp");
-      this.load.image("ci_green", "assets/img/green_circle.webp");
-      this.load.image("tri_blue", "assets/img/blue_triangle.webp");
-      this.load.image("dog", "assets/img/dog.webp");
-      this.load.image("cat", "assets/img/cat.webp");
-      this.load.image("rabbit", "assets/img/rabbit.webp");
+    this.load.audio('correct', '../assets/sound/correct.mp3');
+    this.load.audio('wrong', '../assets/sound/wrong.mp3');
+}
 
-      this.load.audio("correct", "assets/sound/correct.mp3");
-      this.load.audio("wrong", "assets/sound/wrong.mp3");
-    }
+function create() {
+    let bg = this.add.image(400, 300, 'bg_farm_plot');
+    bg.setDisplaySize(800, 600); 
+    
+    levelGroup = this.add.group();
+    startTime = Date.now();
+    currentSubLevel = 1;
+    mistakes = 0;
 
-    function create() {
-      const scene = this;
-      startTime = Date.now();
-      totalAttempts = 0;
-      currentSubLevel = 0;
-      levelObjects = [];
+    startLevel1(this);
+}
 
-      // --- 0. Effect Particle ---
-      createStarTexture(scene);
-      scene.emitter = scene.add
-        .particles(0, 0, "star", {
-          speed: { min: 200, max: 400 },
-          scale: { start: 0.6, end: 0 },
-          blendMode: "ADD",
-          lifespan: 800,
-          gravityY: 200,
-          tint: [0x9c27b0, 0xe040fb, 0x7b1fa2], // ธีมสีม่วง
-          emitting: false,
-        })
-        .setDepth(100);
+function update() {}
 
-      // --- 1. ข้อมูลด่านย่อย (Logic Rules) ---
-      // เราจะกำหนดกฎ (Validator) เป็นฟังก์ชัน เพื่อความยืดหยุ่นของตรรกะ
-      scene.levelData = [
-        {
-          // Sub-Level 1: แยกรูปร่าง (Shape Classification)
-          title: "ภารกิจ 1: แยกรูปร่าง",
-          desc: "แยก 'สี่เหลี่ยม' และ 'วงกลม' ออกจากกัน",
-          bins: [
-            {
-              label: "สี่เหลี่ยม ⬛",
-              color: 0x5c6bc0,
-              validator: (type) => type.includes("sq_"),
-            },
-            {
-              label: "วงกลม ⚫",
-              color: 0xec407a,
-              validator: (type) => type.includes("ci_"),
-            },
-          ],
-          items: ["sq_red", "ci_green", "sq_yellow", "ci_green", "sq_red"],
-        },
-        {
-          // Sub-Level 2: สิ่งมีชีวิต vs ไม่มีชีวิต (Semantic Logic)
-          title: "ภารกิจ 2: สิ่งมีชีวิต",
-          desc: "แยก 'สัตว์' และ 'สิ่งของ' ออกจากกัน",
-          bins: [
-            {
-              label: "สัตว์ 🐶",
-              color: 0x66bb6a,
-              validator: (type) => ["dog", "cat", "rabbit"].includes(type),
-            },
-            {
-              label: "สิ่งของ 📦",
-              color: 0x78909c,
-              validator: (type) =>
-                ["sq_red", "ci_green", "tri_blue"].includes(type),
-            },
-          ],
-          items: ["dog", "sq_red", "rabbit", "tri_blue", "cat"],
-        },
-        {
-          // Sub-Level 3: ตรรกะเชิงปฏิเสธ (NOT Logic)
-          title: "ภารกิจ 3: ไม่ใช่สีแดง",
-          desc: "กล่องหนึ่งรับสีแดง อีกกล่องรับ 'ที่ไม่ใช่' สีแดง",
-          bins: [
-            {
-              label: "สีแดง 🔴",
-              color: 0xef5350,
-              validator: (type) => type.includes("red"),
-            },
-            {
-              label: "ไม่ใช่สีแดง ❌🔴",
-              color: 0x424242,
-              validator: (type) => !type.includes("red"),
-            }, // NOT Logic
-          ],
-          items: ["sq_red", "ci_green", "sq_red", "tri_blue", "sq_yellow"],
-        },
-      ];
-
-      loadSubLevel(scene, 0);
-    }
-
-    // --- Core Logic ---
-
-    function loadSubLevel(scene, index) {
-      // Clear Old Objects
-      levelObjects.forEach((obj) => obj.destroy());
-      levelObjects = [];
-
-      const data = scene.levelData[index];
-
-      // 1. UI Text
-      const title = scene.add
-        .text(450, 40, data.title, {
-          fontSize: "36px",
-          color: "#4A148C",
-          fontFamily: "Kanit",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setPadding({ top: 5, bottom: 5 });
-
-      const desc = scene.add
-        .text(450, 90, data.desc, {
-          fontSize: "22px",
-          color: "#6A1B9A",
-          fontFamily: "Kanit",
-        })
-        .setOrigin(0.5)
-        .setPadding({ top: 5, bottom: 5 });
-
-      levelObjects.push(title, desc);
-
-      // 2. สร้างกล่องรับของ (Bins)
-      const dropZones = [];
-      const binCount = data.bins.length;
-      const binWidth = 250;
-      const binHeight = 180;
-      const spacing = 50;
-      const startX =
-        450 -
-        (binCount * binWidth + (binCount - 1) * spacing) / 2 +
-        binWidth / 2;
-
-      data.bins.forEach((binData, i) => {
-        const x = startX + i * (binWidth + spacing);
-        const y = 250;
-
-        // วาดกราฟิกกล่อง (เปิดฝา)
-        const graphics = scene.add.graphics();
-        graphics.lineStyle(4, binData.color, 1);
-        graphics.fillStyle(binData.color, 0.1);
-
-        // วาดกล่องแบบ U shape
-        graphics.strokeRoundedRect(
-          x - binWidth / 2,
-          y - binHeight / 2,
-          binWidth,
-          binHeight,
-          15
-        );
-        graphics.fillRoundedRect(
-          x - binWidth / 2,
-          y - binHeight / 2,
-          binWidth,
-          binHeight,
-          15
-        );
-
-        // ป้ายชื่อกล่อง
-        const label = scene.add
-          .text(x, y + 110, binData.label, {
-            fontSize: "24px",
-            color: "#333",
-            fontFamily: "Kanit",
-            fontStyle: "bold",
-          })
-          .setOrigin(0.5)
-          .setPadding({ top: 5, bottom: 5 });
-
-        // Drop Zone (ที่มองไม่เห็น)
-        const zone = scene.add
-          .zone(x, y, binWidth, binHeight)
-          .setRectangleDropZone(binWidth, binHeight);
-        zone.setData({ validator: binData.validator }); // ฝากฟังก์ชันตรวจสอบไว้ที่โซนเลย
-
-        dropZones.push(zone);
-        levelObjects.push(graphics, label, zone);
-      });
-
-      // 3. สร้างของที่จะลาก (Items)
-      const items = [...data.items];
-      Phaser.Utils.Array.Shuffle(items); // สลับลำดับ
-
-      // จัดเรียงของไว้ด้านล่าง
-      const itemSpacing = 110;
-      const itemStartX = 450 - ((items.length - 1) * itemSpacing) / 2;
-
-      items.forEach((itemKey, i) => {
-        const x = itemStartX + i * itemSpacing;
-        const y = 500;
-
-        // ฐานวาง
-        const base = scene.add.circle(x, y, 45, 0xffffff, 0.5);
-
-        // ตัว Item
-        const item = scene.add
-          .image(x, y, itemKey)
-          .setDisplaySize(80, 80)
-          .setInteractive();
-        scene.input.setDraggable(item);
-
-        // เก็บค่าเริ่มต้น
-        item.setData({
-          type: itemKey,
-          originX: x,
-          originY: y,
-          baseScale: item.scale,
-          isCorrect: false, // สถานะว่าวางถูกหรือยัง
-        });
-
-        levelObjects.push(base, item);
-      });
-
-      // Setup Logic
-      setupInteractions(scene, dropZones, items.length);
-    }
-
-    function setupInteractions(scene, dropZones, totalItems) {
-      let correctCount = 0; // นับจำนวนที่วางถูกในด่านนี้
-
-      scene.input.off("dragstart");
-      scene.input.off("drag");
-      scene.input.off("drop");
-      scene.input.off("dragend");
-
-      scene.input.on("dragstart", (pointer, gameObject) => {
-        scene.children.bringToTop(gameObject);
-        const startScale = gameObject.getData("baseScale");
-        scene.tweens.add({
-          targets: gameObject,
-          scale: startScale * 1.2,
-          duration: 100,
-        });
-      });
-
-      scene.input.on("drag", (pointer, gameObject, dragX, dragY) => {
-        gameObject.x = dragX;
-        gameObject.y = dragY;
-      });
-
-      scene.input.on("drop", (pointer, gameObject, dropZone) => {
-        const itemType = gameObject.getData("type");
-        const validator = dropZone.getData("validator"); // ดึงฟังก์ชันตรวจสอบออกมา
-        const startScale = gameObject.getData("baseScale");
-
-        // เรียกใช้ฟังก์ชัน Validator เพื่อเช็คเงื่อนไข
-        if (validator(itemType)) {
-          // ✅ ถูกต้องตามตรรกะ
-          gameObject.disableInteractive();
-
-          // จัดวางของในกล่องให้สวยงาม (สุ่มตำแหน่งนิดหน่อยในกล่อง)
-          const randomX = Phaser.Math.Between(dropZone.x - 60, dropZone.x + 60);
-          const randomY = Phaser.Math.Between(dropZone.y - 40, dropZone.y + 40);
-
-          scene.tweens.add({
-            targets: gameObject,
-            x: randomX,
-            y: randomY,
-            scale: startScale * 0.8,
-            duration: 300,
-            ease: "Back.out",
-            onComplete: () => {
-              if (scene.emitter) scene.emitter.explode(10, randomX, randomY);
-              playSound(scene, "correct");
-
-              correctCount++;
-              // เช็คว่าวางครบทุกชิ้นยัง
-              if (correctCount >= totalItems) {
-                handleSubLevelComplete(scene);
-              }
-            },
-          });
-        } else {
-          // ❌ ผิดเงื่อนไข
-          totalAttempts++;
-          returnToOrigin(scene, gameObject);
-          wrongEffect(scene, gameObject);
+// ==========================================
+// 🔄 ระบบเปลี่ยนผ่านอัตโนมัติ
+// ==========================================
+function autoTransition(scene, nextLevelFunc) {
+    currentSubLevel++;
+    let txt = scene.add.text(400, 300, '✨ กวาดล้างสำเร็จ! ไปแปลงต่อไป ✨', { 
+        fontSize: '36px', fontFamily: 'Kanit', color: '#f1c40f', 
+        fontWeight: 'bold', stroke: '#000', strokeThickness: 5 
+    }).setOrigin(0.5);
+    
+    scene.tweens.add({
+        targets: txt, alpha: 0, y: 250, delay: 1000, duration: 500,
+        onComplete: () => {
+            txt.destroy();
+            levelGroup.clear(true, true);
+            nextLevelFunc(scene);
         }
-      });
+    });
+}
 
-      scene.input.on("dragend", (pointer, gameObject, dropped) => {
-        if (!dropped) returnToOrigin(scene, gameObject);
-      });
-    }
-
-    function handleSubLevelComplete(scene) {
-      scene.time.delayedCall(1000, () => {
-        if (currentSubLevel < totalSubLevels - 1) {
-          currentSubLevel++;
-          scene.cameras.main.fade(300, 0, 0, 0);
-          scene.cameras.main.once("camerafadeoutcomplete", () => {
-            loadSubLevel(scene, currentSubLevel);
-            scene.cameras.main.fadeIn(300);
-          });
-        } else {
-          checkGlobalWin(scene);
+// ฟังก์ชันช่วยสร้างตารางตำแหน่งแบบสุ่ม (Grid) เพื่อไม่ให้รูปทับกัน
+function getShuffledGridPositions() {
+    let positions = [];
+    // สร้างตาราง 4x3 แถว
+    for(let r=0; r<3; r++) {
+        for(let c=0; c<4; c++) {
+            positions.push({ x: 150 + (c * 160), y: 200 + (r * 130) });
         }
-      });
     }
-
-    function checkGlobalWin(scene) {
-      const duration = Math.floor((Date.now() - startTime) / 1000);
-      let stars = 1;
-      // ให้เวลาเยอะหน่อยเพราะต้องคิดวิเคราะห์
-      if (totalAttempts === 0 && duration < 80) stars = 3;
-      else if (totalAttempts <= 3) stars = 2;
-
-      showWinPopup(scene, stars, duration);
+    // สับเปลี่ยนตำแหน่ง (Fisher-Yates Shuffle)
+    for (let i = positions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [positions[i], positions[j]] = [positions[j], positions[i]];
     }
+    return positions;
+}
 
-    // --- Visual & Helpers ---
+// ฟังก์ชันสร้างไอเทมในแปลงผัก
+function spawnFarmItems(scene, itemsData, requiredTargets, nextLevelFunc) {
+    let positions = getShuffledGridPositions();
+    let targetsEliminated = 0;
 
-    function showWinPopup(scene, stars, duration) {
-      const overlay = scene.add
-        .rectangle(450, 300, 900, 600, 0x000000, 0.8)
-        .setDepth(20)
-        .setAlpha(0);
-      scene.tweens.add({ targets: overlay, alpha: 0.8, duration: 300 });
+    itemsData.forEach((data, index) => {
+        if (index >= positions.length) return; // ป้องกันเกินช่องตาราง
 
-      const phrases = [
-        "🧠 ตรรกะดีมาก! 🧠",
-        "✨ คิดเป็นระบบ! ✨",
-        "🚀 อัจฉริยะ! 🚀",
-      ];
-      const randomPhrase = Phaser.Utils.Array.GetRandom(phrases);
+        let pos = positions[index];
+        let item = scene.add.image(pos.x, pos.y, data.key).setInteractive();
+        item.setScale(SCALES[data.type] || 0.3); // ดึงสเกลตาม weed หรือ bug
+        
+        item.isTarget = data.isTarget;
+        levelGroup.add(item);
 
-      const text = scene.add
-        .text(450, 250, randomPhrase, {
-          fontSize: "64px",
-          color: "#BA68C8",
-          fontFamily: "Kanit",
-          stroke: "#fff",
-          strokeThickness: 6,
-        })
-        .setOrigin(0.5)
-        .setDepth(22)
-        .setScale(0)
-        .setPadding({ top: 10, bottom: 10 });
+        // แอนิเมชันตอนเกิด
+        item.alpha = 0;
+        scene.tweens.add({ targets: item, alpha: 1, duration: 300, delay: index * 100 });
 
-      scene.tweens.add({
-        targets: text,
-        scale: 1,
-        duration: 500,
-        ease: "Back.out",
-      });
+        item.on('pointerdown', () => {
+            if (item.isTarget) {
+                // คลิกถูกตัว
+                scene.sound.play('correct');
+                
+                // เอฟเฟกต์เด้งและหายไป
+                scene.tweens.add({
+                    targets: item, scale: 0, angle: 180, duration: 200,
+                    onComplete: () => {
+                        item.destroy();
+                        targetsEliminated++;
+                        if (targetsEliminated >= requiredTargets) {
+                            // เก็บเป้าหมายครบแล้ว ไปด่านต่อไป
+                            levelGroup.getChildren().forEach(child => child.disableInteractive());
+                            autoTransition(scene, nextLevelFunc);
+                        }
+                    }
+                });
+            } else {
+                // คลิกผิดตัว (ตัวหลอก)
+                scene.sound.play('wrong');
+                mistakes++;
+                
+                // กากบาทสีแดงแจ้งเตือน
+                let cross = scene.add.text(item.x, item.y, '❌', { fontSize: '40px' }).setOrigin(0.5);
+                scene.tweens.add({ targets: cross, alpha: 0, y: item.y - 50, duration: 1000, onComplete: () => cross.destroy() });
+                
+                // ไอเทมสั่นเตือนว่าผิด
+                scene.tweens.add({ targets: item, x: item.x + 10, yoyo: true, repeat: 2, duration: 50 });
+            }
+        });
+    });
+}
 
-      let starStr = "";
-      for (let i = 0; i < stars; i++) starStr += "⭐";
-      const starText = scene.add
-        .text(450, 350, starStr, { fontSize: "48px" })
-        .setOrigin(0.5)
-        .setDepth(22)
-        .setAlpha(0);
-      scene.tweens.add({
-        targets: starText,
-        alpha: 1,
-        delay: 300,
-        duration: 500,
-      });
+// ==========================================
+// 🟢 ระดับย่อย 1: เงื่อนไขตรงตัว
+// ==========================================
+function startLevel1(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 1/3: กำจัด "วัชพืชใบแหลม" ให้หมด!', {
+        fontSize: '28px', fontFamily: 'Kanit', color: '#c0392b', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }, backgroundColor: 'rgba(255,255,255,0.7)', padding: 10
+    }).setOrigin(0.5);
+    levelGroup.add(title);
 
-      scene.time.delayedCall(2000, () => {
-        window.location.href = `waiting_room.php?stage_id=${STAGE_ID}`;
-      });
+    // สร้างไอเทม 6 ชิ้น (เป้าหมาย 3, หลอก 3)
+    const itemsData = [
+        { key: 'weed_spiky', type: 'weed', isTarget: true },
+        { key: 'weed_spiky', type: 'weed', isTarget: true },
+        { key: 'weed_spiky', type: 'weed', isTarget: true },
+        { key: 'weed_round', type: 'weed', isTarget: false },
+        { key: 'weed_round', type: 'weed', isTarget: false },
+        { key: 'bug_red', type: 'bug', isTarget: false }
+    ];
 
-      if (typeof window.sendResult === "function") {
-        window.sendResult(STAGE_ID, stars, duration, totalAttempts);
-      }
-    }
+    spawnFarmItems(scene, itemsData, 3, startLevel2);
+}
 
-    function returnToOrigin(scene, gameObject) {
-      const startScale = gameObject.getData("baseScale");
-      scene.tweens.add({
-        targets: gameObject,
-        x: gameObject.getData("originX"),
-        y: gameObject.getData("originY"),
-        scale: startScale,
-        duration: 400,
-        ease: "Cubic.out",
-      });
-    }
+// ==========================================
+// 🟦 ระดับย่อย 2: ตรรกะ "ไม่ใช่" (NOT)
+// ==========================================
+function startLevel2(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 2/3: กำจัดแมลงที่ "ไม่ใช่สีแดง" !', {
+        fontSize: '28px', fontFamily: 'Kanit', color: '#c0392b', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }, backgroundColor: 'rgba(255,255,255,0.7)', padding: 10
+    }).setOrigin(0.5);
+    levelGroup.add(title);
 
-    function wrongEffect(scene, gameObject) {
-      playSound(scene, "wrong");
-      scene.cameras.main.shake(100, 0.005);
-      gameObject.setTint(0xff9999);
-      scene.time.delayedCall(500, () => gameObject.clearTint());
-    }
+    // เป้าหมายคือ แมลงที่ไม่ใช่สีแดง (คือ bug_blue) เป้าหมาย 4 ตัว
+    const itemsData = [
+        { key: 'bug_blue', type: 'bug', isTarget: true },
+        { key: 'bug_blue', type: 'bug', isTarget: true },
+        { key: 'bug_blue', type: 'bug', isTarget: true },
+        { key: 'bug_blue', type: 'bug', isTarget: true },
+        { key: 'bug_red', type: 'bug', isTarget: false },
+        { key: 'bug_red', type: 'bug', isTarget: false },
+        { key: 'weed_spiky', type: 'weed', isTarget: false },
+        { key: 'weed_round', type: 'weed', isTarget: false }
+    ];
 
-    function playSound(scene, key) {
-      try {
-        scene.sound.play(key, { volume: 0.5 });
-      } catch (e) {}
-    }
+    spawnFarmItems(scene, itemsData, 4, startLevel3);
+}
 
-    function createStarTexture(scene) {
-      if (scene.textures.exists("star")) return;
-      const g = scene.make.graphics({ x: 0, y: 0, add: false });
-      g.fillStyle(0xffffff, 1);
-      const cx = 16,
-        cy = 16,
-        outer = 15,
-        inner = 7;
-      g.beginPath();
-      for (let i = 0; i < 5; i++) {
-        g.lineTo(
-          cx + Math.cos((18 + i * 72) * 0.01745) * outer,
-          cy - Math.sin((18 + i * 72) * 0.01745) * outer
-        );
-        g.lineTo(
-          cx + Math.cos((54 + i * 72) * 0.01745) * inner,
-          cy - Math.sin((54 + i * 72) * 0.01745) * inner
-        );
-      }
-      g.closePath();
-      g.fillPath();
-      g.generateTexture("star", 32, 32);
-    }
+// ==========================================
+// 🧠 ระดับย่อย 3: ตรรกะซ้อน (AND / OR) บอส!
+// ==========================================
+function startLevel3(scene) {
+    let title = scene.add.text(400, 50, 'ด่าน 3/3: กำจัด "แมลงสีแดง" และ "วัชพืชใบกลม" !', {
+        fontSize: '26px', fontFamily: 'Kanit', color: '#c0392b', fontWeight: 'bold', shadow: { fill: true, blur: 4, color: '#fff' }, backgroundColor: 'rgba(255,255,255,0.7)', padding: 10
+    }).setOrigin(0.5);
+    levelGroup.add(title);
 
-    new Phaser.Game(config);
-  });
-})();
+    // เป้าหมาย 5 ตัว (แดง 2 + กลม 3)
+    const itemsData = [
+        { key: 'bug_red', type: 'bug', isTarget: true },
+        { key: 'bug_red', type: 'bug', isTarget: true },
+        { key: 'weed_round', type: 'weed', isTarget: true },
+        { key: 'weed_round', type: 'weed', isTarget: true },
+        { key: 'weed_round', type: 'weed', isTarget: true },
+        { key: 'bug_blue', type: 'bug', isTarget: false },
+        { key: 'bug_blue', type: 'bug', isTarget: false },
+        { key: 'weed_spiky', type: 'weed', isTarget: false },
+        { key: 'weed_spiky', type: 'weed', isTarget: false }
+    ];
+
+    // ส่ง checkWinCondition แทนฟังก์ชัน startLevel ถัดไป เพื่อให้จบเกม
+    spawnFarmItems(scene, itemsData, 5, checkWinCondition);
+}
+
+// ==========================================
+// 🏆 จบเกมและสรุปผล
+// ==========================================
+function checkWinCondition(scene) {
+    let duration = Math.floor((Date.now() - startTime) / 1000);
+    
+    // เกณฑ์การให้ดาวแบบ Clicker ถ้าพลาดเยอะจะถูกหัก
+    let stars = 3;
+    if (mistakes >= 2 && mistakes <= 4) stars = 2;
+    if (mistakes >= 5) stars = 1;
+
+    let overlay = scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+    let t1 = scene.add.text(400, 250, '🏆 ปกป้องฟาร์มสำเร็จ!', { fontSize: '52px', fontFamily: 'Kanit', color: '#f1c40f', fontWeight: 'bold' }).setOrigin(0.5);
+    let t2 = scene.add.text(400, 330, `ใช้เวลา: ${duration} วินาที | คลิกพลาด: ${mistakes} ครั้ง`, { fontSize: '24px', fontFamily: 'Kanit', color: '#ffffff' }).setOrigin(0.5);
+
+    scene.input.enabled = false;
+
+    setTimeout(() => {
+        if (typeof window.sendResult === 'function') {
+            window.sendResult(window.STAGE_ID, stars, duration, mistakes); 
+        }
+    }, 2000);
+}

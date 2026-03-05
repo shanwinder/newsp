@@ -4,8 +4,6 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
-
-// ✅ รับค่า game_id
 $game_id = $_GET['game_id'] ?? 1;
 ?>
 <!DOCTYPE html>
@@ -13,7 +11,7 @@ $game_id = $_GET['game_id'] ?? 1;
 
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Fame - ลานโชว์ของ</title>
+    <title>Hall of Fame - ลานโชว์ผลงานฟาร์ม</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -22,49 +20,45 @@ $game_id = $_GET['game_id'] ?? 1;
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background: #f0f2f5;
+            background: #f0fdf4; /* ธีมพื้นหลังสีเขียวอ่อน */
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
             min-height: 100vh;
         }
 
         .header-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); /* เปลี่ยนเป็นธีมฟาร์มสีเขียว */
             color: white;
             padding: 60px 0 40px;
             margin-bottom: 40px;
             border-bottom-left-radius: 50px;
             border-bottom-right-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        /* Card Design */
         .work-card {
-            border: none;
+            border: 3px solid #e2e8f0;
             border-radius: 20px;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
             background: white;
             height: 100%;
         }
 
         .work-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
+            border-color: #34d399;
         }
 
-        /* Canvas Mockup */
         .preview-box {
             position: relative;
             width: 100%;
-            padding-top: 62.5%;
-            /* Aspect Ratio 16:10 (800x500) */
+            padding-top: 60%; /* Aspect Ratio 800x480 (480/800 = 60%) */
             background-color: #ffffff;
-            /* Grid Background */
-            background-image:
-                linear-gradient(#f0f0f0 1px, transparent 1px),
-                linear-gradient(90deg, #f0f0f0 1px, transparent 1px);
-            background-size: 30px 30px;
             overflow: hidden;
-            border-bottom: 1px solid #eee;
+            border-bottom: 3px dashed #e2e8f0;
+            background-size: cover;
+            background-position: center;
         }
 
         .preview-content {
@@ -77,15 +71,13 @@ $game_id = $_GET['game_id'] ?? 1;
 
         .art-item {
             position: absolute;
-            width: 10%;
-            /* ขนาดสัมพัทธ์ */
+            width: 12%; /* ขยายไอเทมในหน้าพรีวิวให้เห็นชัดขึ้น */
             transform: translate(-50%, -50%);
-            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.1));
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2));
         }
 
-        /* Like Button */
         .btn-like {
-            border: none;
+            border: 2px solid #eee;
             background: #f8f9fa;
             color: #ccc;
             border-radius: 50px;
@@ -97,26 +89,20 @@ $game_id = $_GET['game_id'] ?? 1;
         .btn-like:hover {
             background: #ffebee;
             color: #ff5252;
+            border-color: #ff5252;
         }
 
         .btn-like.liked {
             background: #ff5252;
             color: white;
+            border-color: #ff5252;
             animation: popHeart 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         @keyframes popHeart {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.3);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
@@ -125,13 +111,13 @@ $game_id = $_GET['game_id'] ?? 1;
 
     <div class="header-section text-center">
         <div class="container">
-            <h1 class="fw-bold display-4 mb-2">🏆 Hall of Fame</h1>
-            <p class="fs-5 opacity-75">รวมผลงานสุดเจ๋งของเพื่อนๆ ที่ผ่านการตรวจสอบแล้ว</p>
+            <h1 class="fw-bold display-4 mb-2"><i class="bi bi-star-fill text-warning"></i> ลานโชว์ผลงาน</h1>
+            <p class="fs-5 opacity-75">รวมมิตรโจทย์ปริศนาและผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
             <div class="mt-4">
-                <a href="create_project.php?game_id=<?php echo $game_id; ?>" class="btn btn-light rounded-pill px-4 fw-bold me-2 text-primary">
-                    <i class="bi bi-plus-lg"></i> สร้างงานของฉัน
+                <a href="create_project_logic.php?game_id=<?php echo $game_id; ?>" class="btn btn-warning rounded-pill px-4 fw-bold me-2 shadow-sm text-dark">
+                    <i class="bi bi-plus-lg"></i> สร้างโจทย์ของทีมฉัน
                 </a>
-                <a href="student_dashboard.php" class="btn btn-outline-light rounded-pill px-4">กลับหน้าหลัก</a>
+                <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-outline-light rounded-pill px-4 fw-bold">กลับหน้าเลือกด่าน</a>
             </div>
         </div>
     </div>
@@ -139,27 +125,15 @@ $game_id = $_GET['game_id'] ?? 1;
     <div class="container pb-5">
         <div id="gallery-grid" class="row g-4">
             <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status"></div>
-                <p class="mt-2 text-muted">กำลังโหลดแกลเลอรี...</p>
+                <div class="spinner-border text-success" role="status"></div>
+                <p class="mt-2 text-muted fw-bold">กำลังรวบรวมผลงานจากแปลงเกษตร...</p>
             </div>
         </div>
     </div>
 
     <script>
         const ASSET_PATH = '../assets/img/';
-        // ✅ ประกาศตัวแปรรับค่าจาก PHP
         const GAME_ID = <?php echo $game_id; ?>;
-
-        // Mapping ชื่อไฟล์
-        const fileMapping = {
-            'dog': 'dog',
-            'cat': 'cat',
-            'rabbit': 'rabbit',
-            'sq_red': 'red_square',
-            'ci_green': 'green_circle',
-            'tri_blue': 'blue_triangle',
-            'sq_yellow': 'yellow_square'
-        };
 
         function loadShowcase() {
             fetch(`../api/get_showcase.php?game_id=${GAME_ID}`)
@@ -170,12 +144,12 @@ $game_id = $_GET['game_id'] ?? 1;
 
                     if (data.length === 0) {
                         grid.innerHTML = `
-                    <div class="col-12 text-center py-5 text-muted">
-                        <i class="bi bi-images display-1 opacity-25"></i>
-                        <h4 class="mt-3">ยังไม่มีผลงานใน Hall of Fame</h4>
-                        <p>รีบส่งงานให้ครูตรวจ แล้วมาเป็นคนแรกกันเถอะ!</p>
-                    </div>
-                `;
+                            <div class="col-12 text-center py-5 text-muted">
+                                <i class="bi bi-inboxes display-1 opacity-25"></i>
+                                <h4 class="mt-3 fw-bold">ยังไม่มีผลงานในตอนนี้</h4>
+                                <p>เป็นทีมแรกที่ส่งโจทย์เข้ามาท้าทายเพื่อนๆ สิ!</p>
+                            </div>
+                        `;
                         return;
                     }
 
@@ -184,35 +158,54 @@ $game_id = $_GET['game_id'] ?? 1;
                         col.className = 'col-md-6 col-lg-4';
 
                         const isLikedClass = (work.is_liked > 0) ? 'liked' : '';
+                        
+                        // 🟢 ดึงข้อมูลฉากหลัง และลบข้อความออกให้เนียนตา
+                        let descText = work.description || '-';
+                        let bgType = 'grid'; // ค่าเริ่มต้น
+                        
+                        const bgMatch = descText.match(/\[ฉากหลัง:\s*(.*?)\]/);
+                        if (bgMatch) {
+                            bgType = bgMatch[1];
+                            descText = descText.replace(/\[ฉากหลัง:\s*.*?\]\s*\n*/, ''); // เอา Tag ฉากหลังออก
+                        }
 
                         col.innerHTML = `
-                    <div class="work-card shadow-sm h-100 d-flex flex-column">
-                        <div class="preview-box">
-                            <div class="preview-content" id="canvas-${work.id}"></div>
-                        </div>
-                        <div class="p-4 d-flex flex-column flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <h5 class="fw-bold text-dark mb-0">${work.student_name}</h5>
-                                    <small class="text-muted">${work.student_id}</small>
+                            <div class="work-card shadow-sm d-flex flex-column">
+                                <div class="preview-box" id="bg-${work.id}">
+                                    <div class="preview-content" id="canvas-${work.id}"></div>
                                 </div>
-                                <button class="btn-like shadow-sm ${isLikedClass}" onclick="toggleLike(${work.id}, this)">
-                                    <i class="bi bi-heart-fill"></i> <span class="like-count">${work.like_count}</span>
-                                </button>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h5 class="fw-bold text-success mb-0"><i class="bi bi-person-circle"></i> ${work.student_name}</h5>
+                                            <small class="text-muted">ทีมรหัส: ${work.student_id}</small>
+                                        </div>
+                                        <button class="btn-like shadow-sm ${isLikedClass}" onclick="toggleLike(${work.id}, this)">
+                                            <i class="bi bi-heart-fill"></i> <span class="like-count">${work.like_count}</span>
+                                        </button>
+                                    </div>
+                                    <p class="text-secondary small bg-light p-2 rounded flex-grow-1 border">
+                                        <strong>📜 กติกา:</strong><br>${descText}
+                                    </p>
+                                    <small class="text-muted text-end mt-1" style="font-size: 0.75rem">
+                                        <i class="bi bi-clock"></i> ส่งเมื่อ: ${timeAgo(work.submitted_at)}
+                                    </small>
+                                </div>
                             </div>
-                            <p class="text-secondary small bg-light p-2 rounded flex-grow-1">
-                                <i class="bi bi-quote"></i> ${work.description || '-'}
-                            </p>
-                            <small class="text-muted mt-2" style="font-size: 0.8rem">
-                                <i class="bi bi-clock"></i> ส่งเมื่อ: ${timeAgo(work.submitted_at)}
-                            </small>
-                        </div>
-                    </div>
-                `;
+                        `;
 
                         grid.appendChild(col);
 
-                        // Render Canvas เล็ก
+                        // ใส่ภาพพื้นหลังให้กล่องโชว์ผลงาน
+                        const bgContainer = document.getElementById(`bg-${work.id}`);
+                        if (bgType === 'grass') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_grass.webp')`;
+                        else if (bgType === 'dirt') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_dirt.webp')`;
+                        else if (bgType === 'farm') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_farm_plot.webp')`;
+                        else {
+                            bgContainer.style.backgroundImage = `url('https://www.transparenttextures.com/patterns/cubes.png')`;
+                            bgContainer.style.backgroundColor = '#f8f9fa';
+                        }
+
                         renderMiniCanvas(work.work_data, `canvas-${work.id}`);
                     });
                 });
@@ -226,58 +219,52 @@ $game_id = $_GET['game_id'] ?? 1;
                 const items = JSON.parse(jsonData);
                 items.forEach(obj => {
                     const img = document.createElement('img');
-                    const realName = fileMapping[obj.type] || obj.type;
-                    img.src = ASSET_PATH + realName + '.webp';
+                    
+                    // เนื่องจากชื่อ Type ตอนนี้ตรงกับชื่อไฟล์แล้ว (เช่น weed_spiky -> weed_spiky.webp)
+                    img.src = ASSET_PATH + obj.type + '.webp';
                     img.className = 'art-item';
 
-                    // แปลงพิกัดจาก Canvas 800x500 เป็น % เพื่อให้ย่อขยายได้ (Responsive)
-                    const leftPercent = (obj.x / 600) * 100; // อิงจากหน้า create width=600
-                    const topPercent = (obj.y / 500) * 100; // อิงจากหน้า create height=500
+                    // แปลงพิกัดจากขนาด 800x480 เป็นเปอร์เซ็นต์ (%) 
+                    const leftPercent = (obj.x / 800) * 100; 
+                    const topPercent = (obj.y / 480) * 100; 
 
                     img.style.left = leftPercent + '%';
                     img.style.top = topPercent + '%';
 
                     container.appendChild(img);
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.error("Error parsing layout data", e);
+            }
         }
 
         function toggleLike(workId, btn) {
-            // Animation feedback ทันที (ไม่ต้องรอ Server)
             const countSpan = btn.querySelector('.like-count');
             let currentCount = parseInt(countSpan.innerText);
 
             if (btn.classList.contains('liked')) {
-                // Unlike Visual
                 btn.classList.remove('liked');
                 countSpan.innerText = Math.max(0, currentCount - 1);
             } else {
-                // Like Visual
                 btn.classList.add('liked');
                 countSpan.innerText = currentCount + 1;
             }
 
-            // Call API
             fetch('../api/toggle_like.php', {
                     method: 'POST',
-                    body: JSON.stringify({
-                        work_id: workId
-                    })
+                    body: JSON.stringify({ work_id: workId })
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (!data.success) {
-                        // ถ้า Error ให้ Revert visual กลับ
-                        alert('เกิดข้อผิดพลาด');
+                        alert('เกิดข้อผิดพลาดในการกดถูกใจ');
                         btn.classList.toggle('liked');
                     } else {
-                        // อัปเดตยอดจริงจาก Server เพื่อความชัวร์
                         countSpan.innerText = data.likes;
                     }
                 });
         }
 
-        // Helper: Time Ago (แปลงเวลาเป็น "2 นาทีที่แล้ว")
         function timeAgo(dateString) {
             const date = new Date(dateString);
             const now = new Date();
@@ -291,27 +278,20 @@ $game_id = $_GET['game_id'] ?? 1;
             return Math.floor(hours / 24) + " วันที่แล้ว";
         }
 
-        // ✅ เพิ่มส่วนนี้: Auto Refresh ทุก 10 วินาที
-        let isHovering = false; // ตัวแปรเช็คว่าเม้าส์ชี้งานอยู่ไหม
+        let isHovering = false; 
 
-        // ดักจับว่าผู้ใช้กำลังเอามือ/เมาส์ แตะที่การ์ดงานไหม (ถ้าแตะอยู่ อย่าเพิ่งรีเฟรช เดี๋ยวเสียจังหวะ)
         document.addEventListener('mouseover', (e) => {
             if (e.target.closest('.work-card')) isHovering = true;
             else isHovering = false;
         });
 
+        // รีเฟรชดูผลงานเพื่อนใหม่ทุกๆ 10 วินาที 
         setInterval(() => {
-            // ถ้านักเรียนไม่ได้กำลังเอาเมาส์ชี้งานอยู่ ให้รีเฟรชข้อมูล
-            if (!isHovering) {
-                console.log("Auto refreshing gallery...");
-                loadShowcase();
-            }
-        }, 10000); // 10000 ms = 10 วินาที (ปรับเวลาตรงนี้ได้ครับ)
+            if (!isHovering) loadShowcase();
+        }, 10000); 
 
-        // เรียกครั้งแรกทันที
         loadShowcase();
     </script>
 
 </body>
-
 </html>

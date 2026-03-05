@@ -29,6 +29,7 @@ function preload() {
     this.load.image('bg_farm', '../assets/img/bg_farm.webp'); 
     this.load.image('basket', '../assets/img/basket.webp'); 
     
+    // โหลดรูปภาพปุ๋ยชนิดต่างๆ
     this.load.image('fert_green_bag', '../assets/img/fert_green_bag.webp'); 
     this.load.image('fert_red_bag', '../assets/img/fert_red_bag.webp'); 
     this.load.image('fert_green_round', '../assets/img/fert_green_round.webp'); 
@@ -54,6 +55,9 @@ function create() {
 
 function update() {}
 
+// ==========================================
+// 🧹 ล้าง Event ป้องกันการทำงานซ้ำซ้อน
+// ==========================================
 function clearInputEvents(scene) {
     scene.input.removeAllListeners('dragstart');
     scene.input.removeAllListeners('drag');
@@ -61,6 +65,9 @@ function clearInputEvents(scene) {
     scene.input.removeAllListeners('dragleave');
 }
 
+// ==========================================
+// 🔄 ระบบเปลี่ยนผ่านอัตโนมัติ (ไร้รอยต่อ)
+// ==========================================
 function autoTransition(scene, nextLevelFunc) {
     clearInputEvents(scene);
     currentSubLevel++;
@@ -211,7 +218,7 @@ function startLevel2(scene) {
 }
 
 // ==========================================
-// 🧠 ระดับย่อย 3: บอส! 2 เงื่อนไข พร้อมปุ่มส่งคำตอบดีไซน์ใหม่
+// 🧠 ระดับย่อย 3: บอส! 2 เงื่อนไข (ออโต้จบด่าน ไม่มีปุ่มแล้ว)
 // ==========================================
 function startLevel3(scene) {
     clearInputEvents(scene);
@@ -234,105 +241,53 @@ function startLevel3(scene) {
 
     levelGroup.addMultiple([basketLeft, basketRight, lblLeft, lblRight]);
 
+    let itemsSorted = 0;
+    // มีเป้าหมายจริงๆ แค่ 2 ชิ้น ส่วนที่เหลือคือตัวหลอก
     const itemsData = [
         { key: 'fert_green_round', isTarget: true, targetZone: 'zone_green_round', x: 150, y: 250 },
         { key: 'fert_red_square', isTarget: true, targetZone: 'zone_red_square', x: 650, y: 150 },
-        { key: 'fert_green_square', isTarget: false, targetZone: null, x: 300, y: 150 }, // หลอก: เขียวแต่เหลี่ยม
-        { key: 'fert_red_round', isTarget: false, targetZone: null, x: 500, y: 250 }    // หลอก: แดงแต่กลม
+        { key: 'fert_green_square', isTarget: false, targetZone: null, x: 300, y: 150 }, // ตัวหลอก
+        { key: 'fert_red_round', isTarget: false, targetZone: null, x: 500, y: 250 }    // ตัวหลอก
     ];
 
     itemsData.forEach(data => {
         let item = scene.add.image(data.x, data.y, data.key).setInteractive();
         item.setScale(SCALES.item);
         scene.input.setDraggable(item);
-        
-        item.isGameItem = true; 
         item.isTarget = data.isTarget;
         item.targetZone = data.targetZone;
-        item.currentZone = null;
-        
         item.originalX = data.x;
         item.originalY = data.y;
         levelGroup.add(item);
-    });
-
-    // ===============================================
-    // 🎨 สร้างปุ่ม "ส่งคำตอบ" ดีไซน์ใหม่
-    // ===============================================
-    let submitBtn = scene.add.text(400, 410, ' ✅ ส่งคำตอบ ', { 
-        fontSize: '28px', 
-        fontFamily: 'Kanit', 
-        color: '#ffffff', 
-        backgroundColor: '#d35400', // สีส้มเข้ม
-        padding: { x: 25, y: 15 },
-        shadow: { fill: true, blur: 6, color: '#000000', offsetY: 4 } // ใส่เงาให้ดูลอยขึ้นมา
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    
-    levelGroup.add(submitBtn);
-
-    // เอฟเฟกต์ตอนเอาเมาส์ชี้ (Hover)
-    submitBtn.on('pointerover', () => {
-        scene.tweens.add({ targets: submitBtn, scale: 1.05, duration: 150 });
-        submitBtn.setStyle({ backgroundColor: '#e67e22' }); // สว่างขึ้น
-    });
-
-    // เอฟเฟกต์ตอนเอาเมาส์ออก
-    submitBtn.on('pointerout', () => {
-        scene.tweens.add({ targets: submitBtn, scale: 1, duration: 150 });
-        submitBtn.setStyle({ backgroundColor: '#d35400' }); // กลับเป็นสีเดิม
-    });
-
-    scene.input.on('dragstart', (pointer, gameObject) => {
-        gameObject.currentZone = null; 
     });
 
     scene.input.on('drag', (pointer, gameObject, dragX, dragY) => {
         gameObject.x = dragX; gameObject.y = dragY;
     });
 
+    // เช็คเงื่อนไขทันทีตอนวาง!
     scene.input.on('drop', (pointer, gameObject, dropZone) => {
-        gameObject.x = dropZone.x + Phaser.Math.Between(-15, 15); 
-        gameObject.y = dropZone.y - 15;
-        gameObject.currentZone = dropZone.zoneName; 
-    });
-
-    // เอฟเฟกต์ตอนกดปุ่ม + ตรวจคำตอบ
-    submitBtn.on('pointerdown', () => {
-        // อนิเมชันปุ่มยุบตัว
-        scene.tweens.add({ targets: submitBtn, scale: 0.95, duration: 100, yoyo: true });
-
-        let isAllCorrect = true;
-        
-        levelGroup.getChildren().forEach(child => {
-            if (child.isGameItem) {
-                if (child.isTarget) {
-                    if (child.currentZone !== child.targetZone) isAllCorrect = false;
-                } else {
-                    if (child.currentZone !== null && child.currentZone !== undefined) isAllCorrect = false;
-                }
-            }
-        });
-
-        if (isAllCorrect) {
+        // ถือว่าถูกต้องก็ต่อเมื่อ เป็นตัวที่ใช่ (isTarget) และลงตะกร้าที่ถูก (targetZone ตรงกับตะกร้า)
+        if (gameObject.isTarget && gameObject.targetZone === dropZone.zoneName) {
             scene.sound.play('correct');
-            checkWinCondition(scene);
+            gameObject.x = dropZone.x; gameObject.y = dropZone.y - 20;
+            gameObject.input.enabled = false;
+            itemsSorted++;
+            
+            // เป้าหมายที่ถูกต้องมีแค่ 2 ชิ้น ถ้าเก็บครบ 2 ก็จบทันที (ทิ้งตัวหลอกไว้แบบนั้นแหละ)
+            if (itemsSorted >= 2) {
+                checkWinCondition(scene);
+            }
         } else {
+            // ถ้าลากผิดตะกร้า หรือเผลอลากตัวหลอกมาลงตะกร้า จะโดนดีดกลับและเสียคะแนน!
             scene.sound.play('wrong');
             mistakes++;
-            // เด้งกลับที่เดิม
-            levelGroup.getChildren().forEach(child => {
-                if (child.isGameItem) {
-                    scene.tweens.add({ targets: child, x: child.originalX, y: child.originalY, duration: 300 });
-                    child.currentZone = null;
-                }
-            });
-            
-            let warn = scene.add.text(400, 320, '❌ ยังคัดแยกไม่ถูกต้อง ลองดูใหม่นะ!', { 
-                fontSize: '24px', fontFamily: 'Kanit', color: '#e74c3c', backgroundColor: '#fff', padding: {x:15, y:5},
-                shadow: { fill: true, blur: 2, color: '#000', offsetY: 1 }
-            }).setOrigin(0.5);
-            setTimeout(() => warn.destroy(), 2000);
+            scene.tweens.add({ targets: gameObject, x: gameObject.originalX, y: gameObject.originalY, duration: 300 });
         }
+    });
+
+    scene.input.on('dragleave', (pointer, gameObject, dropZone) => {
+        gameObject.x = gameObject.originalX; gameObject.y = gameObject.originalY;
     });
 }
 

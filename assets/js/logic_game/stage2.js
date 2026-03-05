@@ -26,7 +26,7 @@ let startTime;
 let levelGroup;
 
 function preload() {
-    this.load.image('bg_farm', '../assets/img/bg_farm.webp'); 
+    this.load.image('bg_barn', '../assets/img/bg_barn.webp'); 
     this.load.image('basket', '../assets/img/basket.webp'); 
     
     // โหลดรูปภาพปุ๋ยชนิดต่างๆ
@@ -42,7 +42,7 @@ function preload() {
 }
 
 function create() {
-    let bg = this.add.image(400, 300, 'bg_farm');
+    let bg = this.add.image(400, 300, 'bg_barn');
     bg.setDisplaySize(800, 600); 
     
     levelGroup = this.add.group();

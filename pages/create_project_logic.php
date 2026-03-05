@@ -345,7 +345,7 @@ $game_id = 1;
 
             const finalDesc = `[ฉากหลัง: ${currentBgType}]\n\n` + desc;
 
-            if (!confirm('ยืนยันสร้างด่านนี้ให้เพื่อนๆ เล่นใช่ไหม?')) return;
+            if (!confirm('ยืนยันจะสร้างชิ้นงานนี้ใช่ไหม?')) return;
 
             const itemsData = placedItems.map(item => ({
                 type: item.getData('type'),
@@ -366,7 +366,7 @@ $game_id = 1;
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        if (confirm('🎉 สร้างด่านสำเร็จ!\n\nกด "OK" เพื่อไปดูผลงาน\nกด "Cancel" เพื่อกลับหน้าหลัก')) {
+                        if (confirm('🎉 สร้างชิ้นงานสำเร็จ!\n\nกด "OK" เพื่อไปดูผลงาน\nกด "Cancel" เพื่อกลับหน้าหลัก')) {
                             window.location.href = 'showcase.php?game_id=<?php echo $game_id; ?>'; 
                         } else {
                             window.location.href = 'student_dashboard.php'; 

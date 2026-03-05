@@ -27,7 +27,7 @@ let levelGroup;
 
 function preload() {
     // ใช้พื้นหลังแปลงผัก (ถ้าหาไม่ได้ใช้ bg_farm ตัวเดิมได้ครับ)
-    this.load.image('bg_farm_plot', '../assets/img/bg_farm.webp'); 
+    this.load.image('bg_v_garden', '../assets/img/bg_v_garden.webp'); 
     
     // โหลดภาพเป้าหมายและตัวหลอก
     this.load.image('weed_spiky', '../assets/img/weed_spiky.webp'); 
@@ -40,7 +40,7 @@ function preload() {
 }
 
 function create() {
-    let bg = this.add.image(400, 300, 'bg_farm_plot');
+    let bg = this.add.image(400, 300, 'bg_v_garden');
     bg.setDisplaySize(800, 600); 
     
     levelGroup = this.add.group();

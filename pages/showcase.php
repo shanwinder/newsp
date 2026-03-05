@@ -215,9 +215,9 @@ $game_id = $_GET['game_id'] ?? 1;
         const GAME_ID = <?php echo $game_id; ?>;
         
         const ITEM_SIZES = {
-            'basket': 80, 'weed_spiky': 60, 'weed_round': 60, 'bug_red': 50, 'bug_blue': 50,
-            'seed': 50, 'fert_green_bag': 60, 'fert_red_bag': 60, 'fert_green_round': 50,
-            'fert_green_square': 50, 'fert_red_round': 50, 'fert_red_square': 50
+            'basket': 160, 'weed_spiky': 120, 'weed_round': 120, 'bug_red': 100, 'bug_blue': 100,
+            'newseed': 100, 'fert_green_bag': 120, 'fert_red_bag': 120, 'fert_green_round': 100,
+            'fert_green_square': 100, 'fert_red_round': 100, 'fert_red_square': 100
         };
 
         let worksList = {}; 
@@ -287,7 +287,7 @@ $game_id = $_GET['game_id'] ?? 1;
                         if (isReviewed && work.feedback && work.feedback.trim() !== '') {
                             feedbackHTML = `
                                 <div class="feedback-box">
-                                    <span class="text-success"><i class="bi bi-chat-heart-fill"></i> <strong>คุณครู:</strong> ${work.feedback}</span>
+                                    <span class="text-success"><i class="bi bi-chat-heart-fill"></i> <strong>ครูณัฐดนัย:</strong> ${work.feedback}</span>
                                 </div>
                             `;
                         }
@@ -308,7 +308,7 @@ $game_id = $_GET['game_id'] ?? 1;
                                     </div>
                                     <div class="bg-light p-2 rounded flex-grow-1 border d-flex flex-column">
                                         <p class="text-secondary small mb-0" style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
-                                            <strong>📜 กติกา:</strong><br>${descText}
+                                            <strong>📜 คำอธิบาย:</strong><br>${descText}
                                         </p>
                                         ${feedbackHTML}
                                     </div>
@@ -463,11 +463,23 @@ $game_id = $_GET['game_id'] ?? 1;
                 .then(data => { if (!data.success) btn.classList.toggle('liked'); else countSpan.innerText = data.likes; });
         }
 
-        function timeAgo(dateString) {
-            const date = new Date(dateString);
+function timeAgo(dateString) {
+            if (!dateString) return "เมื่อสักครู่";
+            
+            // 🟢 แก้บั๊ก NaN: เปลี่ยนขีดกลาง (-) ให้เป็นทับ (/) เพื่อให้ Safari และมือถืออ่านออก
+            let safeDateString = dateString.replace(/-/g, '/');
+            
+            const date = new Date(safeDateString);
+            
+            // ดักจับกรณีถ้ายังแปลงไม่สำเร็จอีก ให้แสดงวันที่ดั้งเดิมไปเลย
+            if (isNaN(date.getTime())) return dateString;
+
             const now = new Date();
             const seconds = Math.floor((now - date) / 1000);
-            if (seconds < 60) return "เมื่อสักครู่";
+
+            // 🟢 ดักกรณีเวลาติดลบ (เวลาในคอมพิวเตอร์ของเด็กเดินช้ากว่าเวลาเซิร์ฟเวอร์นิดหน่อย)
+            if (seconds < 0 || seconds < 60) return "เมื่อสักครู่";
+            
             const minutes = Math.floor(seconds / 60);
             if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
             const hours = Math.floor(minutes / 60);
@@ -475,14 +487,39 @@ $game_id = $_GET['game_id'] ?? 1;
             return Math.floor(hours / 24) + " วันที่แล้ว";
         }
 
-        let isHovering = false; 
-        document.addEventListener('mouseover', (e) => {
-            if (e.target.closest('.work-card') || document.body.classList.contains('modal-open')) isHovering = true;
-            else isHovering = false;
-        });
+// ==========================================
+        // 🟢 ระบบ Auto-Refresh ฉบับรองรับ Tablet & PC
+        // ==========================================
+        let isInteracting = false;
+        let interactionTimer;
 
-        setInterval(() => { if (!isHovering) loadShowcase(); }, 10000); 
+        // ฟังก์ชันหน่วงเวลาเมื่อมีการขยับจอหรือสัมผัส
+        function resetInteraction() {
+            isInteracting = true;
+            clearTimeout(interactionTimer);
+            // ถ้านิ่งไปเกิน 3 วินาที ให้ถือว่าเลิกใช้งานแล้ว (อนุญาตให้รีเฟรชได้)
+            interactionTimer = setTimeout(() => {
+                isInteracting = false;
+            }, 3000);
+        }
 
+        // ดักจับทั้งเมาส์, การสัมผัสจอ (Touch) และการเลื่อนจอ (Scroll)
+        document.addEventListener('mousemove', resetInteraction);
+        document.addEventListener('touchstart', resetInteraction, {passive: true});
+        document.addEventListener('scroll', resetInteraction, {passive: true});
+
+        // สั่งรีเฟรชทุกๆ 10 วินาที 
+        setInterval(() => { 
+            // เช็คว่ามีกล่องพรีเซนต์งาน (Modal) เปิดค้างอยู่ไหม (Bootstrap จะใส่คลาสนี้ที่ body อัตโนมัติ)
+            const isModalOpen = document.body.classList.contains('modal-open');
+            
+            // ถ้าไม่ได้เปิด Modal ค้างไว้ และไม่ได้กำลังถูหน้าจออยู่ -> โหลดผลงานใหม่!
+            if (!isModalOpen && !isInteracting) {
+                loadShowcase(); 
+            }
+        }, 10000); 
+
+        // โหลดครั้งแรกตอนเปิดหน้าเว็บ
         loadShowcase();
     </script>
 </body>

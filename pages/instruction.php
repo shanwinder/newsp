@@ -7,38 +7,38 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1;
+$is_under_construction = false; 
 
 // 🎯 กำหนดเนื้อหาคู่มือตามด่านที่เลือก
 if ($game_id === 1) {
     $game_title = "บทที่ 1: ตรรกะคัดแยก (Logic)";
     $game_theme = "success";
-    $mission_desc = "แปลงผักของเรากำลังวุ่นวาย! ภารกิจของคุณคือการใช้ 'ตรรกะ (Logic)' ในการแยกแยะเมล็ดพันธุ์ ปุ๋ย และกำจัดวัชพืชออกจากแปลงให้ถูกต้องตามเงื่อนไขที่กำหนด!";
+    $mission_desc = "แปลงผักของเรากำลังวุ่นวาย! ภารกิจของคุณคือการแยกแยะเมล็ดพันธุ์ ปุ๋ย และกำจัดวัชพืชออกจากแปลง ให้ถูกต้องตามเงื่อนไขที่กำหนด!";
     
-    // กติกาการเล่น บทที่ 1
     $steps = [
-        ['icon' => 'bi-search', 'title' => '1. สังเกตเงื่อนไข', 'desc' => 'อ่านป้ายคำสั่งให้ดี! บางด่านอาจมีคำหลอก เช่น "ไม่ใช่สีแดง" หรือ "ใบกลมและสีเขียว"'],
-        ['icon' => 'bi-hand-index-thumb', 'title' => '2. ลาก หรือ คลิก', 'desc' => 'ใช้เมาส์ลากไอเทมลงตะกร้าให้ถูกต้อง หรือคลิกกำจัดศัตรูพืชให้สิ้นซาก'],
-        ['icon' => 'bi-shield-exclamation', 'title' => '3. ระวังตัวหลอก', 'desc' => 'ถ้าคลิกผิดตัว หรือหยิบของผิดใส่ตะกร้า จะถูกหักคะแนนดาวนะ!']
+        ['icon' => 'bi-search', 'title' => '1. สังเกตเงื่อนไข', 'desc' => 'อ่านป้ายคำสั่งให้ดี! บางด่านอาจมีคำหลอก เช่น "ไม่ใช่สีแดง"'],
+        ['icon' => 'bi-hand-index-thumb', 'title' => '2. ลาก หรือ คลิก', 'desc' => 'ใช้เมาส์ลากไอเทมลงตะกร้า หรือคลิกกำจัดศัตรูพืช'],
+        ['icon' => 'bi-shield-exclamation', 'title' => '3. ระวังตัวหลอก', 'desc' => 'ถ้าคลิกผิดตัว จะถูกหักคะแนนดาวนะ!']
     ];
-    
-    // ลิงก์ไปเริ่มด่าน 1 (คุณครูสามารถปรับ URL ให้ตรงกับไฟล์เกมจริงได้เลยครับ)
     $start_link = "../pages/game_select.php?game_id=1"; 
-    // ตัวอย่างถ้าคลิกแล้วเข้าเกมเลย: $start_link = "../logic_game/stage1.php";
-    
+
 } else if ($game_id === 2) {
-    // เผื่อไว้สำหรับอนาคต (บทที่ 2)
     $game_title = "บทที่ 2: เส้นทางรถไถ (Algorithm)";
     $game_theme = "warning";
-    $mission_desc = "ถึงเวลาเก็บเกี่ยว! วางแผนเขียนคำสั่ง (Algorithm) แบบเป็นขั้นตอน เพื่อสั่งให้รถไถเดินหน้า เลี้ยวซ้ายขวา ไปเก็บผลผลิตโดยไม่ชนรั้ว!";
-    
-    $steps = [
-        ['icon' => 'bi-signpost-split', 'title' => '1. วางแผนเส้นทาง', 'desc' => 'มองหาเส้นทางที่สั้นและปลอดภัยที่สุดเพื่อไปให้ถึงจุดหมาย'],
-        ['icon' => 'bi-puzzle', 'title' => '2. ต่อบล็อกคำสั่ง', 'desc' => 'ลากบล็อกคำสั่ง เดินหน้า, เลี้ยวซ้าย, เลี้ยวขวา มาต่อกันเป็นลำดับขั้น'],
-        ['icon' => 'bi-play-circle', 'title' => '3. ทดสอบระบบ', 'desc' => 'กดปุ่มทำงานเพื่อดูรถไถวิ่งตามคำสั่ง หากผิดพลาดให้แก้ไขรหัสใหม่']
-    ];
-    $start_link = "../pages/game_select.php?game_id=2";
+    $is_under_construction = true; 
+
+} else if ($game_id === 3) {
+    $game_title = "บทที่ 3: ตามล่าหาศัตรูพืช (Debugging)";
+    $game_theme = "info";
+    $is_under_construction = true; 
+
+} else if ($game_id === 4) {
+    $game_title = "บทที่ 4: วนลูปเก็บเกี่ยว (Loop)";
+    $game_theme = "danger";
+    $is_under_construction = true; 
+
 } else {
-    header("Location: dashboard.php");
+    header("Location: student_dashboard.php");
     exit();
 }
 
@@ -93,6 +93,39 @@ $mode = $_SESSION['mode'] ?? 'solo';
             color: #2c3e50;
         }
 
+        /* 🟢 สไตล์สำหรับใบความรู้ */
+        .knowledge-sheet {
+            background-color: #fffbeb;
+            border: 2px solid #fde68a;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.1);
+        }
+        .knowledge-title {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1rem;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3);
+        }
+        .logic-term {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f59e0b;
+            font-size: 0.95rem;
+        }
+
         .step-card {
             background: #ffffff;
             border-radius: 15px;
@@ -143,13 +176,14 @@ $mode = $_SESSION['mode'] ?? 'solo';
             color: white;
         }
         
-        .floating-element {
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        .floating-element { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        .bouncing-cone { animation: bounce 2s infinite; display: inline-block; }
+        @keyframes bounce { 
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
+            40% {transform: translateY(-20px);} 
+            60% {transform: translateY(-10px);} 
         }
     </style>
 </head>
@@ -165,48 +199,95 @@ $mode = $_SESSION['mode'] ?? 'solo';
 
         <div class="p-4 p-md-5">
             
-            <div class="mission-box mb-5 shadow-sm">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-megaphone-fill fs-1 text-success me-3"></i>
-                    <div>
-                        <strong class="text-success fs-5">ภารกิจของคุณ:</strong><br>
-                        <?php echo $mission_desc; ?>
+            <?php if ($is_under_construction): ?>
+                <div class="text-center py-4">
+                    <div class="mb-4">
+                        <i class="bi bi-cone-striped text-warning bouncing-cone" style="font-size: 5rem; text-shadow: 0 10px 15px rgba(0,0,0,0.1);"></i>
                     </div>
-                </div>
-            </div>
-
-            <h4 class="fw-bold text-dark mb-4 text-center"><i class="bi bi-controller"></i> วิธีการเล่น</h4>
-            <div class="row g-4 mb-5">
-                <?php foreach ($steps as $step): ?>
-                <div class="col-md-4">
-                    <div class="step-card">
-                        <div class="icon-circle">
-                            <i class="bi <?php echo $step['icon']; ?>"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark"><?php echo $step['title']; ?></h5>
-                        <p class="text-secondary small mb-0"><?php echo $step['desc']; ?></p>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-
-            <?php if($mode !== 'solo'): ?>
-            <div class="alert alert-warning border-0 shadow-sm rounded-4 text-center fw-bold">
-                <i class="bi bi-people-fill text-warning fs-4 align-middle me-2"></i> 
-                คุณกำลังเล่นใน "โหมดทีม" อย่าลืมปรึกษากันก่อนคลิกเพื่อไม่ให้พลาดถูกหักดาวนะ!
-            </div>
-            <?php endif; ?>
-
-            <div class="text-center mt-2">
-                <a href="<?php echo $start_link; ?>" class="btn btn-start">
-                    <i class="bi bi-play-fill me-1"></i> เข้าสู่แปลงเกษตร!
-                </a>
-                <div class="mt-3">
-                    <a href="student_dashboard.php" class="text-muted text-decoration-none small fw-bold">
-                        <i class="bi bi-arrow-left"></i> กลับไปหน้าโปรไฟล์
+                    <h2 class="fw-bold text-dark mb-3">กำลังเตรียมพื้นที่แปลงเกษตร!</h2>
+                    <p class="text-muted fs-5 mb-4">
+                        ภารกิจนี้ <strong>อยู่ระหว่างการพัฒนา</strong> <br>
+                        คุณครูกำลังเตรียมความสนุกให้พวกเราอยู่ อดใจรออีกนิดนะ!
+                    </p>
+                    <a href="student_dashboard.php" class="btn btn-secondary btn-lg rounded-pill px-5 shadow-sm fw-bold">
+                        <i class="bi bi-arrow-left-circle me-2"></i> กลับหน้าหลัก
                     </a>
                 </div>
-            </div>
+
+            <?php else: ?>
+                <div class="knowledge-sheet mt-3">
+                    <div class="knowledge-title"><i class="bi bi-lightbulb-fill"></i> เกร็ดความรู้: การใช้เหตุผลเชิงตรรกะ</div>
+                    <p class="text-dark fw-bold mb-2 mt-2">การแก้ปัญหาอย่างเป็นขั้นตอน เริ่มจากการเข้าใจ "เงื่อนไข" (Conditions)</p>
+                    <p class="text-secondary small mb-3">ในภาษาคอมพิวเตอร์ เรามักจะเจอคำสั่งที่ช่วยในการตัดสินใจ 3 รูปแบบหลักๆ คือ:</p>
+                    
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="logic-term shadow-sm h-100">
+                                <span class="badge bg-primary mb-1">และ (AND)</span><br>
+                                ต้องเป็นจริง <strong>ทั้ง 2 อย่าง</strong><br>
+                                <span class="text-muted small">เช่น ต้องเป็น "สีแดง" <u>และ</u> "ใบกลม" เท่านั้นถึงจะคลิกได้</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="logic-term shadow-sm h-100">
+                                <span class="badge bg-success mb-1">หรือ (OR)</span><br>
+                                เป็นจริง <strong>อย่างใดอย่างหนึ่ง</strong> ก็ได้<br>
+                                <span class="text-muted small">เช่น เลือกเก็บ "แมลงสีแดง" <u>หรือ</u> "แมลงสีฟ้า" ก็ได้</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="logic-term shadow-sm h-100">
+                                <span class="badge bg-danger mb-1">ไม่ใช่ (NOT)</span><br>
+                                คือสิ่งที่ <strong>ตรงกันข้าม</strong><br>
+                                <span class="text-muted small">เช่น ให้เก็บพืชที่ <u>ไม่ใช่</u> สีเหลือง (แปลว่าเก็บสีอื่นได้หมด)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mission-box mb-5 shadow-sm">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-megaphone-fill fs-1 text-success me-3"></i>
+                        <div>
+                            <strong class="text-success fs-5">เป้าหมายภารกิจ:</strong><br>
+                            <?php echo $mission_desc; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="fw-bold text-dark mb-4 text-center"><i class="bi bi-controller"></i> วิธีการเล่น</h4>
+                <div class="row g-4 mb-5">
+                    <?php foreach ($steps as $step): ?>
+                    <div class="col-md-4">
+                        <div class="step-card">
+                            <div class="icon-circle">
+                                <i class="bi <?php echo $step['icon']; ?>"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark"><?php echo $step['title']; ?></h5>
+                            <p class="text-secondary small mb-0"><?php echo $step['desc']; ?></p>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <?php if($mode !== 'solo'): ?>
+                <div class="alert alert-warning border-0 shadow-sm rounded-4 text-center fw-bold">
+                    <i class="bi bi-people-fill text-warning fs-4 align-middle me-2"></i> 
+                    คุณกำลังเล่นใน "โหมดทีม" อย่าลืมปรึกษากันก่อนคลิกเพื่อฝึกทักษะการทำงานร่วมกันนะ!
+                </div>
+                <?php endif; ?>
+
+                <div class="text-center mt-2">
+                    <a href="<?php echo $start_link; ?>" class="btn btn-start">
+                        <i class="bi bi-play-fill me-1"></i> เข้าสู่แปลงเกษตร!
+                    </a>
+                    <div class="mt-3">
+                        <a href="student_dashboard.php" class="text-muted text-decoration-none small fw-bold">
+                            <i class="bi bi-arrow-left"></i> กลับไปหน้าโปรไฟล์
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
 
         </div>
     </div>

@@ -1,10 +1,15 @@
 <?php
 // includes/db.php
+
+date_default_timezone_set('Asia/Bangkok');
+
 /*
 $host = 'sql303.infinityfree.com'; // localhost
 $user = 'if0_41282359'; // root
 $pass = 'llNSKSVGiO1ITBD'; // ว่าง หรือ root
-$db   = 'if0_41282359_new_learning_game';*/
+$db   = 'if0_41282359_new_learning_game';
+*/
+
 
 $host = 'localhost'; // localhost
 $user = 'root'; // root
@@ -21,4 +26,11 @@ try {
     error_log($e->getMessage());
     die("ขออภัย ระบบฐานข้อมูลกำลังมีปัญหา โปรดลองใหม่ภายหลัง");
 }
+
+// รองรับภาษาไทย UTF-8
+$conn->set_charset("utf8mb4");
+
+// 2. 🟢 บังคับให้คำสั่งของฐานข้อมูล MySQL (เช่น NOW()) ใช้เวลาประเทศไทย (UTC+7)
+$conn->query("SET time_zone = '+07:00'");
+
 ?>

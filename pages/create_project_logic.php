@@ -26,6 +26,8 @@ $game_id = 1;
             background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); 
             min-height: 100vh;
             color: #333;
+            /* 🟢 ปิดฟีเจอร์ "ดึงเพื่อรีเฟรช" (Pull-to-refresh) บน Tablet/มือถือ */
+            overscroll-behavior-y: none; 
         }
 
         .editor-container {
@@ -73,7 +75,11 @@ $game_id = 1;
             overflow: hidden;
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
             border: 3px solid #27ae60;
-            touch-action: pan-y;
+            touch-action: none;
+            /* 🟢 ป้องกันการเผลอคลุมดำรูปภาพเวลาแตะค้างบน Tablet */
+            -webkit-user-select: none; 
+            user-select: none;
+            -webkit-touch-callout: none;
             background-color: #fff;
         }
     </style>
@@ -144,17 +150,13 @@ $game_id = 1;
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
+<script>
         const GAME_ID = <?php echo $game_id; ?>;
         let placedItems = []; 
         let sceneRef;
         let gridBg, bgImage;
         let currentBgType = 'grid';
 
-        // =========================================================================
-        // ⚙️ ตั้งค่าขนาดไอเทม (คุณครูสามารถปรับตัวเลข Scale ตรงนี้ให้เล็ก/ใหญ่ได้ตามใจชอบ)
-        // =========================================================================
         const assetList = [
             { key: 'basket', img: '../assets/img/basket.webp', label: 'ตะกร้า', scale: 160, role: 'decoy' }, 
             { key: 'weed_spiky', img: '../assets/img/weed_spiky.webp', label: 'หญ้าแหลม', scale: 120, role: 'decoy' },
@@ -169,7 +171,6 @@ $game_id = 1;
             { key: 'fert_red_round', img: '../assets/img/fert_red_round.webp', label: 'เม็ดกลมแดง', scale: 100, role: 'decoy' },
             { key: 'fert_red_square', img: '../assets/img/fert_red_square.webp', label: 'แท่งเหลี่ยมแดง', scale: 100, role: 'decoy' }
         ];
-        // =========================================================================
 
         function renderToolbox() {
             const container = document.getElementById('container-items');
@@ -193,13 +194,21 @@ $game_id = 1;
             height: 480,
             backgroundColor: '#ffffff',
             scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-            input: { mouse: { preventDefaultWheel: false }, touch: { capture: false } },
+            input: { 
+                mouse: { preventDefaultWheel: false }, 
+                touch: { capture: true },
+                activePointers: 2 
+            },
             scene: { preload: preload, create: create }
         };
 
+        // บล็อกการเลื่อนจอด้วยนิ้วเฉพาะจุดที่เป็นเกม
+        document.getElementById('phaser-canvas').addEventListener('touchmove', function (e) {
+            e.preventDefault();
+        }, { passive: false });
+
         function preload() {
             assetList.forEach(item => { this.load.image(item.key, item.img); });
-            // โหลดพื้นหลัง (ไม่ต้องโหลด grid_bg แล้ว)
             this.load.image('bg_farm', '../assets/img/bg_farm.webp');
             this.load.image('bg_barn', '../assets/img/bg_barn.webp');
             this.load.image('bg_v_garden', '../assets/img/bg_v_garden.webp');
@@ -207,11 +216,7 @@ $game_id = 1;
 
         function create() {
             sceneRef = this;
-            
-            // 🟢 1. สร้างตารางกระดาษด้วยโค้ด (หมดปัญหาโหลดรูปตารางไม่ขึ้น)
             gridBg = this.add.grid(400, 240, 800, 480, 40, 40, 0xffffff, 1, 0xcccccc, 0.5);
-            
-            // 🟢 2. เตรียมรูปพื้นหลังอื่นๆ (ซ่อนไว้ก่อน) และตั้งให้พอดีจอ
             bgImage = this.add.image(400, 240, 'bg_farm').setVisible(false);
             bgImage.setDisplaySize(800, 480);
         }
@@ -219,18 +224,15 @@ $game_id = 1;
         window.changeBackground = function(type) {
             if(!sceneRef) return;
             currentBgType = type;
-            
             if(type === 'grid') {
                 gridBg.setVisible(true);
                 bgImage.setVisible(false);
             } else {
                 gridBg.setVisible(false);
                 bgImage.setVisible(true);
-                bgImage.setTexture('bg_' + type); // เปลี่ยนเป็น farm, barn, v_garden
-                bgImage.setDisplaySize(800, 480); // บังคับให้พอดีกรอบ 100%
+                bgImage.setTexture('bg_' + type); 
+                bgImage.setDisplaySize(800, 480); 
             }
-            
-            // ดันพื้นหลังไปอยู่ชั้นล่างสุด
             sceneRef.children.sendToBack(gridBg);
             sceneRef.children.sendToBack(bgImage);
         };
@@ -241,7 +243,8 @@ $game_id = 1;
             const x = Phaser.Math.Between(350, 450);
             const y = Phaser.Math.Between(200, 280);
 
-            const container = sceneRef.add.container(x, y).setSize(targetSize, targetSize).setInteractive();
+            const touchAreaSize = targetSize + 20; 
+            const container = sceneRef.add.container(x, y).setSize(touchAreaSize, touchAreaSize).setInteractive({ cursor: 'pointer' });
             sceneRef.input.setDraggable(container);
             
             const img = sceneRef.add.image(0, 0, key);
@@ -250,54 +253,50 @@ $game_id = 1;
 
             container.setData('type', key);
             container.setData('role', defaultRole); 
-            // ตัวแปรเช็คการลาก
-            container.setData('isDragging', false);
 
-            let statusText = sceneRef.add.text(0, -targetSize/2 - 15, '❌ ตัวหลอก', { 
-                fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#e74c3c', padding: {x:6, y:3} 
-            }).setOrigin(0.5);
-            container.add(statusText);
+            let statusText = null;
+            if (defaultRole !== 'decor') {
+                statusText = sceneRef.add.text(0, -targetSize/2 - 15, '❌ ตัวหลอก', { 
+                    fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#e74c3c', padding: {x:6, y:3} 
+                }).setOrigin(0.5);
+                container.add(statusText);
+            }
 
             const currentScale = container.scale;
             sceneRef.tweens.add({ targets: container, scale: { from: 0, to: currentScale }, duration: 300, ease: 'Back.out' });
-
-            // 🟢 จัดการแยกระหว่างการลาก (Drag) กับการคลิก (Click)
-            container.on('pointerdown', function(pointer) {
-                this.setData('isDragging', false); // เริ่มกด ยังไม่ได้ลาก
-                this.setData('downTime', pointer.time);
-            });
-
-            container.on('drag', function(pointer, dragX, dragY) {
-                this.x = dragX; this.y = dragY;
-                this.setData('isDragging', true); // ถ้าย้ายเมาส์ = กำลังลาก
-            });
 
             container.on('dragstart', function() {
                 this.setAlpha(0.8);
                 sceneRef.children.bringToTop(this);
             });
 
+            container.on('drag', function(pointer, dragX, dragY) {
+                this.x = dragX; 
+                this.y = dragY;
+            });
+
             container.on('dragend', function() {
                 this.setAlpha(1);
             });
 
-            // 🟢 เมื่อปล่อยเมาส์ ให้เช็คว่าเป็นแค่การ "คลิก" หรือไม่
             container.on('pointerup', function(pointer) {
-                if (this.getData('isDragging')) return; // ถ้าเป็นการลาก ให้ยกเลิกการคลิกทันที!
+                // 🟢 ใช้ฟังก์ชันของ Phaser ตรวจสอบระยะทาง (ถ้าลากเกิน 10px ถือว่าไม่ได้ตั้งใจคลิก)
+                if (pointer.getDistance() > 10) return;
 
-                const holdTime = pointer.time - this.getData('downTime');
-                if (holdTime > 300) return; // ถ้ากดค้างไว้นานๆ ก็ไม่นับเป็นคลิก
+                const now = new Date().getTime();
+                const lastClick = this.getData('lastClickTime') || 0;
+                const timeDiff = now - lastClick;
 
-                let clickCount = this.getData('clickCount') || 0;
-                clickCount++;
-                this.setData('clickCount', clickCount);
-
-                if (clickCount === 1) {
-                    this.setData('clickTimer', setTimeout(() => {
-                        this.setData('clickCount', 0);
-                        if (!this.active) return;
+                if (timeDiff > 0 && timeDiff < 350) {
+                    clearTimeout(this.getData('clickTimer'));
+                    this.setData('lastClickTime', 0);
+                    deleteItem(this); 
+                } else {
+                    this.setData('lastClickTime', now);
+                    
+                    let timer = setTimeout(() => {
+                        if (!this.active || this.getData('role') === 'decor') return;
                         
-                        // --- สลับสถานะ ---
                         let currentRole = this.getData('role');
                         let newRole = currentRole === 'decoy' ? 'target' : 'decoy';
                         this.setData('role', newRole);
@@ -311,11 +310,9 @@ $game_id = 1;
                         }
                         sceneRef.tweens.add({ targets: this, y: this.y - 10, yoyo: true, duration: 100 });
 
-                    }, 250));
-                } else if (clickCount === 2) {
-                    clearTimeout(this.getData('clickTimer'));
-                    this.setData('clickCount', 0);
-                    deleteItem(this); // ดับเบิ้ลคลิกเพื่อลบ
+                    }, 360);
+
+                    this.setData('clickTimer', timer);
                 }
             });
 

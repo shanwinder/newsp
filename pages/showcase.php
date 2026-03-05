@@ -20,13 +20,12 @@ $game_id = $_GET['game_id'] ?? 1;
     <style>
         body {
             font-family: 'Kanit', sans-serif;
-            background: #f0fdf4; /* ธีมพื้นหลังสีเขียวอ่อน */
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            background: #f0fdf4;
             min-height: 100vh;
         }
 
         .header-section {
-            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); /* เปลี่ยนเป็นธีมฟาร์มสีเขียว */
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
             color: white;
             padding: 60px 0 40px;
             margin-bottom: 40px;
@@ -42,6 +41,9 @@ $game_id = $_GET['game_id'] ?? 1;
             transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
             background: white;
             height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         .work-card:hover {
@@ -50,15 +52,39 @@ $game_id = $_GET['game_id'] ?? 1;
             border-color: #34d399;
         }
 
+        .work-card.reviewed-card {
+            border: 4px solid #fbbf24;
+            background: #fffbeb;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
+        }
+        .work-card.reviewed-card:hover {
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+            border-color: #f59e0b;
+        }
+
+        .badge-reviewed {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            z-index: 20;
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.4);
+            pointer-events: none;
+        }
+
         .preview-box {
             position: relative;
             width: 100%;
-            padding-top: 60%; /* Aspect Ratio 800x480 (480/800 = 60%) */
-            background-color: #ffffff;
+            padding-top: 60%;
+            background-color: #f8fafc;
             overflow: hidden;
             border-bottom: 3px dashed #e2e8f0;
-            background-size: cover;
-            background-position: center;
+            cursor: pointer;
         }
 
         .preview-content {
@@ -69,12 +95,30 @@ $game_id = $_GET['game_id'] ?? 1;
             height: 100%;
         }
 
-        .art-item {
-            position: absolute;
-            width: 12%; /* ขยายไอเทมในหน้าพรีวิวให้เห็นชัดขึ้น */
-            transform: translate(-50%, -50%);
-            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2));
+        .bg-grid-pattern {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .preview-box:hover .zoom-hint { opacity: 1; }
 
         .btn-like {
             border: 2px solid #eee;
@@ -85,24 +129,27 @@ $game_id = $_GET['game_id'] ?? 1;
             transition: 0.3s;
             font-weight: bold;
         }
-
-        .btn-like:hover {
-            background: #ffebee;
-            color: #ff5252;
-            border-color: #ff5252;
+        .btn-like:hover { background: #ffebee; color: #ff5252; border-color: #ff5252; }
+        .btn-like.liked { background: #ff5252; color: white; border-color: #ff5252; }
+        
+        .member-list-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-top: 8px;
+            border: 1px dashed #cbd5e1;
         }
 
-        .btn-like.liked {
-            background: #ff5252;
-            color: white;
-            border-color: #ff5252;
-            animation: popHeart 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popHeart {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+        /* 🟢 สไตล์สำหรับกล่องข้อเสนอแนะจากครู */
+        .feedback-box {
+            background-color: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -131,9 +178,49 @@ $game_id = $_GET['game_id'] ?? 1;
         </div>
     </div>
 
+    <div class="modal fade" id="presentationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="modal-header bg-success text-white border-0 py-3">
+                    <h4 class="modal-title fw-bold" id="modal-title-text"><i class="bi bi-easel-fill me-2"></i> นำเสนอผลงาน</h4>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 bg-light">
+                    <div class="preview-box border-bottom border-5 border-success" style="border-radius: 0; cursor: default;">
+                        <div id="modal-canvas-content" class="preview-content"></div>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <div id="modal-members-area"></div>
+                        
+                        <div class="row align-items-start">
+                            <div class="col-md-8">
+                                <h5 class="fw-bold text-success mb-2">📜 กติกาและเงื่อนไขของด่าน:</h5>
+                                <p id="modal-desc" class="text-dark fs-5 mb-3" style="white-space: pre-wrap; line-height: 1.6;"></p>
+                                
+                                <div id="modal-feedback-area"></div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge bg-light text-secondary border fs-6 px-3 py-2" id="modal-time"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const ASSET_PATH = '../assets/img/';
         const GAME_ID = <?php echo $game_id; ?>;
+        
+        const ITEM_SIZES = {
+            'basket': 80, 'weed_spiky': 60, 'weed_round': 60, 'bug_red': 50, 'bug_blue': 50,
+            'seed': 50, 'fert_green_bag': 60, 'fert_red_bag': 60, 'fert_green_round': 50,
+            'fert_green_square': 50, 'fert_red_round': 50, 'fert_red_square': 50
+        };
+
+        let worksList = {}; 
 
         function loadShowcase() {
             fetch(`../api/get_showcase.php?game_id=${GAME_ID}`)
@@ -141,6 +228,7 @@ $game_id = $_GET['game_id'] ?? 1;
                 .then(data => {
                     const grid = document.getElementById('gallery-grid');
                     grid.innerHTML = '';
+                    worksList = {}; 
 
                     if (data.length === 0) {
                         grid.innerHTML = `
@@ -154,89 +242,209 @@ $game_id = $_GET['game_id'] ?? 1;
                     }
 
                     data.forEach(work => {
+                        worksList[work.id] = work; 
                         const col = document.createElement('div');
-                        col.className = 'col-md-6 col-lg-4';
+                        col.className = 'col-md-6 col-lg-4 d-flex align-items-stretch';
 
                         const isLikedClass = (work.is_liked > 0) ? 'liked' : '';
                         
-                        // 🟢 ดึงข้อมูลฉากหลัง และลบข้อความออกให้เนียนตา
                         let descText = work.description || '-';
-                        let bgType = 'grid'; // ค่าเริ่มต้น
+                        let bgType = 'grid'; 
                         
                         const bgMatch = descText.match(/\[ฉากหลัง:\s*(.*?)\]/);
                         if (bgMatch) {
                             bgType = bgMatch[1];
-                            descText = descText.replace(/\[ฉากหลัง:\s*.*?\]\s*\n*/, ''); // เอา Tag ฉากหลังออก
+                            descText = descText.replace(/\[ฉากหลัง:\s*.*?\]\s*\n*/, ''); 
+                        }
+                        work.cleanDesc = descText; 
+                        work.bgType = bgType; 
+
+                        const isReviewed = work.status === 'reviewed';
+                        const reviewedClass = isReviewed ? 'reviewed-card' : '';
+                        const reviewedBadge = isReviewed ? '<div class="badge-reviewed"><i class="bi bi-award-fill"></i> ตรวจแล้ว</div>' : '';
+
+                        let teamInfoHTML = '';
+                        if (work.mode === 'group') {
+                            teamInfoHTML = `
+                                <div style="width: calc(100% - 70px);">
+                                    <h5 class="fw-bold mb-0" style="color: #d35400;"><i class="bi bi-people-fill"></i> กลุ่มที่ ${work.group_number}</h5>
+                                    <div class="member-list-box text-muted">
+                                        <strong>สมาชิก:</strong> ${work.member_names || '-'}
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            teamInfoHTML = `
+                                <div style="width: calc(100% - 70px);">
+                                    <h5 class="fw-bold text-success mb-0 text-truncate"><i class="bi bi-person-circle"></i> ${work.student_name}</h5>
+                                    <small class="text-muted d-block mt-1">รหัสนักเรียน: ${work.student_id}</small>
+                                </div>
+                            `;
+                        }
+
+                        // 🟢 ประมวลผลข้อเสนอแนะจากครู (ถ้ามีการพิมพ์ให้คำชมไว้)
+                        let feedbackHTML = '';
+                        if (isReviewed && work.feedback && work.feedback.trim() !== '') {
+                            feedbackHTML = `
+                                <div class="feedback-box">
+                                    <span class="text-success"><i class="bi bi-chat-heart-fill"></i> <strong>คุณครู:</strong> ${work.feedback}</span>
+                                </div>
+                            `;
                         }
 
                         col.innerHTML = `
-                            <div class="work-card shadow-sm d-flex flex-column">
-                                <div class="preview-box" id="bg-${work.id}">
+                            <div class="work-card shadow-sm w-100 ${reviewedClass}">
+                                ${reviewedBadge}
+                                <div class="preview-box" onclick="openPresentation(${work.id})" title="คลิกเพื่อนำเสนอจอใหญ่">
                                     <div class="preview-content" id="canvas-${work.id}"></div>
+                                    <div class="zoom-hint"><i class="bi bi-arrows-fullscreen"></i> ขยายเต็มจอ</div>
                                 </div>
                                 <div class="p-3 d-flex flex-column flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <h5 class="fw-bold text-success mb-0"><i class="bi bi-person-circle"></i> ${work.student_name}</h5>
-                                            <small class="text-muted">ทีมรหัส: ${work.student_id}</small>
-                                        </div>
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        ${teamInfoHTML}
                                         <button class="btn-like shadow-sm ${isLikedClass}" onclick="toggleLike(${work.id}, this)">
                                             <i class="bi bi-heart-fill"></i> <span class="like-count">${work.like_count}</span>
                                         </button>
                                     </div>
-                                    <p class="text-secondary small bg-light p-2 rounded flex-grow-1 border">
-                                        <strong>📜 กติกา:</strong><br>${descText}
-                                    </p>
-                                    <small class="text-muted text-end mt-1" style="font-size: 0.75rem">
-                                        <i class="bi bi-clock"></i> ส่งเมื่อ: ${timeAgo(work.submitted_at)}
-                                    </small>
+                                    <div class="bg-light p-2 rounded flex-grow-1 border d-flex flex-column">
+                                        <p class="text-secondary small mb-0" style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
+                                            <strong>📜 กติกา:</strong><br>${descText}
+                                        </p>
+                                        ${feedbackHTML}
+                                    </div>
                                 </div>
                             </div>
                         `;
 
                         grid.appendChild(col);
-
-                        // ใส่ภาพพื้นหลังให้กล่องโชว์ผลงาน
-                        const bgContainer = document.getElementById(`bg-${work.id}`);
-                        if (bgType === 'grass') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_grass.webp')`;
-                        else if (bgType === 'dirt') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_dirt.webp')`;
-                        else if (bgType === 'farm') bgContainer.style.backgroundImage = `url('${ASSET_PATH}bg_farm_plot.webp')`;
-                        else {
-                            bgContainer.style.backgroundImage = `url('https://www.transparenttextures.com/patterns/cubes.png')`;
-                            bgContainer.style.backgroundColor = '#f8f9fa';
-                        }
-
-                        renderMiniCanvas(work.work_data, `canvas-${work.id}`);
+                        renderMiniCanvas(work.work_data, `canvas-${work.id}`, work.bgType);
                     });
+                    
+                    setTimeout(resizeCanvases, 100);
                 });
         }
 
-        function renderMiniCanvas(jsonData, targetId) {
+        // 🖥️ ฟังก์ชันเปิด Presentation Mode
+        function openPresentation(workId) {
+            const work = worksList[workId];
+            if(!work) return;
+
+            let modalTitleStr = work.mode === 'group' ? `กลุ่มที่ ${work.group_number}` : work.student_name;
+            document.getElementById('modal-title-text').innerHTML = `<i class="bi bi-easel-fill me-2"></i> ผลงานของ: ${modalTitleStr}`;
+            
+            let membersHtml = '';
+            if (work.mode === 'group') {
+                membersHtml = `
+                    <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
+                        <strong class="text-dark"><i class="bi bi-people-fill text-warning fs-5 align-middle me-1"></i> สมาชิกทีม:</strong> 
+                        <span class="text-secondary ms-1">${work.member_names || '-'}</span>
+                    </div>`;
+            }
+            document.getElementById('modal-members-area').innerHTML = membersHtml;
+
+            document.getElementById('modal-desc').innerText = work.cleanDesc;
+            document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
+            
+            // 🟢 แสดงคอมเมนต์คุณครูในหน้าจอใหญ่ด้วย
+            let feedbackModalHtml = '';
+            if (work.status === 'reviewed' && work.feedback && work.feedback.trim() !== '') {
+                feedbackModalHtml = `
+                    <div class="alert alert-success py-2 mt-2 border-0 shadow-sm rounded-3">
+                        <strong class="text-success"><i class="bi bi-chat-heart-fill fs-5 align-middle me-1"></i> ข้อเสนอแนะจากคุณครู:</strong> 
+                        <span class="text-dark ms-1">${work.feedback}</span>
+                    </div>`;
+            }
+            document.getElementById('modal-feedback-area').innerHTML = feedbackModalHtml;
+
+            renderMiniCanvas(work.work_data, 'modal-canvas-content', work.bgType);
+
+            const presentationModal = new bootstrap.Modal(document.getElementById('presentationModal'));
+            presentationModal.show();
+        }
+
+        document.getElementById('presentationModal').addEventListener('shown.bs.modal', function () {
+            resizeCanvases();
+        });
+
+        function renderMiniCanvas(jsonData, targetId, bgType) {
             const container = document.getElementById(targetId);
             if (!container) return;
+            container.innerHTML = ''; 
+
+            const stage = document.createElement('div');
+            stage.className = 'scalable-canvas';
+            stage.style.width = '800px';
+            stage.style.height = '480px';
+            stage.style.position = 'absolute';
+            stage.style.top = '0';
+            stage.style.left = '0';
+            stage.style.transformOrigin = 'top left'; 
+
+            if (bgType === 'farm') {
+                stage.style.backgroundImage = `url('${ASSET_PATH}bg_farm.webp')`;
+                stage.style.backgroundSize = 'cover';
+            } else if (bgType === 'barn') {
+                stage.style.backgroundImage = `url('${ASSET_PATH}bg_barn.webp')`;
+                stage.style.backgroundSize = 'cover';
+            } else if (bgType === 'v_garden') {
+                stage.style.backgroundImage = `url('${ASSET_PATH}bg_v_garden.webp')`;
+                stage.style.backgroundSize = 'cover';
+            } else {
+                stage.classList.add('bg-grid-pattern'); 
+            }
 
             try {
                 const items = JSON.parse(jsonData);
-                items.forEach(obj => {
+                items.forEach((obj) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.style.position = 'absolute';
+                    wrapper.style.left = obj.x + 'px';
+                    wrapper.style.top = obj.y + 'px';
+
+                    const targetSize = ITEM_SIZES[obj.type] || 60;
+
                     const img = document.createElement('img');
-                    
-                    // เนื่องจากชื่อ Type ตอนนี้ตรงกับชื่อไฟล์แล้ว (เช่น weed_spiky -> weed_spiky.webp)
                     img.src = ASSET_PATH + obj.type + '.webp';
-                    img.className = 'art-item';
+                    img.style.width = targetSize + 'px';
+                    img.style.position = 'absolute';
+                    img.style.transform = 'translate(-50%, -50%)'; 
+                    img.style.filter = 'drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3))';
+                    wrapper.appendChild(img);
 
-                    // แปลงพิกัดจากขนาด 800x480 เป็นเปอร์เซ็นต์ (%) 
-                    const leftPercent = (obj.x / 800) * 100; 
-                    const topPercent = (obj.y / 480) * 100; 
+                    if(obj.role && obj.role !== 'decor') {
+                        const badge = document.createElement('div');
+                        badge.innerText = obj.role === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก';
+                        badge.style.backgroundColor = obj.role === 'target' ? '#27ae60' : '#e74c3c';
+                        badge.style.color = 'white';
+                        badge.style.position = 'absolute';
+                        badge.style.whiteSpace = 'nowrap';
+                        badge.style.padding = '4px 10px';
+                        badge.style.borderRadius = '12px';
+                        badge.style.fontSize = '14px';
+                        badge.style.fontWeight = 'bold';
+                        badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                        badge.style.transform = `translate(-50%, calc(-50% - ${(targetSize/2) + 15}px))`;
+                        wrapper.appendChild(badge);
+                    }
 
-                    img.style.left = leftPercent + '%';
-                    img.style.top = topPercent + '%';
-
-                    container.appendChild(img);
+                    stage.appendChild(wrapper);
                 });
             } catch (e) {
                 console.error("Error parsing layout data", e);
             }
+            container.appendChild(stage);
         }
+
+        function resizeCanvases() {
+            document.querySelectorAll('.preview-content').forEach(container => {
+                const stage = container.querySelector('.scalable-canvas');
+                if (stage) {
+                    const scale = container.clientWidth / 800; 
+                    stage.style.transform = `scale(${scale})`;
+                }
+            });
+        }
+        window.addEventListener('resize', resizeCanvases);
 
         function toggleLike(workId, btn) {
             const countSpan = btn.querySelector('.like-count');
@@ -250,26 +458,15 @@ $game_id = $_GET['game_id'] ?? 1;
                 countSpan.innerText = currentCount + 1;
             }
 
-            fetch('../api/toggle_like.php', {
-                    method: 'POST',
-                    body: JSON.stringify({ work_id: workId })
-                })
+            fetch('../api/toggle_like.php', { method: 'POST', body: JSON.stringify({ work_id: workId }) })
                 .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        alert('เกิดข้อผิดพลาดในการกดถูกใจ');
-                        btn.classList.toggle('liked');
-                    } else {
-                        countSpan.innerText = data.likes;
-                    }
-                });
+                .then(data => { if (!data.success) btn.classList.toggle('liked'); else countSpan.innerText = data.likes; });
         }
 
         function timeAgo(dateString) {
             const date = new Date(dateString);
             const now = new Date();
             const seconds = Math.floor((now - date) / 1000);
-
             if (seconds < 60) return "เมื่อสักครู่";
             const minutes = Math.floor(seconds / 60);
             if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
@@ -279,19 +476,14 @@ $game_id = $_GET['game_id'] ?? 1;
         }
 
         let isHovering = false; 
-
         document.addEventListener('mouseover', (e) => {
-            if (e.target.closest('.work-card')) isHovering = true;
+            if (e.target.closest('.work-card') || document.body.classList.contains('modal-open')) isHovering = true;
             else isHovering = false;
         });
 
-        // รีเฟรชดูผลงานเพื่อนใหม่ทุกๆ 10 วินาที 
-        setInterval(() => {
-            if (!isHovering) loadShowcase();
-        }, 10000); 
+        setInterval(() => { if (!isHovering) loadShowcase(); }, 10000); 
 
         loadShowcase();
     </script>
-
 </body>
 </html>

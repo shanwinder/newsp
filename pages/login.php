@@ -48,31 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "❌ รหัสผ่านไม่ถูกต้อง!";
             }
 
-        } elseif ($mode === 'pair') {
-            $driver_id = intval($_POST['driver_id']);
-            $driver_pw = trim($_POST['driver_pw']);
-            $nav_id = intval($_POST['nav_id']);
-            $nav_pw = trim($_POST['nav_pw']);
-
-            if ($driver_id === $nav_id) {
-                $all_valid = false;
-                $message = "❌ ไม่สามารถเลือกตัวเองเป็นคู่หูได้!";
-            } else {
-                $driver = verifyStudent($conn, $driver_id, $driver_pw);
-                $nav = verifyStudent($conn, $nav_id, $nav_pw);
-                
-                if ($driver && $nav) {
-                    $members_data[] = ['id' => $driver['user_id'], 'role' => 'driver'];
-                    $members_data[] = ['id' => $nav['user_id'], 'role' => 'navigator'];
-                    $names[] = $driver['name'];
-                    $names[] = $nav['name'];
-                    $primary_user = $driver; // ให้ Driver เป็นคนแรก
-                } else {
-                    $all_valid = false;
-                    $message = "❌ รหัสผ่านของผู้คุมรถไถ หรือ ผู้วางแผน ไม่ถูกต้อง!";
-                }
-            }
-
         } elseif ($mode === 'group') {
             $group_number = intval($_POST['group_number']);
             $group_ids = $_POST['group_ids'] ?? [];
@@ -133,9 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // จัดการชื่อที่จะแสดงในระบบตามโหมด
             if ($mode === 'solo') {
                 $_SESSION['name'] = $names[0];
-            } elseif ($mode === 'pair') {
-                $_SESSION['name'] = implode(" และ ", $names);
-                $_SESSION['current_role'] = 'driver'; // ส่งผลต่อ UI การแสดงผลดั้งเดิม
             } else {
                 $_SESSION['name'] = "กลุ่มที่ " . $group_number;
             }
@@ -192,8 +164,6 @@ if ($res) {
         .btn-game:hover { background-color: #e67e22; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(211, 84, 0, 0.4); color: white; }
         .role-box { background: #f8f9fa; border-radius: 20px; padding: 20px; border: 2px dashed #ccc; transition: all 0.3s; }
         .role-box.solo { border-color: #27ae60; background: #e9f7ef; }
-        .role-box.driver { border-color: #3498db; background: #ebf5fb; }
-        .role-box.nav { border-color: #9b59b6; background: #f4ecf8; }
         .role-box.group { border-color: #e67e22; background: #fdf2e9; }
         .nav-pills .nav-link { border-radius: 50px; color: #555; margin: 0 5px; border: 2px solid transparent;}
         .nav-pills .nav-link.active { background-color: #27ae60; border-color: #27ae60; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);}
@@ -211,9 +181,6 @@ if ($res) {
         <ul class="nav nav-pills nav-justified mb-4" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-solo" type="button" role="tab">👤 ลุยเดี่ยว</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-pair" type="button" role="tab">👥 จับคู่</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-group" type="button" role="tab">👨‍👩‍👧‍👦 แบบกลุ่ม</button>
@@ -242,52 +209,6 @@ if ($res) {
                         </div>
                     </div>
                     <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 เข้าสู่ฟาร์ม</button>
-                </form>
-            </div>
-
-            <div class="tab-pane fade" id="pills-pair" role="tabpanel">
-                <form method="post">
-                    <input type="hidden" name="login_type" value="student">
-                    <input type="hidden" name="mode" value="pair">
-                    <div class="row g-4 text-start">
-                        <div class="col-md-6">
-                            <div class="role-box driver h-100">
-                                <h4 class="text-primary fw-bold text-center">🚜 ผู้คุมรถไถ (Driver)</h4>
-                                <div class="mb-3 mt-3">
-                                    <label class="form-label">เลือกชื่อนักเรียน</label>
-                                    <select class="form-select" name="driver_id" required>
-                                        <option value="" disabled selected>-- ค้นหาชื่อตนเอง --</option>
-                                        <?php foreach ($students as $s): ?>
-                                            <option value="<?php echo $s['user_id']; ?>"><?php echo htmlspecialchars($s['name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">รหัสผ่าน (PIN)</label>
-                                    <input type="password" class="form-control" name="driver_pw" placeholder="••••" required>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="role-box nav h-100">
-                                <h4 class="fw-bold text-center" style="color:#8e44ad;">🗺️ ผู้วางแผน (Navigator)</h4>
-                                <div class="mb-3 mt-3">
-                                    <label class="form-label">เลือกชื่อนักเรียน</label>
-                                    <select class="form-select" name="nav_id" required>
-                                        <option value="" disabled selected>-- ค้นหาชื่อตนเอง --</option>
-                                        <?php foreach ($students as $s): ?>
-                                            <option value="<?php echo $s['user_id']; ?>"><?php echo htmlspecialchars($s['name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">รหัสผ่าน (PIN)</label>
-                                    <input type="password" class="form-control" name="nav_pw" placeholder="••••" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 จับคู่และเข้าสู่ฟาร์ม</button>
                 </form>
             </div>
 

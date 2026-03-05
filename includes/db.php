@@ -1,8 +1,14 @@
 <?php
 // includes/db.php
-$host = 'localhost';
-$user = 'root';
-$pass = 'root'; // ⚠️ เปลี่ยนให้ตรงกับ Server ของคุณ
+/*
+$host = 'sql303.infinityfree.com'; // localhost
+$user = 'if0_41282359'; // root
+$pass = 'llNSKSVGiO1ITBD'; // ว่าง หรือ root
+$db   = 'if0_41282359_new_learning_game';*/
+
+$host = 'localhost'; // localhost
+$user = 'root'; // root
+$pass = 'root'; // ว่าง หรือ root
 $db   = 'new_learning_game';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT); // เปิด Strict Mode เพื่อให้จับ Error ได้ง่ายขึ้น

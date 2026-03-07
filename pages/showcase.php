@@ -159,7 +159,7 @@ $game_id = $_GET['game_id'] ?? 1;
     <div class="header-section text-center">
         <div class="container">
             <h1 class="fw-bold display-4 mb-2"><i class="bi bi-star-fill text-warning"></i> ลานโชว์ผลงาน</h1>
-            <p class="fs-5 opacity-75">รวมมิตรโจทย์ปริศนาและผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
+            <p class="fs-5 opacity-75">รวมผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
             <div class="mt-4">
                 <a href="create_project_logic.php?game_id=<?php echo $game_id; ?>" class="btn btn-warning rounded-pill px-4 fw-bold me-2 shadow-sm text-dark">
                     <i class="bi bi-plus-lg"></i> สร้างโจทย์ของทีมฉัน

@@ -1,11 +1,38 @@
 <?php
 // pages/create_project_logic.php
 session_start();
+require_once '../includes/db.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 $game_id = 1; 
+$user_id = $_SESSION['user_id'];
+$existingData = null;
+$revisionFeedback = null;
+$existingBg = 'grid';
+$existingDesc = '';
+
+// Check if there is an existing work
+$sql = "SELECT * FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+$res = $conn->query($sql);
+if ($res && $res->num_rows > 0) {
+    $work = $res->fetch_assoc();
+    $existingData = $work['work_data']; 
+    $desc = $work['description'];
+    
+    $bgMatch = [];
+    if (preg_match('/\[ฉากหลัง:\s*(.*?)\]/', $desc, $bgMatch)) {
+        $existingBg = $bgMatch[1];
+        $existingDesc = preg_replace('/\[ฉากหลัง:\s*.*?\]\s*\n*/', '', $desc);
+    } else {
+        $existingDesc = $desc;
+    }
+    
+    if ($work['status'] === 'revision') {
+        $revisionFeedback = $work['feedback'];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -92,6 +119,13 @@ $game_id = 1;
             <h1 class="fw-bold"><i class="bi bi-controller"></i> สตูดิโอสร้างด่าน "จับผิดตรรกะ"</h1>
             <p class="fs-5 opacity-75 mb-0">ออกแบบเงื่อนไขที่ซับซ้อน แล้วส่งให้เพื่อนๆ มาไขปริศนา!</p>
         </div>
+
+        <?php if ($revisionFeedback): ?>
+        <div class="alert alert-danger fw-bold shadow-lg border-danger mb-4 rounded-3 mx-lg-5">
+            <h4><i class="bi bi-exclamation-triangle-fill"></i> งานถูกส่งกลับให้แก้ไข!</h4>
+            <p class="mb-0 text-dark"><strong>ข้อเสนอแนะจากคุณครู:</strong> <span class="fw-normal"><?php echo htmlspecialchars($revisionFeedback); ?></span></p>
+        </div>
+        <?php endif; ?>
 
         <div class="editor-container">
             <div class="row g-3">
@@ -219,6 +253,22 @@ $game_id = 1;
             gridBg = this.add.grid(400, 240, 800, 480, 40, 40, 0xffffff, 1, 0xcccccc, 0.5);
             bgImage = this.add.image(400, 240, 'bg_farm').setVisible(false);
             bgImage.setDisplaySize(800, 480);
+
+            let initialBg = '<?php echo $existingBg; ?>';
+            changeBackground(initialBg);
+            
+            <?php if ($existingData): ?>
+            try {
+                let savedItems = <?php echo $existingData; ?>;
+                savedItems.forEach(item => {
+                    let asset = assetList.find(a => a.key === item.type);
+                    const targetSize = asset ? asset.scale : 60;
+                    spawnItem(item.type, targetSize, item.role, item.x, item.y);
+                });
+            } catch(e) { console.error('Failed to parse existing data', e); }
+            <?php endif; ?>
+            
+            document.getElementById('desc-input').value = `<?php echo str_replace('`', '\`', htmlspecialchars_decode($existingDesc, ENT_QUOTES)); ?>`;
         }
 
         window.changeBackground = function(type) {
@@ -237,11 +287,11 @@ $game_id = 1;
             sceneRef.children.sendToBack(bgImage);
         };
 
-        window.spawnItem = function(key, targetSize, defaultRole) {
+        window.spawnItem = function(key, targetSize, defaultRole, startX = null, startY = null) {
             if (!sceneRef) return;
 
-            const x = Phaser.Math.Between(350, 450);
-            const y = Phaser.Math.Between(200, 280);
+            const x = startX !== null ? startX : Phaser.Math.Between(350, 450);
+            const y = startY !== null ? startY : Phaser.Math.Between(200, 280);
 
             const touchAreaSize = targetSize + 20; 
             const container = sceneRef.add.container(x, y).setSize(touchAreaSize, touchAreaSize).setInteractive({ cursor: 'pointer' });
@@ -256,8 +306,8 @@ $game_id = 1;
 
             let statusText = null;
             if (defaultRole !== 'decor') {
-                statusText = sceneRef.add.text(0, -targetSize/2 - 15, '❌ ตัวหลอก', { 
-                    fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: '#e74c3c', padding: {x:6, y:3} 
+                statusText = sceneRef.add.text(0, -targetSize/2 - 15, defaultRole === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก', { 
+                    fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: defaultRole === 'target' ? '#27ae60' : '#e74c3c', padding: {x:6, y:3} 
                 }).setOrigin(0.5);
                 container.add(statusText);
             }

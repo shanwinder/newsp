@@ -138,6 +138,15 @@ $result = $conn->query($sql);
             font-weight: 800;
             font-size: 1.1rem;
         }
+
+        .heartbeat-badge {
+            animation: pulse-danger 1.5s infinite;
+        }
+        @keyframes pulse-danger {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+        }
     </style>
 </head>
 
@@ -156,21 +165,6 @@ $result = $conn->query($sql);
                     <i class="bi bi-person-fill"></i> เกษตรกรฉายเดี่ยว (Solo)
                 </span>
                 
-            <?php elseif ($mode === 'pair'): ?>
-                <h3 class="fw-bold text-primary mb-3">👥 <?php echo htmlspecialchars($display_name); ?></h3>
-                <span class="badge bg-primary rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
-                    <i class="bi bi-people-fill"></i> คู่หูเกษตรกร (Pair Programming)
-                </span>
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <?php 
-                    foreach($team_data as $member) {
-                        $role_icon = ($member['team_role'] === 'driver') ? '🚜 ผู้คุมรถไถ' : '🗺️ ผู้วางแผน';
-                        $role_color = ($member['team_role'] === 'driver') ? 'text-primary' : 'text-purple';
-                        echo "<div class='bg-light px-3 py-1 rounded-pill border'><span class='fw-bold'>{$member['name']}</span> <small class='{$role_color}'>($role_icon)</small></div>";
-                    }
-                    ?>
-                </div>
-
             <?php elseif ($mode === 'group'): ?>
                 <h3 class="fw-bold mb-3" style="color:#d35400;">👨‍👩‍👧‍👦 ทีมเกษตรกร <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
@@ -225,9 +219,21 @@ $result = $conn->query($sql);
                     if (!$current_score) $current_score = 0;
 
                     $percent = ($max_score > 0) ? ($current_score / $max_score) * 100 : 0;
+
+                    // 🟢 เช็คสถานะการสร้างชิ้นงานว่าครูส่งกลับหรือไม่
+                    $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $gameId LIMIT 1";
+                    $res_work = $conn->query($sql_work);
+                    $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
             ?>
                     <div class="col-md-6 col-lg-5">
-                        <div class="farm-card p-4 h-100 d-flex flex-column">
+                        <div class="farm-card p-4 h-100 d-flex flex-column <?php echo ($project_status === 'revision') ? 'border-danger border-3 bg-danger bg-opacity-10' : ''; ?>">
+                            
+                            <?php if ($project_status === 'revision'): ?>
+                            <div class="position-absolute top-0 end-0 mt-3 me-3 z-3">
+                                <span class="badge bg-danger fs-6 shadow heartbeat-badge"><i class="bi bi-exclamation-triangle-fill"></i> ครูส่งกลับให้แก้ไข</span>
+                            </div>
+                            <?php endif; ?>
+
                             <div class="text-center">
                                 <div class="mission-icon"><?php echo $icon; ?></div>
                                 <h4 class="fw-bold mb-2 text-dark"><?php echo htmlspecialchars($row['title']); ?></h4>
@@ -246,8 +252,19 @@ $result = $conn->query($sql);
                                     <div class="progress-fill" style="width: <?php echo $percent; ?>%;"></div>
                                 </div>
 
-                                <a href="instruction.php?game_id=<?php echo $row['id']; ?>" class="btn btn-play">
-                                    🚀 เข้าสู่ฟาร์ม
+                                <?php
+                                $btn_text = "🚀 เข้าสู่ฟาร์ม";
+                                $btn_class = "btn-play";
+                                
+                                if ($project_status === 'revision') {
+                                    $btn_text = "⚠️ เข้าไปแก้ไขงานด่วน";
+                                    $btn_class = "btn btn-danger w-100 rounded-pill py-2 fw-bold shadow heartbeat-badge text-white";
+                                } elseif ($project_status === 'submitted' || $project_status === 'reviewed') {
+                                    $btn_text = "✅ เข้าสู่ฟาร์ม (มีผลงานแล้ว)";
+                                }
+                                ?>
+                                <a href="instruction.php?game_id=<?php echo $row['id']; ?>" class="<?php echo strpos($btn_class, 'btn ') !== false ? $btn_class : 'btn ' . $btn_class . ' w-100 d-block text-white text-decoration-none'; ?>">
+                                    <?php echo $btn_text; ?>
                                 </a>
                             </div>
                         </div>

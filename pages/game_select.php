@@ -247,6 +247,10 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php
     // ถ้าผ่านครบ 3 ด่าน (ครบทุกด่านในบทเรียนนี้) ให้แสดงปุ่มสร้างโปรเจกต์
     if ($passed_count >= $total_stages && $total_stages > 0):
+        $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+        $res_work = $conn->query($sql_work);
+        $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
+
         // กำหนดไฟล์ปลายทางสำหรับสร้างชิ้นงานตามบทเรียน
         $project_pages = [
             1 => 'create_project_logic.php',    // บทที่ 1: ตรรกะคัดแยก
@@ -254,18 +258,34 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             3 => 'create_project_condition.php',// บทที่ 3: เงื่อนไขรดน้ำ
             4 => 'create_project_debug.php'     // บทที่ 4: แก้บั๊กฟาร์ม
         ];
-        $target_page = $project_pages[$game_id] ?? 'create_project.php';
+        $target_page = $project_pages[$game_id] ?? 'create_project_logic.php';
     ?>
         <div class="container mt-5 mb-5">
             <div class="row">
                 <div class="col-12 text-center">
                     <div class="card border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); border-radius: 20px;">
-                        <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! ทีมของคุณพิชิตครบทุกด่านแล้ว</h2>
-                        <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้าง "ผลงานนวัตกรรมฟาร์ม" ของพวกเราแล้ว!</p>
-                        <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
-                            class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
-                            <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน
-                        </a>
+                        <?php if ($project_status === 'revision'): ?>
+                            <h2 class="fw-bold text-danger mb-3">⚠️ โครงงานถูกส่งกลับให้แก้ไข</h2>
+                            <p class="fs-5 text-dark mb-4">คุณครูมีคำแนะนำเพิ่มเติม อ่านฟีดแบ็กแล้วเข้าไปปรับปรุงผลงานด่วน!</p>
+                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
+                                class="btn btn-danger btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim shadow">
+                                <i class="bi bi-pencil-square me-2"></i> เข้าไปแก้ไขผลงานด่วน
+                            </a>
+                        <?php elseif ($project_status === 'submitted' || $project_status === 'reviewed'): ?>
+                            <h2 class="fw-bold text-dark mb-3">✅ คุณได้สร้างผลงานเรียบร้อยแล้ว</h2>
+                            <p class="fs-5 text-dark mb-4">คุณสามารถเข้าไปดูหรือปรับปรุงผลงานให้ดีขึ้นกว่าเดิมได้เสมอนะ!</p>
+                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
+                                class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
+                                <i class="bi bi-pencil-square me-2"></i> แก้ไขผลงานล่าสุด
+                            </a>
+                        <?php else: ?>
+                            <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! ทีมของคุณพิชิตครบทุกด่านแล้ว</h2>
+                            <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้าง "ผลงานนวัตกรรมฟาร์ม" ของพวกเราแล้ว!</p>
+                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
+                                class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
+                                <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

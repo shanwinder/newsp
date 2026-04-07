@@ -161,8 +161,31 @@ $game_id = $_GET['game_id'] ?? 1;
             <h1 class="fw-bold display-4 mb-2"><i class="bi bi-star-fill text-warning"></i> ลานโชว์ผลงาน</h1>
             <p class="fs-5 opacity-75">รวมผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
             <div class="mt-4">
-                <a href="create_project_logic.php?game_id=<?php echo $game_id; ?>" class="btn btn-warning rounded-pill px-4 fw-bold me-2 shadow-sm text-dark">
-                    <i class="bi bi-plus-lg"></i> สร้างโจทย์ของทีมฉัน
+                <?php
+                require_once '../includes/db.php';
+                $user_id = $_SESSION['user_id'];
+                $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+                $res_work = $conn->query($sql_work);
+                $has_work = ($res_work && $res_work->num_rows > 0);
+                $work_status = $has_work ? $res_work->fetch_assoc()['status'] : null;
+
+                $btn_text = "สร้างโจทย์ของทีมฉัน";
+                $btn_icon = "bi-plus-lg";
+                $btn_style = "btn-warning text-dark";
+
+                if ($has_work) {
+                    if ($work_status === 'revision') {
+                        $btn_text = "เข้าไปแก้ไขงานด่วน";
+                        $btn_icon = "bi-exclamation-triangle-fill";
+                        $btn_style = "btn-danger";
+                    } else {
+                        $btn_text = "แก้ไขโจทย์ของทีมฉัน";
+                        $btn_icon = "bi-pencil-square";
+                    }
+                }
+                ?>
+                <a href="create_project_logic.php?game_id=<?php echo $game_id; ?>" class="btn <?php echo $btn_style; ?> rounded-pill px-4 fw-bold me-2 shadow-sm">
+                    <i class="bi <?php echo $btn_icon; ?>"></i> <?php echo $btn_text; ?>
                 </a>
                 <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-outline-light rounded-pill px-4 fw-bold">กลับหน้าเลือกด่าน</a>
             </div>

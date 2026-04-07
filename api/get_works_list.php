@@ -17,7 +17,7 @@ $sql = "SELECT u.user_id as id, u.student_id, u.name, u.mode, u.group_number, u.
             AND w.game_id = $game_id
         WHERE u.role = 'student'
         ORDER BY 
-            FIELD(COALESCE(w.status, 'pending'), 'submitted', 'pending', 'reviewed'), 
+            FIELD(COALESCE(w.status, 'pending'), 'submitted', 'revision', 'pending', 'reviewed'), 
             w.submitted_at DESC, 
             u.group_number ASC, 
             u.student_id ASC";

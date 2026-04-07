@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Mar 05, 2026 at 09:36 AM
+-- Generation Time: Apr 04, 2026 at 09:47 AM
 -- Server version: 8.0.40
 -- PHP Version: 8.3.14
 
@@ -42,7 +42,7 @@ CREATE TABLE `games` (
 --
 
 INSERT INTO `games` (`id`, `code`, `title`, `description`, `learning_topic`, `instruction_html`, `created_at`) VALUES
-(1, 'logic', 'คัดแยกผลผลิต (Logic)', 'ฝึกความคิดเชิงตรรกะและการสังเกต (Pattern Recognition) โดยการแยกประเภทผลผลิตทางการเกษตร', 'ความคิดเชิงตรรกะ (Logical Thinking)', '<div class=\"text-center\"><h4>ภารกิจลุยเดี่ยว!</h4><p>สังเกตลักษณะของผลผลิตและจัดหมวดหมู่ให้ถูกต้อง</p></div>', '2026-03-03 19:33:20'),
+(1, 'logic', 'ตรรกะคัดแยก (Logic)', 'ฝึกความคิดเชิงตรรกะและการสังเกต (Pattern Recognition) โดยการแยกแยะเมล็ดพันธุ์ ปุ๋ย และกำจัดวัชพืชออกจากแปลงให้ถูกต้อง', 'ความคิดเชิงตรรกะ (Logical Thinking)', '<div class=\"text-center\"><h4>ภารกิจลุยเดี่ยว!</h4><p>สังเกตลักษณะ แยกแยะเมล็ดพันธุ์ ปุ๋ย และกำจัดวัชพืช</p></div>', '2026-03-03 19:33:20'),
 (2, 'algorithm', 'เส้นทางเดินรถไถ (Sequence)', 'เรียนรู้การเขียนคำสั่งเรียงลำดับขั้นตอน (Sequential Algorithm) พาพาหุ่นยนต์รถไถเดินตามเส้นทาง', 'อัลกอริทึมแบบลำดับ (Sequential Algorithm)', '<div class=\"text-center\"><h4>ภารกิจคู่หู (Driver & Navigator)!</h4><p>ช่วยกันวางแผนและเรียงบล็อกคำสั่งพารถไถเข้าเป้าหมาย</p></div>', '2026-03-03 19:33:20'),
 (3, 'condition', 'เครื่องรดน้ำอัจฉริยะ (Condition)', 'ฝึกการคิดแบบมีเงื่อนไข (If-Then-Else) ถ้าน้ำแห้งให้รดน้ำ ถ้าฝนตกให้หยุดพัก', 'อัลกอริทึมแบบมีเงื่อนไข (Conditional Algorithm)', '<div class=\"text-center\"><h4>ภารกิจคู่คิด!</h4><p>ใช้บล็อกเงื่อนไขเพื่อสร้างระบบรดน้ำอัตโนมัติ</p></div>', '2026-03-03 19:33:20'),
 (4, 'debugging', 'กู้วิกฤตฟาร์ม (Debugging)', 'ค้นหาข้อผิดพลาด (Bug) ในชุดคำสั่งที่ทำให้ฟาร์มวุ่นวาย แล้วแก้ไขให้ถูกต้อง', 'การตรวจสอบและแก้ไขข้อผิดพลาด (Debugging)', '<div class=\"text-center\"><h4>ภารกิจรวมพลัง (Group)!</h4><p>ช่วยกันวิเคราะห์โค้ดที่ผิดพลาดและสลับตำแหน่งให้ถูกต้อง</p></div>', '2026-03-03 19:33:20');
@@ -67,44 +67,13 @@ CREATE TABLE `game_logs` (
 --
 
 INSERT INTO `game_logs` (`id`, `user_id`, `stage_id`, `action`, `detail`, `logged_at`) VALUES
-(48, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 16 s, Attempts: 3', '2026-03-03 20:20:58'),
-(49, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 76 s, Attempts: 5', '2026-03-03 20:36:40'),
-(50, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 34 s, Attempts: 2', '2026-03-03 21:19:49'),
-(51, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 71 s, Attempts: 9', '2026-03-03 22:53:49'),
-(52, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 89 s, Attempts: 3', '2026-03-03 22:55:56'),
-(53, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 64 s, Attempts: 10', '2026-03-03 23:43:39'),
-(54, 13, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 47 s, Attempts: 0', '2026-03-03 23:50:30'),
-(55, 18, 1, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 26 s, Attempts: 0', '2026-03-03 23:51:28'),
-(56, 19, 1, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 26 s, Attempts: 0', '2026-03-03 23:51:28'),
-(57, 16, 1, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 29 s, Attempts: 1', '2026-03-04 05:45:52'),
-(58, 15, 1, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 29 s, Attempts: 1', '2026-03-04 05:45:52'),
-(59, 16, 2, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 40 s, Attempts: 0', '2026-03-04 05:48:32'),
-(60, 15, 2, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 40 s, Attempts: 0', '2026-03-04 05:48:32'),
-(61, 16, 2, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 25 s, Attempts: 0', '2026-03-04 09:21:36'),
-(62, 15, 2, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 25 s, Attempts: 0', '2026-03-04 09:21:36'),
-(63, 16, 2, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 2, Time: 33 s, Attempts: 1', '2026-03-04 22:42:33'),
-(64, 15, 2, 'pass', 'Mode: pair, Role: navigator, Score: 2, Time: 33 s, Attempts: 1', '2026-03-04 22:42:33'),
-(65, 16, 3, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 3, Time: 47 s, Attempts: 0', '2026-03-04 22:43:42'),
-(66, 15, 3, 'pass', 'Mode: pair, Role: navigator, Score: 3, Time: 47 s, Attempts: 0', '2026-03-04 22:43:42'),
-(67, 16, 3, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 2, Time: 57 s, Attempts: 3', '2026-03-04 23:05:46'),
-(68, 15, 3, 'pass', 'Mode: pair, Role: navigator, Score: 2, Time: 57 s, Attempts: 3', '2026-03-04 23:05:46'),
-(69, 16, 3, 'pass', 'Mode: pair, Role: driver (คนกดส่งงาน), Score: 2, Time: 35 s, Attempts: 2', '2026-03-04 23:07:14'),
-(70, 15, 3, 'pass', 'Mode: pair, Role: navigator, Score: 2, Time: 35 s, Attempts: 2', '2026-03-04 23:07:14'),
-(71, 14, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 19 s, Attempts: 6', '2026-03-05 07:30:35'),
-(72, 14, 2, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 22 s, Attempts: 0', '2026-03-05 07:31:11'),
-(73, 14, 3, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 26 s, Attempts: 1', '2026-03-05 07:31:45'),
-(74, 19, 2, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 3, Time: 20 s, Attempts: 0', '2026-03-05 07:42:35'),
-(75, 17, 2, 'pass', 'Mode: group, Role: member, Score: 3, Time: 20 s, Attempts: 0', '2026-03-05 07:42:35'),
-(76, 16, 2, 'pass', 'Mode: group, Role: member, Score: 3, Time: 20 s, Attempts: 0', '2026-03-05 07:42:35'),
-(77, 19, 3, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 3, Time: 23 s, Attempts: 0', '2026-03-05 07:43:06'),
-(78, 17, 3, 'pass', 'Mode: group, Role: member, Score: 3, Time: 23 s, Attempts: 0', '2026-03-05 07:43:06'),
-(79, 16, 3, 'pass', 'Mode: group, Role: member, Score: 3, Time: 23 s, Attempts: 0', '2026-03-05 07:43:06'),
-(80, 5, 1, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 2, Time: 15 s, Attempts: 4', '2026-03-05 08:11:37'),
-(81, 6, 1, 'pass', 'Mode: group, Role: member, Score: 2, Time: 15 s, Attempts: 4', '2026-03-05 08:11:37'),
-(82, 5, 2, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 2, Time: 24 s, Attempts: 1', '2026-03-05 08:12:11'),
-(83, 6, 2, 'pass', 'Mode: group, Role: member, Score: 2, Time: 24 s, Attempts: 1', '2026-03-05 08:12:11'),
-(84, 5, 3, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 2, Time: 30 s, Attempts: 3', '2026-03-05 08:12:53'),
-(85, 6, 3, 'pass', 'Mode: group, Role: member, Score: 2, Time: 30 s, Attempts: 3', '2026-03-05 08:12:53');
+(86, 32, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 102 s, Attempts: 8', '2026-03-06 07:28:25'),
+(87, 18, 1, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 3, Time: 15 s, Attempts: 1', '2026-04-03 23:39:54'),
+(88, 31, 1, 'pass', 'Mode: group, Role: member, Score: 3, Time: 15 s, Attempts: 1', '2026-04-03 23:39:54'),
+(89, 18, 2, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 1, Time: 33 s, Attempts: 3', '2026-04-03 23:40:36'),
+(90, 31, 2, 'pass', 'Mode: group, Role: member, Score: 1, Time: 33 s, Attempts: 3', '2026-04-03 23:40:36'),
+(91, 18, 3, 'pass', 'Mode: group, Role: member (คนกดส่งงาน), Score: 2, Time: 27 s, Attempts: 3', '2026-04-03 23:41:12'),
+(92, 31, 3, 'pass', 'Mode: group, Role: member, Score: 2, Time: 27 s, Attempts: 3', '2026-04-03 23:41:12');
 
 -- --------------------------------------------------------
 
@@ -127,28 +96,13 @@ CREATE TABLE `progress` (
 --
 
 INSERT INTO `progress` (`id`, `user_id`, `stage_id`, `score`, `duration_seconds`, `attempts`, `completed_at`) VALUES
-(48, 13, 1, 3, 47, 0, '2026-03-04 06:50:30'),
-(55, 18, 1, 3, 26, 0, '2026-03-04 06:51:28'),
-(56, 19, 1, 3, 26, 0, '2026-03-04 06:51:28'),
-(57, 16, 1, 3, 29, 1, '2026-03-04 12:45:52'),
-(58, 15, 1, 3, 29, 1, '2026-03-04 12:45:52'),
-(59, 16, 2, 3, 20, 0, '2026-03-05 14:42:35'),
-(60, 15, 2, 3, 33, 1, '2026-03-05 05:42:33'),
-(65, 16, 3, 3, 23, 0, '2026-03-05 14:43:06'),
-(66, 15, 3, 3, 35, 2, '2026-03-05 06:07:14'),
-(71, 14, 1, 1, 19, 6, '2026-03-05 14:30:35'),
-(72, 14, 2, 3, 22, 0, '2026-03-05 14:31:11'),
-(73, 14, 3, 3, 26, 1, '2026-03-05 14:31:45'),
-(74, 19, 2, 3, 20, 0, '2026-03-05 14:42:35'),
-(75, 17, 2, 3, 20, 0, '2026-03-05 14:42:35'),
-(77, 19, 3, 3, 23, 0, '2026-03-05 14:43:06'),
-(78, 17, 3, 3, 23, 0, '2026-03-05 14:43:06'),
-(80, 5, 1, 2, 15, 4, '2026-03-05 15:11:37'),
-(81, 6, 1, 2, 15, 4, '2026-03-05 15:11:37'),
-(82, 5, 2, 2, 24, 1, '2026-03-05 15:12:10'),
-(83, 6, 2, 2, 24, 1, '2026-03-05 15:12:11'),
-(84, 5, 3, 2, 30, 3, '2026-03-05 15:12:53'),
-(85, 6, 3, 2, 30, 3, '2026-03-05 15:12:53');
+(1, 32, 1, 1, 102, 8, '2026-03-06 14:28:25'),
+(2, 18, 1, 3, 15, 1, '2026-04-04 06:39:54'),
+(3, 31, 1, 3, 15, 1, '2026-04-04 06:39:54'),
+(4, 18, 2, 1, 33, 3, '2026-04-04 06:40:36'),
+(5, 31, 2, 1, 33, 3, '2026-04-04 06:40:36'),
+(6, 18, 3, 2, 27, 3, '2026-04-04 06:41:12'),
+(7, 31, 3, 2, 27, 3, '2026-04-04 06:41:12');
 
 -- --------------------------------------------------------
 
@@ -168,17 +122,7 @@ CREATE TABLE `project_likes` (
 --
 
 INSERT INTO `project_likes` (`id`, `user_id`, `work_id`, `created_at`) VALUES
-(2, 3, 2, '2026-01-19 15:24:12'),
-(4, 4, 2, '2026-01-19 15:25:08'),
-(5, 4, 1, '2026-01-19 15:25:30'),
-(8, 3, 1, '2026-01-19 16:30:51'),
-(14, 16, 3, '2026-03-05 03:52:20'),
-(15, 14, 3, '2026-03-05 07:36:18'),
-(16, 19, 5, '2026-03-05 07:46:39'),
-(17, 5, 3, '2026-03-05 08:50:58'),
-(18, 5, 4, '2026-03-05 08:51:00'),
-(19, 5, 5, '2026-03-05 08:51:01'),
-(20, 5, 6, '2026-03-05 08:51:02');
+(2, 18, 1, '2026-04-04 01:32:52');
 
 -- --------------------------------------------------------
 
@@ -225,7 +169,7 @@ CREATE TABLE `student_works` (
   `game_id` int NOT NULL,
   `work_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'เก็บพิกัด JSON',
   `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'คำอธิบายของเด็ก',
-  `status` enum('pending','submitted','reviewed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','submitted','reviewed','revision') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `feedback` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `submitted_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -235,12 +179,7 @@ CREATE TABLE `student_works` (
 --
 
 INSERT INTO `student_works` (`id`, `user_id`, `game_id`, `work_data`, `description`, `status`, `feedback`, `submitted_at`) VALUES
-(1, 3, 1, '[{\"type\":\"sq_red\",\"x\":294,\"y\":230},{\"type\":\"ci_green\",\"x\":319,\"y\":279},{\"type\":\"tri_blue\",\"x\":264,\"y\":213},{\"type\":\"rabbit\",\"x\":275,\"y\":227}]', 'หกอหอ', 'reviewed', NULL, '2026-01-20 00:39:01'),
-(2, 4, 1, '[{\"type\":\"dog\",\"x\":119,\"y\":134},{\"type\":\"cat\",\"x\":384,\"y\":187},{\"type\":\"sq_red\",\"x\":229,\"y\":327}]', 'มั่วจ้า', 'reviewed', NULL, '2026-01-19 22:22:09'),
-(3, 16, 1, '[{\"type\":\"basket\",\"x\":144,\"y\":385,\"role\":\"decoy\"},{\"type\":\"weed_spiky\",\"x\":571,\"y\":164,\"role\":\"target\"},{\"type\":\"fert_red_bag\",\"x\":322,\"y\":148,\"role\":\"decoy\"},{\"type\":\"bug_blue\",\"x\":459,\"y\":354,\"role\":\"target\"}]', '[ฉากหลัง: v_garden]\n\nทดสอบเฉยๆ', 'reviewed', 'เยี่ยมมากมาก ถถถถถถ', '2026-03-05 13:30:55'),
-(4, 14, 1, '[{\"type\":\"newseed\",\"x\":358,\"y\":279,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":429,\"y\":214,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":431,\"y\":258,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":165,\"y\":210,\"role\":\"target\"}]', '[ฉากหลัง: grid]\n\nqwfqwfgqfgqหดไฟำดไเำ', 'reviewed', 'หกฟหก', '2026-03-05 14:35:58'),
-(5, 19, 1, '[{\"type\":\"fert_red_round\",\"x\":416,\"y\":163,\"role\":\"decoy\"},{\"type\":\"fert_red_square\",\"x\":556,\"y\":248,\"role\":\"decoy\"},{\"type\":\"fert_green_square\",\"x\":353,\"y\":273,\"role\":\"decoy\"},{\"type\":\"fert_green_round\",\"x\":278,\"y\":119,\"role\":\"decoy\"},{\"type\":\"fert_green_bag\",\"x\":722,\"y\":199,\"role\":\"decoy\"},{\"type\":\"fert_red_bag\",\"x\":511,\"y\":91,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":337,\"y\":430,\"role\":\"decoy\"},{\"type\":\"bug_blue\",\"x\":538,\"y\":408,\"role\":\"target\"},{\"type\":\"weed_round\",\"x\":101,\"y\":149,\"role\":\"decoy\"},{\"type\":\"bug_red\",\"x\":635,\"y\":86,\"role\":\"target\"},{\"type\":\"weed_spiky\",\"x\":666,\"y\":363,\"role\":\"decoy\"},{\"type\":\"basket\",\"x\":127,\"y\":337,\"role\":\"decoy\"}]', '[ฉากหลัง: grid]\n\nกำจัดสิ่งมีชีวิต', 'reviewed', 'รกจัง', '2026-03-05 14:44:21'),
-(6, 5, 1, '[{\"type\":\"newseed\",\"x\":373,\"y\":180,\"role\":\"target\"},{\"type\":\"fert_red_bag\",\"x\":493,\"y\":88,\"role\":\"decoy\"},{\"type\":\"fert_green_bag\",\"x\":293,\"y\":347,\"role\":\"decoy\"},{\"type\":\"bug_blue\",\"x\":176,\"y\":110,\"role\":\"decoy\"},{\"type\":\"fert_red_round\",\"x\":635,\"y\":177,\"role\":\"decoy\"},{\"type\":\"fert_red_square\",\"x\":556,\"y\":339,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":146,\"y\":371,\"role\":\"decoy\"}]', '[ฉากหลัง: barn]\n\nไยาดืทอๆไนำ่ือไก่ือ', 'submitted', NULL, '2026-03-05 15:13:21');
+(1, 18, 1, '[{\"type\":\"bug_red\",\"x\":381,\"y\":335,\"role\":\"target\"},{\"type\":\"bug_blue\",\"x\":655,\"y\":79,\"role\":\"decoy\"},{\"type\":\"fert_green_bag\",\"x\":605,\"y\":306,\"role\":\"target\"},{\"type\":\"fert_red_bag\",\"x\":171,\"y\":314,\"role\":\"decoy\"},{\"type\":\"newseed\",\"x\":357,\"y\":170,\"role\":\"target\"}]', '[ฉากหลัง: farm]\n\nแค่ทดสอบ 3', 'reviewed', 'ไม่ได้เรื่อง', '2026-04-04 08:31:49');
 
 -- --------------------------------------------------------
 
@@ -303,12 +242,10 @@ CREATE TABLE `users` (
   `class_level` varchar(10) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('student','admin') DEFAULT 'student',
-  `pair_id` varchar(50) DEFAULT NULL,
-  `pair_role` enum('driver','navigator') DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `last_seen` timestamp NULL DEFAULT NULL,
   `team_id` varchar(50) DEFAULT NULL COMMENT 'ID ของทีมในเซสชันนั้นๆ',
-  `mode` enum('solo','pair','group') DEFAULT NULL COMMENT 'รูปแบบการเรียน',
+  `mode` enum('solo','group') DEFAULT NULL,
   `team_role` varchar(20) DEFAULT NULL COMMENT 'บทบาทในทีม (เช่น driver, navigator)',
   `group_number` int DEFAULT NULL COMMENT 'หมายเลขกลุ่ม (1-8)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -317,24 +254,24 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `pair_id`, `pair_role`, `created_at`, `last_seen`, `team_id`, `mode`, `team_role`, `group_number`) VALUES
-(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', NULL, NULL, '2026-01-11 17:22:45', NULL, NULL, NULL, NULL, NULL),
-(5, 'test01', 'นักเรียนทดสอบ ที่ 1', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', '2026-03-05 09:35:56', 'team_69a935cc7f7f2', 'group', 'member', 5),
-(6, 'test02', 'นักเรียนทดสอบ ที่ 2', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a935cc7f7f2', 'group', 'member', 5),
-(7, 'test03', 'นักเรียนทดสอบ ที่ 3', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7323594dfc', 'group', 'member', 7),
-(8, 'test04', 'นักเรียนทดสอบ ที่ 4', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(9, 'test05', 'นักเรียนทดสอบ ที่ 5', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7323594dfc', 'group', 'member', 7),
-(10, 'test06', 'นักเรียนทดสอบ ที่ 6', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(11, 'test07', 'นักเรียนทดสอบ ที่ 7', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(12, 'test08', 'นักเรียนทดสอบ ที่ 8', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, NULL, NULL, NULL, NULL),
-(13, 'test09', 'นักเรียนทดสอบ ที่ 9', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7391267926', 'solo', 'solo', NULL),
-(14, 'test10', 'นักเรียนทดสอบ ที่ 10', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', '2026-03-05 07:38:58', 'team_69a930fbe0cd4', 'solo', 'solo', NULL),
-(15, 'test11', 'นักเรียนทดสอบ ที่ 11', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a7c6db2101a', 'pair', 'navigator', NULL),
-(16, 'test12', 'นักเรียนทดสอบ ที่ 12', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', '2026-03-05 06:46:34', 'team_69a9332b55b0b', 'group', 'member', 3),
-(17, 'test13', 'นักเรียนทดสอบ ที่ 13', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a9332b55b0b', 'group', 'member', 3),
-(18, 'test14', 'นักเรียนทดสอบ ที่ 14', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a773dd10d3e', 'pair', 'driver', NULL),
-(19, 'test15', 'นักเรียนทดสอบ ที่ 15', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', '2026-03-05 07:43:04', 'team_69a9332b55b0b', 'group', 'member', 3),
-(20, 'test16', 'นักเรียนทดสอบ ที่ 16', 'ป.4/1', '$2y$10$UpPwjE5jC4xItt5tBCxOzuqfACAt1sQnlYe09W7buLcAWTBQkvvmK', 'student', NULL, NULL, '2026-03-03 05:43:04', NULL, 'team_69a738cdc49d2', 'pair', 'navigator', NULL);
+INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`, `role`, `created_at`, `last_seen`, `team_id`, `mode`, `team_role`, `group_number`) VALUES
+(1, 'admin', 'ครูผู้สอน', NULL, '$2y$10$rVth9N8rAGirBUBMMpbpDuLwYf0vYyf.SYBuDudRut1r6XEcmi886', 'admin', '2026-01-11 17:22:45', NULL, NULL, NULL, NULL, NULL),
+(17, '2645', 'เด็กชายหนึ่งธันวา  ตาทิพย์', 'ป.4', '$2y$10$tGKeW1g37GgPmHn9gVAZPegavjLVTgFRXANeLh9p59BX/5a7HV1ke', 'student', '2026-03-05 16:26:18', NULL, NULL, NULL, NULL, NULL),
+(18, '2646', 'เด็กชายชุติพนธ์  ฉิมพลี', 'ป.4', '$2y$10$Zo3G0FNIpltuOrqR9MHDE.jzCQtVDTJTxPGV26WvHupAcBgUFJtdS', 'student', '2026-03-05 16:26:18', '2026-04-04 09:47:31', 'team_69d04fad06364', 'group', 'member', 1),
+(19, '2647', 'เด็กชายวิทวัส  เติมศิลป์', 'ป.4', '$2y$10$Sp4YeFk/V3zX4aUY3UMN1ux9guwdvN09mz9wdseN6DM28gzDLJln6', 'student', '2026-03-05 16:26:18', NULL, NULL, NULL, NULL, NULL),
+(20, '2648', 'เด็กชายวีรศรุต  วงศ์สมัคร', 'ป.4', '$2y$10$rQkgt4.9sWzBkUzH55DdteRzPXeUsbWq417tkDJRg83Vd7Iw5IzNC', 'student', '2026-03-05 16:26:18', NULL, NULL, NULL, NULL, NULL),
+(21, '2649', 'เด็กหญิงกัญญาภัทร  กอทอง', 'ป.4', '$2y$10$m/Vtxqx8AgBZZd1XnwzuJuNmTPT0qSdCrMCHOGmdTgCloWbWJ3Tcq', 'student', '2026-03-05 16:26:18', NULL, NULL, NULL, NULL, NULL),
+(22, '2650', 'เด็กหญิงจิตติมา  บุรมย์', 'ป.4', '$2y$10$GLWTNPb/ux1JpSy4eaO9POYOQfFqKz4QHqGTug8E0NqSPPXwF8PYC', 'student', '2026-03-05 16:26:18', NULL, NULL, NULL, NULL, NULL),
+(23, '2651', 'เด็กหญิงบุณยนุช  วรรณพัฒน์', 'ป.4', '$2y$10$FmdOoed4ILMTGqGCCMV2JeK6OPQqoJtlSNp0tqFkXN4eIcP7FK3yW', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(24, '2652', 'เด็กหญิงอภิสรา  ชูรัตน์', 'ป.4', '$2y$10$2WsIAdLkie8r7xpRak32tuAAkjz9SsYJh6hXK4v6Vc3IooKQObaxi', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(25, '2655', 'เด็กหญิงฐิตาภรณ์  ทำนุ', 'ป.4', '$2y$10$DLzopx1NwXLaUTMtCRGITuDwCu2pIlHw1OPZgydM33xsKAo3ud7.6', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(26, '2656', 'เด็กหญิงกชกร  เนาวนิตย์', 'ป.4', '$2y$10$YuvUUPKZBjjor1nvDznmC.TTMo0hRaf/iDLcySiEUyQKaNet2qn7a', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(27, '2657', 'เด็กหญิงกัญญารัตน์  วันซวง', 'ป.4', '$2y$10$WNGriOp1L5V54ZM7FuWwkOsxkKRn0MG0nITBBcTOzS4mM/tpXJTp2', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(28, '2658', 'เด็กหญิงสิริขวัญ  ศรีมาชัย', 'ป.4', '$2y$10$MmF1HiG67071Bb.Lc.F5Lu3.Ge2MWieL4A4KCpfDmdApth2gqv.qq', 'student', '2026-03-05 16:26:19', NULL, NULL, NULL, NULL, NULL),
+(29, '2659', 'เด็กหญิงพรศินี  เอี่ยมจริง', 'ป.4', '$2y$10$lIQa1KXIQllN.9PeGfzItOZ6EYYCd/E6P.8oKsJkD2w17OyIY2qTq', 'student', '2026-03-05 16:26:20', NULL, NULL, NULL, NULL, NULL),
+(30, '2660', 'เด็กชายศิวกร สุวรรณเพชร', 'ป.4', '$2y$10$LrW9Q0TdMVvUOd6XpcPqreBxE2.A80Aoo9RlAIDYln7QEv9ORls3O', 'student', '2026-03-05 16:26:20', NULL, NULL, NULL, NULL, NULL),
+(31, '2712', 'เด็กชายภีรวัฒน์ ศรีสรรณ์', 'ป.4', '$2y$10$x31BKZHxKBfCxlMOP2HqeuYJO36CyufS9ca48GYvEd1FndKZE4b26', 'student', '2026-03-05 16:26:20', NULL, 'team_69d04fad06364', 'group', 'member', 1),
+(32, '017', 'เด็กชายทดสอบ ลองดู', 'ป.4', '$2y$10$MZrjczSGPvlj8cz1NGyoG.WY8ycL3bS7a6Ub5W5T6tJghNxNJ/op6', 'student', '2026-03-06 07:20:35', '2026-03-06 07:28:22', 'team_69aa805f6a900', 'solo', 'solo', NULL);
 
 --
 -- Indexes for dumped tables
@@ -418,19 +355,19 @@ ALTER TABLE `games`
 -- AUTO_INCREMENT for table `game_logs`
 --
 ALTER TABLE `game_logs`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `project_likes`
 --
 ALTER TABLE `project_likes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `stages`
@@ -442,7 +379,7 @@ ALTER TABLE `stages`
 -- AUTO_INCREMENT for table `student_works`
 --
 ALTER TABLE `student_works`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `titles`
@@ -454,7 +391,7 @@ ALTER TABLE `titles`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- Constraints for dumped tables

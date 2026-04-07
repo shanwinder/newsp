@@ -51,6 +51,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
         .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; float: right; font-weight: bold; }
         .badge-pending { background: #e2e8f0; color: #64748b; }
         .badge-submitted { background: #fef08a; color: #854d0e; }
+        .badge-revision { background: #fed7aa; color: #c2410c; }
         .badge-reviewed { background: #bbf7d0; color: #166534; }
     </style>
 </head>
@@ -109,9 +110,14 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
                             <h6 class="text-success fw-bold mb-2"><i class="bi bi-pen-fill"></i> ข้อเสนอแนะจากคุณครู:</h6>
                             <textarea id="teacher-feedback" class="form-control mb-3 flex-grow-1 border-success" placeholder="ชื่นชม หรือแนะนำเพิ่มเติมให้นักเรียนที่นี่..." style="resize: none;"></textarea>
                             
-                            <button id="btn-approve" onclick="markAsReviewed()" class="btn btn-success btn-lg rounded-pill fw-bold shadow">
-                                <i class="bi bi-check-circle-fill me-2"></i> ตรวจผ่าน / บันทึกผล
-                            </button>
+                            <div class="d-flex gap-2" id="action-buttons">
+                                <button id="btn-revision" onclick="markAsReviewed('revision')" class="btn btn-warning btn-lg rounded-pill fw-bold shadow flex-grow-1 text-dark">
+                                    <i class="bi bi-arrow-return-left me-2"></i> ให้แก้ไข
+                                </button>
+                                <button id="btn-approve" onclick="markAsReviewed('reviewed')" class="btn btn-success btn-lg rounded-pill fw-bold shadow flex-grow-1">
+                                    <i class="bi bi-check-circle-fill me-2"></i> ตรวจผ่าน
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -156,6 +162,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
                         let badge = '<span class="status-badge badge-pending">ขาดส่ง</span>';
                         if (std.work_status === 'submitted') badge = '<span class="status-badge badge-submitted">รอตรวจ</span>';
+                        if (std.work_status === 'revision') badge = '<span class="status-badge badge-revision">รอแก้</span>';
                         if (std.work_status === 'reviewed') badge = '<span class="status-badge badge-reviewed">ตรวจแล้ว</span>';
 
                         // 🟢 ประมวลผลข้อความแยกเดี่ยว และ กลุ่ม
@@ -228,13 +235,25 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             }
             document.getElementById('display-desc').innerText = desc || "ไม่มีคำอธิบาย";
 
-            const btn = document.getElementById('btn-approve');
+            const btnApprove = document.getElementById('btn-approve');
+            const btnRevision = document.getElementById('btn-revision');
+            
             if (data.work_status === 'reviewed') {
-                btn.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow';
-                btn.innerHTML = '<i class="bi bi-check2-all me-2"></i> บันทึกและตรวจแล้ว';
+                btnApprove.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                btnApprove.innerHTML = '<i class="bi bi-check2-all me-2"></i> ตรวจแล้ว';
+                btnRevision.style.display = 'none';
+            } else if (data.work_status === 'revision') {
+                btnApprove.className = 'btn btn-success btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                btnApprove.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> ตรวจผ่าน';
+                btnRevision.style.display = 'block';
+                btnRevision.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                btnRevision.innerHTML = '<i class="bi bi-arrow-return-left me-2"></i> ส่งให้แก้อีกรอบ';
             } else {
-                btn.className = 'btn btn-success btn-lg rounded-pill fw-bold shadow';
-                btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> ตรวจผ่าน / บันทึกผล';
+                btnApprove.className = 'btn btn-success btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                btnApprove.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> ตรวจผ่าน';
+                btnRevision.style.display = 'block';
+                btnRevision.className = 'btn btn-warning btn-lg rounded-pill fw-bold shadow flex-grow-1 text-dark';
+                btnRevision.innerHTML = '<i class="bi bi-arrow-return-left me-2"></i> ให้แก้ไข';
             }
 
             renderCanvas(data.work_data, bgType);
@@ -300,28 +319,40 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             setTimeout(adjustScale, 50);
         }
 
-        function markAsReviewed() {
+        function markAsReviewed(statusToSave) {
             if (!currentWorkId) return;
 
-            const btn = document.getElementById('btn-approve');
+            const btnApprove = document.getElementById('btn-approve');
+            const btnRevision = document.getElementById('btn-revision');
             const feedbackText = document.getElementById('teacher-feedback').value;
             
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
+            if (statusToSave === 'reviewed') {
+                btnApprove.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
+            } else {
+                btnRevision.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังส่งกลับ...';
+            }
 
             fetch('../api/update_work_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ work_id: currentWorkId, status: 'reviewed', feedback: feedbackText })
+                    body: JSON.stringify({ work_id: currentWorkId, status: statusToSave, feedback: feedbackText })
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        btn.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow';
-                        btn.innerHTML = '<i class="bi bi-check2-all me-2"></i> บันทึกและส่ง Feedback สำเร็จ!';
+                        if (statusToSave === 'reviewed') {
+                            btnApprove.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                            btnApprove.innerHTML = '<i class="bi bi-check2-all me-2"></i> บันทึกและตรวจแล้ว';
+                            btnRevision.style.display = 'none';
+                        } else {
+                            btnRevision.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow flex-grow-1';
+                            btnRevision.innerHTML = '<i class="bi bi-arrow-return-left me-2"></i> ส่งให้เด็กแก้แล้ว';
+                        }
                         setTimeout(() => { loadStudents(); }, 1000);
                     } else {
                         alert('Error: ' + data.error);
-                        btn.innerHTML = 'ลองใหม่';
+                        if (statusToSave === 'reviewed') btnApprove.innerHTML = 'ลองใหม่';
+                        else btnRevision.innerHTML = 'ลองใหม่';
                     }
                 });
         }

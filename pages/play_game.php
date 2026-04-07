@@ -31,16 +31,16 @@ $stage_num = $stage['stage_number'];
 $game_script = "";
 if ($game_id == 1) {
     // บทที่ 1: คัดแยกผลผลิต (ไฟล์เดิมที่คุณครูมีอยู่แล้ว)
-    $game_script = "stage{$stage_num}.js"; 
+    $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 2) {
     // บทที่ 2: เส้นทางเดินรถไถ
-    $game_script = "stage{$stage_num}_algo.js"; 
+    $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 3) {
     // บทที่ 3: เครื่องรดน้ำอัจฉริยะ (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
-    $game_script = "stage{$stage_num}_cond.js"; 
+    $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 4) {
     // บทที่ 4: กู้วิกฤตฟาร์ม (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
-    $game_script = "stage{$stage_num}_debug.js"; 
+    $game_script = "stage{$stage_id}.js"; 
 }
 
 // 4. กำหนดสีธีมตามบทเรียน (ให้เข้ากับหน้าเลือกด่าน)
@@ -196,10 +196,6 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 });
         };
     </script>
-
-    <?php if ($game_id == 2 || $game_id == 3 || $game_id == 4): ?>
-        <script src="../assets/js/logic_game/asset_generator.js"></script>
-    <?php endif; ?>
 
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 

@@ -23,9 +23,17 @@ if ($game_id === 1) {
     $start_link = "../pages/game_select.php?game_id=1"; 
 
 } else if ($game_id === 2) {
-    $game_title = "บทที่ 2: เส้นทางรถไถ (Algorithm)";
+    $game_title = "บทที่ 2: เส้นทางเดินรถไถ (Sequence)";
     $game_theme = "warning";
-    $is_under_construction = true; 
+    $mission_desc = "วางแผนเส้นทางและประกอบบล็อกคำสั่งลูกศร เพื่อพารถไถอัตโนมัติ (🚜) ไปเก็บเกี่ยวตะกร้าผลผลิต (🧺) ให้สำเร็จอย่างปลอดภัย";
+    
+    $steps = [
+        ['icon' => 'bi-map', 'title' => '1. สังเกตแผนที่', 'desc' => 'เริ่มด้วยการดูจุดเริ่มต้นของรถไถ ตำแหน่งตะกร้า และเช็คดูโขดหิน (🪨) สิ่งกีดขวางให้ดี'],
+        ['icon' => 'bi-puzzle', 'title' => '2. ประกอบบล็อก', 'desc' => 'จินตนาการเส้นทางล่วงหน้า แล้วเรียงลูกศรทิศทาง ⬆️ ⬇️ ⬅️ ➡️ แบบทีละช่อง'],
+        ['icon' => 'bi-play-circle', 'title' => '3. สั่งรถไถวิ่ง!', 'desc' => 'ตรวจสอบความถูกต้อง เมื่อเรียงเสร็จแล้วให้กด "รันคำสั่ง" เพื่อดูรถไถวิ่งตามที่คุณเขียนอังกอริทึม!']
+    ];
+    $start_link = "../pages/game_select.php?game_id=2"; 
+    $is_under_construction = false; 
 
 } else if ($game_id === 3) {
     $game_title = "บทที่ 3: ตามล่าหาศัตรูพืช (Debugging)";
@@ -215,6 +223,8 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 </div>
 
             <?php else: ?>
+                
+                <?php if ($game_id === 1): ?>
                 <div class="knowledge-sheet mt-3">
                     <div class="knowledge-title"><i class="bi bi-lightbulb-fill"></i> เกร็ดความรู้: การใช้เหตุผลเชิงตรรกะ</div>
                     <p class="text-dark fw-bold mb-2 mt-2">การแก้ปัญหาอย่างเป็นขั้นตอน เริ่มจากการเข้าใจ "เงื่อนไข" (Conditions)</p>
@@ -244,6 +254,13 @@ $mode = $_SESSION['mode'] ?? 'solo';
                         </div>
                     </div>
                 </div>
+                <?php elseif ($game_id === 2): ?>
+                <div class="knowledge-sheet mt-3" style="border-color: #fcd34d; background-color: #fffbeb;">
+                    <div class="knowledge-title" style="background: #f59e0b;"><i class="bi bi-code-square"></i> เกร็ดความรู้: การทำงานตามลำดับขั้นตอน (Sequential Algorithm)</div>
+                    <p class="text-dark fw-bold mb-2 mt-2">ยินดีต้อนรับยุวเกษตรกร! ในภารกิจนี้เราจะมาฝึกทักษะการเป็นนักเขียนโปรแกรมเบื้องต้น</p>
+                    <p class="text-secondary small mb-0">รู้หรือไม่? คอมพิวเตอร์หรือหุ่นยนต์รถไถของเรา <strong>ไม่สามารถคิดเองได้</strong> มันจะทำงานตามคำสั่งที่เราป้อนให้ "ทีละคำสั่ง" เรียงจากคำสั่งแรกไปจนถึงคำสั่งสุดท้ายอย่างเคร่งครัด ถ้าเราวางคำสั่งสลับกันแม้แต่ขั้นตอนเดียว รถไถก็อาจจะวิ่งชนหินหรือหลงทางได้เลยนะ!</p>
+                </div>
+                <?php endif; ?>
 
                 <div class="mission-box mb-5 shadow-sm">
                     <div class="d-flex align-items-center">
@@ -269,6 +286,30 @@ $mode = $_SESSION['mode'] ?? 'solo';
                     </div>
                     <?php endforeach; ?>
                 </div>
+
+                <?php if ($game_id === 2): ?>
+                <h5 class="fw-bold text-danger mb-3"><i class="bi bi-exclamation-triangle-fill"></i> กฎเหล็กของแปลงเกษตร (ข้อควรระวัง)</h5>
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;">
+                            <b class="text-danger fs-6">💥 ห้ามชนสิ่งกีดขวาง</b>
+                            <p class="small text-muted mb-0 mt-2">ถ้ารถไถวิ่งไปชนโขดหินปั๊ก เครื่องยนต์จะเสียหาย และต้องเริ่มทำภารกิจใหม่ทั้งหมด</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #fd7e14 !important;">
+                            <b class="fs-6" style="color: #d35400;">🚧 ห้ามตกขอบแปลง</b>
+                            <p class="small text-muted mb-0 mt-2">ต้องนับช่องตารางให้แม่นยำ ถ้ารถไถวิ่งทะลุขอบแปลงเกษตรออกไป จะถือว่าทำภารกิจพลาด</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;">
+                            <b class="text-success fs-6">🎯 หยุดให้ตรงเป้า</b>
+                            <p class="small text-muted mb-0 mt-2">ชุดคำสั่งของคุณ ต้องพารถไถไปหยุดที่ช่องตะกร้าผลผลิตพอดีเป๊ะ ห้ามขาดและเกิน!</p>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <?php if($mode !== 'solo'): ?>
                 <div class="alert alert-warning border-0 shadow-sm rounded-4 text-center fw-bold">

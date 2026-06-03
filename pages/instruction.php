@@ -34,17 +34,33 @@ if ($game_id === 1) {
         ['icon' => 'bi-play-circle', 'title' => '3. สั่งรถไถวิ่ง!', 'desc' => 'ตรวจสอบความถูกต้อง เมื่อเรียงเสร็จแล้วให้กด "รันคำสั่ง" เพื่อดูรถไถวิ่งตามที่คุณเขียนอังกอริทึม!']
     ];
     $start_link = "../pages/game_select.php?game_id=2"; 
-    $is_under_construction = false; 
+    $is_under_construction = false;
 
 } else if ($game_id === 3) {
     $game_title = "บทที่ 3: เครื่องรดน้ำอัจฉริยะ (Condition)";
     $game_theme = "info";
-    $is_under_construction = true; 
+    $mission_desc = "สร้างกฎแบบ ถ้า...แล้ว...มิฉะนั้น เพื่อให้เครื่องรดน้ำอัตโนมัติตัดสินใจถูกต้องตามสภาพดิน ฝน และน้ำในถัง";
+
+    $steps = [
+        ['icon' => 'bi-cloud-rain', 'title' => '1. อ่านสถานการณ์', 'desc' => 'ดูว่าดินแห้งหรือชื้น ฝนตกหรือไม่ และถังน้ำพร้อมใช้งานไหม'],
+        ['icon' => 'bi-diagram-3', 'title' => '2. เลือกเงื่อนไข', 'desc' => 'จับคู่สถานการณ์กับคำสั่ง เช่น รดน้ำ หยุดรดน้ำ หรือแจ้งเตือนเติมน้ำ'],
+        ['icon' => 'bi-check2-circle', 'title' => '3. ทดสอบระบบ', 'desc' => 'กดทดสอบเพื่อดูว่ากฎที่ตั้งไว้ดูแลทุกแปลงได้ถูกต้องหรือไม่']
+    ];
+    $start_link = "../pages/game_select.php?game_id=3";
+    $is_under_construction = false;
 
 } else if ($game_id === 4) {
     $game_title = "บทที่ 4: กู้วิกฤตฟาร์ม (Debugging)";
     $game_theme = "danger";
-    $is_under_construction = true; 
+    $mission_desc = "ค้นหาข้อผิดพลาดในลำดับคำสั่งหรือเงื่อนไข แล้วปรับแก้ให้ระบบฟาร์มกลับมาทำงานถูกต้อง";
+
+    $steps = [
+        ['icon' => 'bi-bug', 'title' => '1. สังเกตบั๊ก', 'desc' => 'อ่านผลลัพธ์ที่ผิด เช่น ขั้นตอนสลับ รถไถหลงทาง หรือระบบรดน้ำผิดเงื่อนไข'],
+        ['icon' => 'bi-tools', 'title' => '2. แก้ไขคำสั่ง', 'desc' => 'สลับ เปลี่ยน หรือจัดลำดับบล็อกใหม่ตามเหตุผลที่ตรวจพบ'],
+        ['icon' => 'bi-play-btn', 'title' => '3. ทดสอบซ้ำ', 'desc' => 'กดทดสอบหลังแก้ไขเพื่อยืนยันว่าบั๊กหายไปแล้วจริง ๆ']
+    ];
+    $start_link = "../pages/game_select.php?game_id=4";
+    $is_under_construction = false;
 
 } else {
     header("Location: student_dashboard.php");
@@ -261,6 +277,23 @@ $mode = $_SESSION['mode'] ?? 'solo';
                     <p class="text-dark fw-bold mb-2 mt-2">ยินดีต้อนรับนักแก้ปัญหา! ในภารกิจนี้เราจะมาฝึกทักษะการเป็นนักเขียนโปรแกรมเบื้องต้น</p>
                     <p class="text-secondary small mb-0">รู้หรือไม่? คอมพิวเตอร์หรือหุ่นยนต์รถไถของเรา <strong>ไม่สามารถคิดเองได้</strong> มันจะทำงานตามคำสั่งที่เราป้อนให้ "ทีละคำสั่ง" เรียงจากคำสั่งแรกไปจนถึงคำสั่งสุดท้ายอย่างเคร่งครัด ถ้าเราวางคำสั่งสลับกันแม้แต่ขั้นตอนเดียว รถไถก็อาจจะวิ่งชนหินหรือหลงทางได้เลยนะ!</p>
                 </div>
+                <?php elseif ($game_id === 3): ?>
+                <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
+                    <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If-Then-Else</div>
+                    <p class="text-dark fw-bold mb-2 mt-2">การใช้เงื่อนไขช่วยให้ระบบเลือกคำสั่งตามสถานการณ์จริง</p>
+                    <p class="text-secondary small mb-3">ตัวอย่างเช่น <strong>ถ้าฝนตก ให้หยุดรดน้ำ</strong> มิฉะนั้นจึงค่อยตรวจว่าดินแห้งหรือไม่ ลำดับของการตรวจเงื่อนไขจึงสำคัญมาก</p>
+                    <div class="row g-2">
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">ถ้า</span><br>ตรวจสถานการณ์ก่อนตัดสินใจ</div></div>
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">แล้ว</span><br>ทำคำสั่งเมื่อเงื่อนไขเป็นจริง</div></div>
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-secondary mb-1">มิฉะนั้น</span><br>เลือกทางอื่นเมื่อเงื่อนไขแรกไม่จริง</div></div>
+                    </div>
+                </div>
+                <?php elseif ($game_id === 4): ?>
+                <div class="knowledge-sheet mt-3" style="border-color: #fed7aa; background-color: #fff7ed;">
+                    <div class="knowledge-title" style="background: #ea580c;"><i class="bi bi-bug-fill"></i> เกร็ดความรู้: การ Debug</div>
+                    <p class="text-dark fw-bold mb-2 mt-2">Debugging คือการตรวจสอบว่าขั้นตอนไหนทำให้ผลลัพธ์เริ่มผิด แล้วแก้ไขอย่างมีเหตุผล</p>
+                    <p class="text-secondary small mb-0">นักแก้ปัญหาที่ดีจะไม่เดาสุ่ม แต่จะทดลอง ตรวจผลลัพธ์ หาจุดผิด และปรับปรุงคำสั่งให้ถูกต้องทีละขั้น</p>
+                </div>
                 <?php endif; ?>
 
                 <div class="mission-box mb-5 shadow-sm">
@@ -309,6 +342,20 @@ $mode = $_SESSION['mode'] ?? 'solo';
                             <p class="small text-muted mb-0 mt-2">ชุดคำสั่งของคุณ ต้องพารถไถไปหยุดที่ช่องตะกร้าผลผลิตพอดีเป๊ะ ห้ามขาดและเกิน!</p>
                         </div>
                     </div>
+                </div>
+                <?php elseif ($game_id === 3): ?>
+                <h5 class="fw-bold text-info mb-3"><i class="bi bi-droplet-half"></i> สิ่งที่ต้องคิดก่อนตั้งเงื่อนไข</h5>
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ตรวจฝนก่อน</b><p class="small text-muted mb-0 mt-2">ถ้าฝนตกอยู่ แม้ดินแห้งก็ไม่ควรรดน้ำเพิ่ม</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ดูความชื้นดิน</b><p class="small text-muted mb-0 mt-2">ดินแห้งจึงต้องการน้ำ ดินชื้นแล้วควรหยุด</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ถังน้ำหมด</b><p class="small text-muted mb-0 mt-2">ต้องแจ้งเตือนเติมน้ำก่อนสั่งให้ระบบรดน้ำ</p></div></div>
+                </div>
+                <?php elseif ($game_id === 4): ?>
+                <h5 class="fw-bold text-danger mb-3"><i class="bi bi-search"></i> วิธีคิดแบบนักแก้บั๊ก</h5>
+                <div class="row g-3 mb-5">
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">หาจุดเริ่มผิด</b><p class="small text-muted mb-0 mt-2">สังเกตว่าคำสั่งใดทำให้ผลลัพธ์เริ่มออกนอกแผน</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #fd7e14 !important;"><b style="color: #d35400;">แก้ทีละจุด</b><p class="small text-muted mb-0 mt-2">เปลี่ยนคำสั่งอย่างมีเหตุผล ไม่แก้หลายอย่างพร้อมกันจนตรวจยาก</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ทดสอบซ้ำ</b><p class="small text-muted mb-0 mt-2">หลังแก้แล้วต้องทดลองใหม่เพื่อยืนยันว่าปัญหาหายจริง</p></div></div>
                 </div>
                 <?php endif; ?>
 

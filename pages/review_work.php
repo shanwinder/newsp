@@ -68,7 +68,9 @@ if (!$context) {
                 <h5 class="mb-3 fw-bold"><i class="bi bi-clipboard-check-fill me-2"></i> โต๊ะตรวจงาน</h5>
                 <select id="game-filter" class="form-select shadow-sm" onchange="changeGame()">
                     <option value="1">บทที่ 1: ตรรกะคัดแยก</option>
-                    <option value="2">บทที่ 2: เส้นทางรถไถ (เร็วๆ นี้)</option>
+                    <option value="2">บทที่ 2: เส้นทางเดินรถไถ</option>
+                    <option value="3">บทที่ 3: เครื่องรดน้ำอัจฉริยะ</option>
+                    <option value="4">บทที่ 4: กู้วิกฤตฟาร์ม</option>
                 </select>
             </div>
 
@@ -139,6 +141,17 @@ if (!$context) {
             'basket': 160, 'weed_spiky': 120, 'weed_round': 120, 'bug_red': 100, 'bug_blue': 100,
             'newseed': 100, 'fert_green_bag': 120, 'fert_red_bag': 120, 'fert_green_round': 100,
             'fert_green_square': 100, 'fert_red_round': 100, 'fert_red_square': 100
+        };
+
+        const STRUCTURED_LABELS = {
+            map: 'แผนที่หรือฉากที่ออกแบบ',
+            commands: 'ลำดับคำสั่ง',
+            situation: 'สถานการณ์ของแปลงผัก',
+            rules: 'เงื่อนไข If-Then-Else',
+            reason: 'เหตุผล',
+            buggy_steps: 'ชุดคำสั่งที่ผิด',
+            bug_point: 'จุดที่เป็นบั๊ก',
+            fix: 'วิธีแก้ไข'
         };
 
         function changeGame() {
@@ -287,6 +300,11 @@ if (!$context) {
 
             try {
                 const items = JSON.parse(jsonData);
+                if (!Array.isArray(items)) {
+                    renderStructuredWork(stage, items);
+                    setTimeout(adjustScale, 50);
+                    return;
+                }
                 items.forEach((obj, i) => {
                     const wrapper = document.createElement('div');
                     wrapper.style.position = 'absolute';
@@ -321,6 +339,33 @@ if (!$context) {
             } catch (e) { console.error("JSON Error", e); }
             
             setTimeout(adjustScale, 50);
+        }
+
+        function renderStructuredWork(stage, data) {
+            stage.className = '';
+            stage.style.backgroundImage = '';
+            stage.style.background = '#f8fafc';
+            stage.style.padding = '28px';
+            stage.style.overflowY = 'auto';
+            stage.innerHTML = `
+                <div class="h-100 d-flex flex-column justify-content-center">
+                    <div class="bg-white rounded-4 shadow-sm border p-4">
+                        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-journal-text"></i> ชิ้นงานสะท้อนการแก้ปัญหา</h4>
+                        ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).map(key => `
+                            <div class="mb-3">
+                                <div class="small fw-bold text-secondary">${STRUCTURED_LABELS[key]}</div>
+                                <div class="fs-6 text-dark" style="white-space: pre-wrap;">${escapeHtml(data[key])}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            return String(text || '').replace(/[&<>"']/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+            });
         }
 
         function markAsReviewed(statusToSave) {

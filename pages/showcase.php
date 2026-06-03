@@ -4,9 +4,18 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+require_once '../includes/db.php';
+require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
-$game_id = $_GET['game_id'] ?? 1;
+$game_id = intval($_GET['game_id'] ?? 1);
 $context = session_context();
+$project_pages = [
+    1 => 'create_project_logic.php',
+    2 => 'create_project_algo.php',
+    3 => 'create_project_condition.php',
+    4 => 'create_project_debug.php'
+];
+$project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -164,7 +173,6 @@ $context = session_context();
             <p class="fs-5 opacity-75">รวมผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
             <div class="mt-4">
                 <?php
-                require_once '../includes/db.php';
                 $user_id = $_SESSION['user_id'];
                 $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
                 $res_work = $conn->query($sql_work);
@@ -186,7 +194,7 @@ $context = session_context();
                     }
                 }
                 ?>
-                <a href="create_project_logic.php?game_id=<?php echo $game_id; ?>" class="btn <?php echo $btn_style; ?> rounded-pill px-4 fw-bold me-2 shadow-sm">
+                <a href="<?php echo $project_page; ?>?game_id=<?php echo $game_id; ?>" class="btn <?php echo $btn_style; ?> rounded-pill px-4 fw-bold me-2 shadow-sm">
                     <i class="bi <?php echo $btn_icon; ?>"></i> <?php echo $btn_text; ?>
                 </a>
                 <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-outline-light rounded-pill px-4 fw-bold">กลับหน้าเลือกด่าน</a>
@@ -243,6 +251,17 @@ $context = session_context();
             'basket': 160, 'weed_spiky': 120, 'weed_round': 120, 'bug_red': 100, 'bug_blue': 100,
             'newseed': 100, 'fert_green_bag': 120, 'fert_red_bag': 120, 'fert_green_round': 100,
             'fert_green_square': 100, 'fert_red_round': 100, 'fert_red_square': 100
+        };
+
+        const STRUCTURED_LABELS = {
+            map: 'แผนที่หรือฉากที่ออกแบบ',
+            commands: 'ลำดับคำสั่ง',
+            situation: 'สถานการณ์ของแปลงผัก',
+            rules: 'เงื่อนไข If-Then-Else',
+            reason: 'เหตุผล',
+            buggy_steps: 'ชุดคำสั่งที่ผิด',
+            bug_point: 'จุดที่เป็นบั๊ก',
+            fix: 'วิธีแก้ไข'
         };
 
         let worksList = {}; 
@@ -420,6 +439,11 @@ $context = session_context();
 
             try {
                 const items = JSON.parse(jsonData);
+                if (!Array.isArray(items)) {
+                    renderStructuredPreview(stage, items);
+                    container.appendChild(stage);
+                    return;
+                }
                 items.forEach((obj) => {
                     const wrapper = document.createElement('div');
                     wrapper.style.position = 'absolute';
@@ -458,6 +482,32 @@ $context = session_context();
                 console.error("Error parsing layout data", e);
             }
             container.appendChild(stage);
+        }
+
+        function renderStructuredPreview(stage, data) {
+            stage.classList.remove('bg-grid-pattern');
+            stage.style.background = '#f8fafc';
+            stage.style.padding = '28px';
+            stage.style.overflow = 'hidden';
+            stage.innerHTML = `
+                <div style="height:100%; display:flex; align-items:center; justify-content:center;">
+                    <div style="background:white; border:1px solid #e2e8f0; border-radius:18px; padding:24px; width:90%; max-height:88%; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,.08);">
+                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">ชิ้นงานแก้ปัญหา</div>
+                        ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).slice(0, 3).map(key => `
+                            <div style="margin-bottom:12px;">
+                                <div style="font-weight:700; color:#64748b; font-size:16px;">${STRUCTURED_LABELS[key]}</div>
+                                <div style="white-space:pre-wrap; color:#1f2937; font-size:20px; line-height:1.35;">${escapeHtml(data[key])}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            return String(text || '').replace(/[&<>"']/g, function (char) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+            });
         }
 
         function resizeCanvases() {

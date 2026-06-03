@@ -1,10 +1,14 @@
 <?php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
-// เช็คสิทธิ์ Admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+require_teacher_or_admin();
+ensure_active_account($conn);
+
+$context = classroom_context($conn, isset($_GET['classroom_id']) ? intval($_GET['classroom_id']) : null);
+if (!$context) {
+    header("Location: classrooms.php");
     exit();
 }
 
@@ -18,17 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = $_POST['password'];
     $role = 'student'; // บังคับเป็น student
 
-    // 1. 🟢 เช็คว่ารหัสนักเรียนซ้ำไหม (แก้ไขจาก id เป็น user_id ให้ตรงกับฐานข้อมูล)
-    $check = $conn->prepare("SELECT user_id FROM users WHERE student_id = ?");
-    $check->bind_param("s", $student_id);
+    // เช็ครหัสนักเรียนซ้ำเฉพาะในห้องเรียนเดียวกัน
+    $check = $conn->prepare("SELECT user_id FROM users WHERE student_id = ? AND classroom_id = ?");
+    $check->bind_param("si", $student_id, $context['classroom_id']);
     $check->execute();
     if ($check->get_result()->num_rows > 0) {
         $error = "รหัสนักเรียนนี้ ($student_id) มีในระบบแล้ว!";
     } else {
         // 2. บันทึกข้อมูล (Hash Password)
         $hashed_pwd = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("INSERT INTO users (student_id, name, class_level, password, role) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $student_id, $name, $class_level, $hashed_pwd, $role);
+        $stmt = $conn->prepare("INSERT INTO users (student_id, name, class_level, password, role, school_id, classroom_id, teacher_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')");
+        $stmt->bind_param("sssssiii", $student_id, $name, $class_level, $hashed_pwd, $role, $context['school_id'], $context['classroom_id'], $context['teacher_id']);
 
         if ($stmt->execute()) {
             $success = "เพิ่มนักเรียนเรียบร้อยแล้ว!";
@@ -74,8 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="col-md-6">
                 <div class="card card-custom p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold text-primary"><i class="bi bi-person-plus-fill"></i> เพิ่มนักเรียนใหม่</h4>
-                        <a href="dashboard.php" class="btn btn-outline-secondary rounded-pill btn-sm"><i class="bi bi-arrow-left"></i> กลับ</a>
+                        <div>
+                            <h4 class="fw-bold text-primary mb-1"><i class="bi bi-person-plus-fill"></i> เพิ่มนักเรียนใหม่</h4>
+                            <div class="small text-muted">ห้อง: <?php echo htmlspecialchars($context['classroom']['classroom_name']); ?> | Join Code: <?php echo htmlspecialchars($context['classroom']['join_code']); ?></div>
+                        </div>
+                        <a href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-secondary rounded-pill btn-sm"><i class="bi bi-arrow-left"></i> กลับ</a>
                     </div>
 
                     <?php if ($error): ?>

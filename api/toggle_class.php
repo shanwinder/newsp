@@ -3,10 +3,16 @@
 header('Content-Type: application/json');
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
-// เช็คสิทธิ์ Admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+if (!is_teacher_or_admin()) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+    exit();
+}
+
+$context = classroom_context($conn);
+if (!$context) {
+    echo json_encode(['status' => 'error', 'message' => 'No active classroom']);
     exit();
 }
 
@@ -14,8 +20,8 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 $data = json_decode(file_get_contents('php://input'), true);
 $new_status = $data['status'] ?? 'active';
 
-$stmt = $conn->prepare("UPDATE system_settings SET setting_value = ? WHERE setting_key = 'class_status'");
-$stmt->bind_param("s", $new_status);
+$stmt = $conn->prepare("UPDATE learning_sessions SET class_status = ?, updated_at = NOW() WHERE id = ?");
+$stmt->bind_param("si", $new_status, $context['learning_session_id']);
 $stmt->execute();
 
 echo json_encode(['status' => 'success', 'new_status' => $new_status]);

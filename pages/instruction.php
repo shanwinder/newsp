@@ -5,6 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit();
 }
+$app = require __DIR__ . '/../config/app.php';
 
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1;
 $is_under_construction = false; 
@@ -36,12 +37,12 @@ if ($game_id === 1) {
     $is_under_construction = false; 
 
 } else if ($game_id === 3) {
-    $game_title = "บทที่ 3: ตามล่าหาศัตรูพืช (Debugging)";
+    $game_title = "บทที่ 3: เครื่องรดน้ำอัจฉริยะ (Condition)";
     $game_theme = "info";
     $is_under_construction = true; 
 
 } else if ($game_id === 4) {
-    $game_title = "บทที่ 4: วนลูปเก็บเกี่ยว (Loop)";
+    $game_title = "บทที่ 4: กู้วิกฤตฟาร์ม (Debugging)";
     $game_theme = "danger";
     $is_under_construction = true; 
 
@@ -56,7 +57,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>คู่มือการเล่น - Young Smart Farmer</title>
+    <title>คู่มือภารกิจ - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -199,7 +200,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
 
     <div class="instruction-card">
         <div class="card-header-custom">
-            <h5 class="text-secondary fw-bold mb-2">📜 แฟ้มภารกิจ Young Smart Farmer</h5>
+            <h5 class="text-secondary fw-bold mb-2">📜 แฟ้มภารกิจการแก้ปัญหา</h5>
             <h1 class="fw-bold text-<?php echo $game_theme; ?> mb-0 display-5 floating-element">
                 <?php echo $game_title; ?>
             </h1>
@@ -212,7 +213,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
                     <div class="mb-4">
                         <i class="bi bi-cone-striped text-warning bouncing-cone" style="font-size: 5rem; text-shadow: 0 10px 15px rgba(0,0,0,0.1);"></i>
                     </div>
-                    <h2 class="fw-bold text-dark mb-3">กำลังเตรียมพื้นที่แปลงเกษตร!</h2>
+                    <h2 class="fw-bold text-dark mb-3">กำลังเตรียมภารกิจการเรียนรู้!</h2>
                     <p class="text-muted fs-5 mb-4">
                         ภารกิจนี้ <strong>อยู่ระหว่างการพัฒนา</strong> <br>
                         คุณครูกำลังเตรียมความสนุกให้พวกเราอยู่ อดใจรออีกนิดนะ!
@@ -257,7 +258,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 2): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #fcd34d; background-color: #fffbeb;">
                     <div class="knowledge-title" style="background: #f59e0b;"><i class="bi bi-code-square"></i> เกร็ดความรู้: การทำงานตามลำดับขั้นตอน (Sequential Algorithm)</div>
-                    <p class="text-dark fw-bold mb-2 mt-2">ยินดีต้อนรับยุวเกษตรกร! ในภารกิจนี้เราจะมาฝึกทักษะการเป็นนักเขียนโปรแกรมเบื้องต้น</p>
+                    <p class="text-dark fw-bold mb-2 mt-2">ยินดีต้อนรับนักแก้ปัญหา! ในภารกิจนี้เราจะมาฝึกทักษะการเป็นนักเขียนโปรแกรมเบื้องต้น</p>
                     <p class="text-secondary small mb-0">รู้หรือไม่? คอมพิวเตอร์หรือหุ่นยนต์รถไถของเรา <strong>ไม่สามารถคิดเองได้</strong> มันจะทำงานตามคำสั่งที่เราป้อนให้ "ทีละคำสั่ง" เรียงจากคำสั่งแรกไปจนถึงคำสั่งสุดท้ายอย่างเคร่งครัด ถ้าเราวางคำสั่งสลับกันแม้แต่ขั้นตอนเดียว รถไถก็อาจจะวิ่งชนหินหรือหลงทางได้เลยนะ!</p>
                 </div>
                 <?php endif; ?>
@@ -320,7 +321,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
 
                 <div class="text-center mt-2">
                     <a href="<?php echo $start_link; ?>" class="btn btn-start">
-                        <i class="bi bi-play-fill me-1"></i> เข้าสู่แปลงเกษตร!
+                        <i class="bi bi-play-fill me-1"></i> เริ่มฝึกภารกิจ!
                     </a>
                     <div class="mt-3">
                         <a href="student_dashboard.php" class="text-muted text-decoration-none small fw-bold">

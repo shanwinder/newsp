@@ -1,18 +1,19 @@
 <?php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
-    exit();
-}
+require_teacher_or_admin();
+ensure_active_account($conn);
 
 $id = $_GET['id'] ?? 0;
 $msg = "";
 
 // 🟢 แก้ไข: เปลี่ยน id เป็น user_id
-$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ?");
-$stmt->bind_param("i", $id);
+$stmt = $conn->prepare("SELECT * FROM users WHERE user_id = ? AND role = 'student' AND (? = 1 OR teacher_id = ?)");
+$is_admin = is_super_admin() ? 1 : 0;
+$teacher_id = intval($_SESSION['user_id']);
+$stmt->bind_param("iii", $id, $is_admin, $teacher_id);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 

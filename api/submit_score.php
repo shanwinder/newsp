@@ -3,6 +3,7 @@
 header('Content-Type: application/json');
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
 // 1. ตรวจสอบสิทธิ์ (ต้อง Login)
 if (!isset($_SESSION['user_id'])) {
@@ -26,6 +27,7 @@ $score = intval($input['score']); // จำนวนดาว (0-3)
 $duration = intval($input['duration'] ?? $input['time_taken'] ?? 0); 
 $attempts = intval($input['attempts']); // จำนวนครั้งที่ลองผิด
 $mode = $_SESSION['mode'] ?? 'solo';
+$context = session_context();
 
 // 3. ดึงรายชื่อสมาชิกในทีมจาก Session (เป็น Array ของ user_id)
 // หากไม่มีให้ยึดคนที่ล็อกอินเป็นหลักคนเดียว (ป้องกันกรณีเซสชันเก่าค้าง)
@@ -33,8 +35,8 @@ $team_members = $_SESSION['team_members'] ?? [$submitter_id];
 
 try {
     // เตรียมคำสั่ง SQL สำหรับบันทึก/อัปเดตคะแนน (เตรียมไว้รันซ้ำในลูป)
-    $sql_progress = "INSERT INTO progress (user_id, stage_id, score, duration_seconds, attempts, completed_at) 
-                     VALUES (?, ?, ?, ?, ?, NOW())
+    $sql_progress = "INSERT INTO progress (user_id, stage_id, score, duration_seconds, attempts, school_id, classroom_id, teacher_id, learning_session_id, completed_at)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                      ON DUPLICATE KEY UPDATE 
                      score = GREATEST(score, VALUES(score)), 
                      duration_seconds = VALUES(duration_seconds),
@@ -44,7 +46,7 @@ try {
 
     // เตรียมคำสั่ง SQL สำหรับบันทึก Log การเล่น
     $action = ($score > 0) ? 'pass' : 'fail';
-    $sql_log = "INSERT INTO game_logs (user_id, stage_id, action, detail) VALUES (?, ?, ?, ?)";
+    $sql_log = "INSERT INTO game_logs (user_id, stage_id, action, detail, school_id, classroom_id, teacher_id, learning_session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt_log = $conn->prepare($sql_log);
 
     // เตรียมคำสั่ง SQL สำหรับดึงบทบาท (Role) ของแต่ละคนมาบันทึก Log
@@ -54,7 +56,18 @@ try {
     foreach ($team_members as $member_id) {
         
         // 4.1 บันทึกคะแนนลงตาราง progress
-        $stmt_prog->bind_param("iiiii", $member_id, $stage_id, $score, $duration, $attempts);
+        $stmt_prog->bind_param(
+            "iiiiiiiii",
+            $member_id,
+            $stage_id,
+            $score,
+            $duration,
+            $attempts,
+            $context['school_id'],
+            $context['classroom_id'],
+            $context['teacher_id'],
+            $context['learning_session_id']
+        );
         $stmt_prog->execute();
 
         // 4.2 หาบทบาท (team_role) ปัจจุบันของคนๆ นี้
@@ -67,7 +80,17 @@ try {
         $is_submitter = ($member_id == $submitter_id) ? " (คนกดส่งงาน)" : "";
         $detail = "Mode: $mode, Role: $team_role{$is_submitter}, Score: $score, Time: $duration s, Attempts: $attempts";
         
-        $stmt_log->bind_param("iiss", $member_id, $stage_id, $action, $detail);
+        $stmt_log->bind_param(
+            "iissiiii",
+            $member_id,
+            $stage_id,
+            $action,
+            $detail,
+            $context['school_id'],
+            $context['classroom_id'],
+            $context['teacher_id'],
+            $context['learning_session_id']
+        );
         $stmt_log->execute();
     }
 

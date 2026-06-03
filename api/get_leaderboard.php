@@ -1,7 +1,9 @@
 <?php
 // api/get_leaderboard.php
 header('Content-Type: application/json');
+session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
 // ป้องกัน SQL Injection
 $stage_id = isset($_GET['stage_id']) ? intval($_GET['stage_id']) : 0;
@@ -13,14 +15,19 @@ if ($stage_id === 0) {
 
 // ดึง Top 10 ของด่านนี้ (เรียงตามดาวมากสุด -> เวลาน้อยสุด)
 // แก้ไข u.id เป็น u.user_id ให้ตรงกับโครงสร้างตาราง
+$context = session_context();
 $sql = "SELECT u.name, u.class_level, p.score, p.duration_seconds as duration
         FROM progress p
         JOIN users u ON p.user_id = u.user_id
-        WHERE p.stage_id = $stage_id
+        WHERE p.stage_id = ?
+          AND p.learning_session_id = ?
         ORDER BY p.score DESC, p.duration_seconds ASC
         LIMIT 10";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $stage_id, $context['learning_session_id']);
+$stmt->execute();
+$result = $stmt->get_result();
 $data = [];
 
 // เพิ่มการตรวจสอบ $result เผื่อกรณี Query ไม่ผ่าน จะได้ไม่พัง

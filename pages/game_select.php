@@ -2,10 +2,22 @@
 // pages/game_select.php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
+$app = require __DIR__ . '/../config/app.php';
 
-// เช็คสถานะล็อกของครู
-$res_nav = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'");
-$global_lock = ($res_nav->fetch_assoc()['setting_value'] ?? 'locked') === 'locked';
+$context = session_context();
+
+// เช็คสถานะล็อกของครูเฉพาะรอบการเรียนรู้ของห้องนี้
+if ($context['learning_session_id'] > 0) {
+    $stmt_nav = $conn->prepare("SELECT navigation_status FROM learning_sessions WHERE id = ?");
+    $stmt_nav->bind_param("i", $context['learning_session_id']);
+    $stmt_nav->execute();
+    $nav_row = $stmt_nav->get_result()->fetch_assoc();
+    $global_lock = ($nav_row['navigation_status'] ?? 'locked') === 'locked';
+} else {
+    $res_nav = $conn->query("SELECT setting_value FROM system_settings WHERE setting_key = 'navigation_status'");
+    $global_lock = ($res_nav->fetch_assoc()['setting_value'] ?? 'locked') === 'locked';
+}
 
 // 1. รับค่า game_id จาก URL
 if (!isset($_GET['game_id'])) {
@@ -22,18 +34,18 @@ $stmt->execute();
 $game = $stmt->get_result()->fetch_assoc();
 
 if (!$game) {
-    die("ไม่พบแปลงเกษตรนี้ในระบบ");
+    die("ไม่พบภารกิจการเรียนรู้นี้ในระบบ");
 }
 
 // 3. ดึงข้อมูลด่าน + คะแนนที่เคยทำได้
 // ใช้ LEFT JOIN progress เพื่อดูว่าเคยได้ดาวไหม (ถ้าไม่มีคะแนน จะเป็น NULL)
 $sql_stages = "SELECT s.*, p.score, p.completed_at 
                FROM stages s 
-               LEFT JOIN progress p ON s.id = p.stage_id AND p.user_id = ?
+               LEFT JOIN progress p ON s.id = p.stage_id AND p.user_id = ? AND p.learning_session_id = ?
                WHERE s.game_id = ? 
                ORDER BY s.stage_number ASC";
 $stmt_stages = $conn->prepare($sql_stages);
-$stmt_stages->bind_param("ii", $user_id, $game_id);
+$stmt_stages->bind_param("iii", $user_id, $context['learning_session_id'], $game_id);
 $stmt_stages->execute();
 $stages_result = $stmt_stages->get_result();
 
@@ -52,7 +64,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
 
 <head>
     <meta charset="UTF-8">
-    <title>เลือกด่าน - <?php echo htmlspecialchars($game['title']); ?></title>
+    <title>เลือกด่าน - <?php echo htmlspecialchars($game['title']); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -143,7 +155,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
             <div>
                 <a href="student_dashboard.php" class="btn-back">
-                    <i class="bi bi-arrow-left me-2"></i> กลับหน้าหลักฟาร์ม
+                    <i class="bi bi-arrow-left me-2"></i> กลับหน้าหลัก
                 </a>
                 <a href="showcase.php?game_id=<?php echo $game_id; ?>" class="btn btn-warning rounded-pill shadow fw-bold px-4 pulse-icon">
                     <i class="bi bi-trophy-fill me-2"></i> ดูผลงานเพื่อนๆ
@@ -173,7 +185,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 $is_locked_sequence = !$is_previous_cleared;
 
                 // ตรวจสอบว่าครูล็อกหน้าจออยู่หรือไม่
-                $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] == 'admin');
+                $is_admin = (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin', 'teacher'], true));
                 $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
 
                 // ลิงก์เข้าสู่ด่าน
@@ -247,7 +259,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php
     // ถ้าผ่านครบ 3 ด่าน (ครบทุกด่านในบทเรียนนี้) ให้แสดงปุ่มสร้างโปรเจกต์
     if ($passed_count >= $total_stages && $total_stages > 0):
-        $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+        $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
         $res_work = $conn->query($sql_work);
         $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
 
@@ -280,7 +292,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                             </a>
                         <?php else: ?>
                             <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! ทีมของคุณพิชิตครบทุกด่านแล้ว</h2>
-                            <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้าง "ผลงานนวัตกรรมฟาร์ม" ของพวกเราแล้ว!</p>
+                            <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้างชิ้นงานแก้ปัญหาอย่างเป็นขั้นตอนของพวกเราแล้ว!</p>
                             <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
                                 class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
                                 <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน

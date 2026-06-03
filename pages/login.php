@@ -2,55 +2,78 @@
 // pages/login.php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
+$app = require __DIR__ . '/../config/app.php';
 
 // หากล็อกอินอยู่แล้วให้ข้ามไปหน้า Dashboard
 if (isset($_SESSION['user_id'])) {
-    header("Location: " . ($_SESSION['role'] === 'admin' ? "dashboard.php" : "student_dashboard.php"));
+    header("Location: " . (in_array($_SESSION['role'], ['admin', 'super_admin', 'teacher'], true) ? "dashboard.php" : "student_dashboard.php"));
     exit();
 }
 
 $message = '';
+
+function verifyStudentByJoinCode(mysqli $conn, string $join_code, string $student_id, string $pin)
+{
+    $sql = "SELECT u.user_id, u.student_id, u.name, u.password,
+                   u.school_id, u.classroom_id, u.teacher_id,
+                   ls.id as learning_session_id
+            FROM users u
+            JOIN classrooms c ON u.classroom_id = c.id
+            JOIN learning_sessions ls ON ls.classroom_id = c.id AND ls.status = 'active'
+            WHERE c.join_code = ?
+              AND c.status = 'active'
+              AND u.student_id = ?
+              AND u.role = 'student'
+              AND u.status = 'active'
+            LIMIT 1";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $join_code, $student_id);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+
+    return ($user && password_verify($pin, $user['password'])) ? $user : false;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login_type = $_POST['login_type'] ?? 'student';
 
     if ($login_type === 'student') {
         $mode = $_POST['mode'] ?? 'solo';
+        $join_code = strtoupper(trim($_POST['join_code'] ?? ''));
         $team_id = uniqid('team_'); // สร้างรหัสทีมอ้างอิงสำหรับเซสชันนี้
         $members_data = [];
         $all_valid = true;
         $names = [];
         $primary_user = null;
+        $login_context = null;
 
-        // ฟังก์ชันช่วยเช็ครหัสผ่าน
-        function verifyStudent($conn, $id, $pw) {
-            $stmt = $conn->prepare("SELECT user_id, student_id, name, password FROM users WHERE user_id = ? AND role = 'student'");
-            $stmt->bind_param("i", $id);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
-            if ($user && password_verify($pw, $user['password'])) {
-                return $user;
-            }
-            return false;
+        if ($join_code === '') {
+            $all_valid = false;
+            $message = "❌ กรุณากรอก Join Code ของห้องเรียน";
         }
 
         if ($mode === 'solo') {
-            $u_id = intval($_POST['solo_id']);
-            $u_pw = trim($_POST['solo_pw']);
-            $user = verifyStudent($conn, $u_id, $u_pw);
+            $student_id = trim($_POST['solo_student_id'] ?? '');
+            $u_pw = trim($_POST['solo_pw'] ?? '');
+            $user = $all_valid ? verifyStudentByJoinCode($conn, $join_code, $student_id, $u_pw) : false;
             
             if ($user) {
                 $members_data[] = ['id' => $user['user_id'], 'role' => 'solo'];
                 $names[] = $user['name'];
                 $primary_user = $user;
+                $login_context = $user;
             } else {
                 $all_valid = false;
-                $message = "❌ รหัสผ่านไม่ถูกต้อง!";
+                if ($message === '') {
+                    $message = "❌ Join Code, รหัสนักเรียน หรือ PIN ไม่ถูกต้อง";
+                }
             }
 
         } elseif ($mode === 'group') {
             $group_number = intval($_POST['group_number']);
-            $group_ids = $_POST['group_ids'] ?? [];
+            $group_ids = $_POST['group_student_ids'] ?? [];
             $group_pws = $_POST['group_pws'] ?? [];
             
             // กรองเอาเฉพาะคนที่เลือกชื่อมาจริงๆ (ป้องกันช่องว่าง)
@@ -67,16 +90,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 foreach ($group_ids as $index => $g_id) {
                     if (empty($g_id)) continue; // ข้ามช่องที่ไม่ได้เลือก
                     
-                    $g_pw = trim($group_pws[$index]);
-                    $member = verifyStudent($conn, intval($g_id), $g_pw);
+                    $g_pw = trim($group_pws[$index] ?? '');
+                    $member = verifyStudentByJoinCode($conn, $join_code, trim($g_id), $g_pw);
                     
                     if ($member) {
                         $members_data[] = ['id' => $member['user_id'], 'role' => 'member'];
                         $names[] = $member['name'];
                         if (!$primary_user) $primary_user = $member; // คนแรกสุดเป็นตัวแทนกลุ่ม
+                        if (!$login_context) $login_context = $member;
                     } else {
                         $all_valid = false;
-                        $message = "❌ รหัสผ่านของสมาชิกบางคนไม่ถูกต้อง!";
+                        $message = "❌ Join Code, รหัสนักเรียน หรือ PIN ของสมาชิกบางคนไม่ถูกต้อง!";
                         break;
                     }
                 }
@@ -104,6 +128,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['mode'] = $mode;
             $_SESSION['team_id'] = $team_id;
             $_SESSION['team_members'] = $member_ids; // *** สำคัญ: อาร์เรย์เก็บสมาชิกทุกคน ***
+            $_SESSION['school_id'] = intval($login_context['school_id']);
+            $_SESSION['classroom_id'] = intval($login_context['classroom_id']);
+            $_SESSION['teacher_id'] = intval($login_context['teacher_id']);
+            $_SESSION['learning_session_id'] = intval($login_context['learning_session_id']);
+            $_SESSION['join_code'] = $join_code;
             
             // จัดการชื่อที่จะแสดงในระบบตามโหมด
             if ($mode === 'solo') {
@@ -120,30 +149,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
 
-        $stmt = $conn->prepare("SELECT user_id, name, password, role FROM users WHERE student_id = ? AND role = 'admin'");
-        $stmt->bind_param("s", $username);
+        $stmt = $conn->prepare("SELECT user_id, name, password, role, school_id, status FROM users WHERE (student_id = ? OR email = ?) AND role IN ('admin','super_admin','teacher') LIMIT 1");
+        $stmt->bind_param("ss", $username, $username);
         $stmt->execute();
         $admin = $stmt->get_result()->fetch_assoc();
 
         if ($admin && password_verify($password, $admin['password'])) {
+            if ($admin['role'] === 'teacher' && $admin['status'] !== 'active') {
+                header("Location: pending_approval.php");
+                exit();
+            }
+
             session_regenerate_id(true);
             $_SESSION['user_id'] = $admin['user_id'];
             $_SESSION['name'] = $admin['name'];
-            $_SESSION['role'] = 'admin';
+            $_SESSION['role'] = $admin['role'];
+            $_SESSION['school_id'] = intval($admin['school_id'] ?? 0);
+
+            $context = classroom_context($conn);
+            if ($context) {
+                apply_context_to_session($context);
+            }
+
             header("Location: dashboard.php");
             exit();
         } else {
-            $message = "❌ ชื่อผู้ใช้หรือรหัสผ่านครูไม่ถูกต้อง";
+            $message = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
         }
-    }
-}
-
-// ดึงรายชื่อนักเรียนมาแสดงใน Dropdown
-$students = [];
-$res = $conn->query("SELECT user_id, name FROM users WHERE role = 'student' ORDER BY name ASC");
-if ($res) {
-    while ($row = $res->fetch_assoc()) {
-        $students[] = $row;
     }
 }
 ?>
@@ -151,7 +183,7 @@ if ($res) {
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เข้าสู่ฟาร์ม - Young Smart Farmer</title>
+    <title>เข้าสู่บทเรียน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -171,7 +203,8 @@ if ($res) {
 </head>
 <body>
     <div class="login-box text-center">
-        <h2 class="mb-2" style="color: #27ae60; font-weight: 800;">👨‍🌾 เข้าสู่ฟาร์มเกษตรกรน้อย</h2>
+        <h2 class="mb-2" style="color: #27ae60; font-weight: 800;">👨‍🌾 <?php echo htmlspecialchars($app['app_name']); ?></h2>
+        <p class="mb-1 text-muted"><?php echo htmlspecialchars($app['app_subtitle']); ?></p>
         <p class="mb-4 text-muted">เลือกรูปแบบการเรียนรู้ของคุณในวันนี้</p>
         
         <?php if (!empty($message)): ?>
@@ -180,7 +213,7 @@ if ($res) {
 
         <ul class="nav nav-pills nav-justified mb-4" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-solo" type="button" role="tab">👤 ลุยเดี่ยว</button>
+                <button class="nav-link active fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-solo" type="button" role="tab">👤 รายบุคคล</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link fw-bold fs-5" data-bs-toggle="pill" data-bs-target="#pills-group" type="button" role="tab">👨‍👩‍👧‍👦 แบบกลุ่ม</button>
@@ -193,22 +226,21 @@ if ($res) {
                     <input type="hidden" name="login_type" value="student">
                     <input type="hidden" name="mode" value="solo">
                     <div class="role-box solo mx-auto text-start" style="max-width: 400px;">
-                        <h4 class="text-success fw-bold text-center">👤 เกษตรกรฉายเดี่ยว</h4>
+                        <h4 class="text-success fw-bold text-center">👤 เรียนรู้รายบุคคล</h4>
                         <div class="mb-3 mt-3">
-                            <label class="form-label">เลือกชื่อนักเรียน</label>
-                            <select class="form-select" name="solo_id" required>
-                                <option value="" disabled selected>-- ค้นหาชื่อของตนเอง --</option>
-                                <?php foreach ($students as $s): ?>
-                                    <option value="<?php echo $s['user_id']; ?>"><?php echo htmlspecialchars($s['name']); ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                            <label class="form-label">Join Code ห้องเรียน</label>
+                            <input type="text" class="form-control text-uppercase" name="join_code" placeholder="เช่น DEMO4" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">รหัสนักเรียน</label>
+                            <input type="text" class="form-control" name="solo_student_id" placeholder="เช่น 4001" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">รหัสผ่าน (PIN)</label>
                             <input type="password" class="form-control" name="solo_pw" placeholder="••••" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 เข้าสู่ฟาร์ม</button>
+                    <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 เข้าสู่บทเรียน</button>
                 </form>
             </div>
 
@@ -217,7 +249,11 @@ if ($res) {
                     <input type="hidden" name="login_type" value="student">
                     <input type="hidden" name="mode" value="group">
                     <div class="role-box group text-start mx-auto">
-                        <h4 class="text-warning fw-bold text-center" style="color:#d35400 !important;">👨‍👩‍👧‍👦 ทีมเกษตรกร</h4>
+                        <h4 class="text-warning fw-bold text-center" style="color:#d35400 !important;">👨‍👩‍👧‍👦 เรียนรู้แบบกลุ่ม</h4>
+                        <div class="mb-3 mt-3">
+                            <label class="form-label fw-bold">Join Code ห้องเรียน</label>
+                            <input type="text" class="form-control text-uppercase border-warning" name="join_code" placeholder="เช่น DEMO4" required>
+                        </div>
                         
                         <div class="row align-items-center mb-4 mt-3">
                             <div class="col-md-4 text-md-end">
@@ -241,19 +277,14 @@ if ($res) {
                             <div class="col-md-6">
                                 <div class="p-2 border rounded bg-white">
                                     <span class="badge bg-secondary mb-2">คนที่ <?php echo $i; ?> <?php echo $i<=2 ? '<span class="text-warning">*</span>' : '(ถ้ามี)'; ?></span>
-                                    <select class="form-select form-select-sm mb-2" name="group_ids[]" <?php echo $i<=2 ? 'required' : ''; ?>>
-                                        <option value="" selected>-- เลือกชื่อนักเรียน --</option>
-                                        <?php foreach ($students as $s): ?>
-                                            <option value="<?php echo $s['user_id']; ?>"><?php echo htmlspecialchars($s['name']); ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
+                                    <input type="text" class="form-control form-control-sm mb-2" name="group_student_ids[]" placeholder="รหัสนักเรียน" <?php echo $i<=2 ? 'required' : ''; ?>>
                                     <input type="password" class="form-control form-control-sm" name="group_pws[]" placeholder="รหัสผ่าน" <?php echo $i<=2 ? 'required' : ''; ?>>
                                 </div>
                             </div>
                             <?php endfor; ?>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 จัดทีมและเข้าสู่ฟาร์ม</button>
+                    <button type="submit" class="btn btn-game w-100 mt-4 shadow">🚀 จัดทีมและเข้าสู่บทเรียน</button>
                 </form>
             </div>
         </div>
@@ -265,19 +296,22 @@ if ($res) {
             <div class="collapse mt-3" id="adminLogin">
                 <form method="post" class="text-start mx-auto" style="max-width: 300px;">
                     <input type="hidden" name="login_type" value="admin">
-                    <input type="text" class="form-control mb-2" name="username" placeholder="รหัสครูผู้สอน" required>
+                    <input type="text" class="form-control mb-2" name="username" placeholder="อีเมลหรือรหัสผู้ใช้ครู" required>
                     <input type="password" class="form-control mb-2" name="password" placeholder="รหัสผ่าน" required>
                     <button type="submit" class="btn btn-secondary w-100 rounded-pill">เข้าสู่ระบบครู</button>
                 </form>
+                <div class="text-center mt-3">
+                    <a href="register_teacher.php" class="small text-decoration-none">สมัครใช้งานสำหรับครู</a>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.querySelectorAll('select[name="group_ids[]"]').forEach((select, index) => {
-            select.addEventListener('change', function() {
+        document.querySelectorAll('input[name="group_student_ids[]"]').forEach((input, index) => {
+            input.addEventListener('input', function() {
                 let pwInput = document.querySelectorAll('input[name="group_pws[]"]')[index];
-                if (this.value !== "") {
+                if (this.value.trim() !== "") {
                     pwInput.setAttribute('required', 'required');
                 } else if (index >= 2) { 
                     pwInput.removeAttribute('required');

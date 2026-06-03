@@ -2,6 +2,8 @@
 // pages/student_dashboard.php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
+$app = require __DIR__ . '/../config/app.php';
 
 // ตรวจสอบสิทธิ์
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
@@ -13,6 +15,7 @@ $user_id = $_SESSION['user_id'];
 $mode = $_SESSION['mode'] ?? 'solo';
 $team_members = $_SESSION['team_members'] ?? [$user_id];
 $display_name = $_SESSION['name'] ?? 'นักเรียน';
+$context = session_context();
 
 // ดึงชื่อและบทบาทของสมาชิกในทีมทุกคนมาเพื่อแสดงผล
 $team_data = [];
@@ -21,7 +24,7 @@ if (!empty($team_members)) {
     $ids = implode(',', array_map('intval', $team_members));
     
     // เรียงลำดับตามคนที่ล็อกอินเข้ามาก่อน
-    $sql_names = "SELECT name, team_role FROM users WHERE user_id IN ($ids) ORDER BY FIELD(user_id, $ids)";
+    $sql_names = "SELECT name, team_role FROM users WHERE user_id IN ($ids) AND classroom_id = {$context['classroom_id']} ORDER BY FIELD(user_id, $ids)";
     $res_names = $conn->query($sql_names);
     
     if ($res_names) {
@@ -40,7 +43,7 @@ $result = $conn->query($sql);
 
 <head>
     <meta charset="UTF-8">
-    <title>ศูนย์ฟาร์มอัจฉริยะ - Young Smart Farmer</title>
+    <title>ศูนย์ฝึกทักษะการแก้ปัญหา - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -162,11 +165,11 @@ $result = $conn->query($sql);
             <?php if ($mode === 'solo'): ?>
                 <h3 class="fw-bold text-success mb-3">🧑‍🌾 <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-success rounded-pill px-4 py-2 fs-6 shadow-sm">
-                    <i class="bi bi-person-fill"></i> เกษตรกรฉายเดี่ยว (Solo)
+                    <i class="bi bi-person-fill"></i> เรียนรู้รายบุคคล (Solo)
                 </span>
                 
             <?php elseif ($mode === 'group'): ?>
-                <h3 class="fw-bold mb-3" style="color:#d35400;">👨‍👩‍👧‍👦 ทีมเกษตรกร <?php echo htmlspecialchars($display_name); ?></h3>
+                <h3 class="fw-bold mb-3" style="color:#d35400;">👨‍👩‍👧‍👦 ทีม<?php echo htmlspecialchars($app['student_role']); ?> <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
                     <i class="bi bi-diagram-3-fill"></i> ทำงานเป็นกลุ่ม (Group)
                 </span>
@@ -182,9 +185,9 @@ $result = $conn->query($sql);
 
         <div class="mb-5">
             <h1 class="display-5 fw-bold" style="color: #166534;">
-                เลือกแปลงเกษตรของคุณ
+                เลือกภารกิจการเรียนรู้
             </h1>
-            <p class="text-muted fs-5">สะสมดาวผลผลิตให้ครบเพื่อเป็นสุดยอด Young Smart Farmer!</p>
+            <p class="text-muted fs-5">สะสม<?php echo htmlspecialchars($app['mission_stars']); ?>เพื่อเป็นนักแก้ปัญหาอย่างเป็นขั้นตอน</p>
         </div>
 
         <div class="row g-4 text-start justify-content-center">
@@ -213,7 +216,7 @@ $result = $conn->query($sql);
                     $sql_score = "SELECT SUM(p.score) as earned 
                                   FROM progress p 
                                   JOIN stages s ON p.stage_id = s.id 
-                                  WHERE p.user_id = $user_id AND s.game_id = $gameId";
+                                  WHERE p.user_id = $user_id AND s.game_id = $gameId AND p.learning_session_id = {$context['learning_session_id']}";
                     $res_score = $conn->query($sql_score);
                     $current_score = $res_score->fetch_assoc()['earned'];
                     if (!$current_score) $current_score = 0;
@@ -221,7 +224,7 @@ $result = $conn->query($sql);
                     $percent = ($max_score > 0) ? ($current_score / $max_score) * 100 : 0;
 
                     // 🟢 เช็คสถานะการสร้างชิ้นงานว่าครูส่งกลับหรือไม่
-                    $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $gameId LIMIT 1";
+                    $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $gameId AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
                     $res_work = $conn->query($sql_work);
                     $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
             ?>
@@ -244,7 +247,7 @@ $result = $conn->query($sql);
 
                             <div class="mt-auto">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="small fw-bold text-secondary">ผลผลิตที่ได้</span>
+                                    <span class="small fw-bold text-secondary"><?php echo htmlspecialchars($app['mission_stars']); ?>ที่ได้</span>
                                     <span class="star-score">⭐ <?php echo $current_score; ?>/<?php echo $max_score; ?></span>
                                 </div>
 
@@ -253,14 +256,14 @@ $result = $conn->query($sql);
                                 </div>
 
                                 <?php
-                                $btn_text = "🚀 เข้าสู่ฟาร์ม";
+                                $btn_text = "🚀 เข้าสู่บทเรียน";
                                 $btn_class = "btn-play";
                                 
                                 if ($project_status === 'revision') {
                                     $btn_text = "⚠️ เข้าไปแก้ไขงานด่วน";
                                     $btn_class = "btn btn-danger w-100 rounded-pill py-2 fw-bold shadow heartbeat-badge text-white";
                                 } elseif ($project_status === 'submitted' || $project_status === 'reviewed') {
-                                    $btn_text = "✅ เข้าสู่ฟาร์ม (มีผลงานแล้ว)";
+                                    $btn_text = "✅ เข้าสู่บทเรียน (มีผลงานแล้ว)";
                                 }
                                 ?>
                                 <a href="instruction.php?game_id=<?php echo $row['id']; ?>" class="<?php echo strpos($btn_class, 'btn ') !== false ? $btn_class : 'btn ' . $btn_class . ' w-100 d-block text-white text-decoration-none'; ?>">
@@ -272,7 +275,7 @@ $result = $conn->query($sql);
                 <?php endwhile; ?>
             <?php else: ?>
                 <div class="col-12 text-center text-muted py-5">
-                    <h3>ยังไม่มีแปลงเกษตรในระบบครับ!</h3>
+                    <h3>ยังไม่มีภารกิจการเรียนรู้ในระบบครับ!</h3>
                 </div>
             <?php endif; ?>
         </div>

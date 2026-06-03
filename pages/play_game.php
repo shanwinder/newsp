@@ -2,6 +2,7 @@
 // pages/play_game.php
 session_start();
 require_once '../includes/db.php';
+$app = require __DIR__ . '/../config/app.php';
 
 // 1. รับค่า Stage ID
 if (!isset($_GET['stage_id'])) {
@@ -27,7 +28,7 @@ $stage = $result->fetch_assoc();
 $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
 
-// 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 บทเรียนฟาร์มอัจฉริยะ)
+// 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 ภารกิจการเรียนรู้)
 $game_script = "";
 if ($game_id == 1) {
     // บทที่ 1: คัดแยกผลผลิต (ไฟล์เดิมที่คุณครูมีอยู่แล้ว)
@@ -58,7 +59,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
 
 <head>
     <meta charset="UTF-8">
-    <title>ด่านที่ <?php echo $stage_num; ?>: <?php echo htmlspecialchars($stage['title']); ?> - <?php echo htmlspecialchars($stage['game_title']); ?></title>
+    <title>ด่านที่ <?php echo $stage_num; ?>: <?php echo htmlspecialchars($stage['title']); ?> - <?php echo htmlspecialchars($stage['game_title']); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -151,7 +152,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
 
             <div class="col-md-6 text-center">
                 <span class="badge bg-white text-dark mb-2 rounded-pill px-3 shadow-sm border">
-                    <i class="bi bi-controller me-1 <?php echo $theme['text']; ?>"></i> <?php echo htmlspecialchars($stage['game_title']); ?>
+                    <i class="bi bi-controller me-1 <?php echo $theme['text']; ?>"></i> <?php echo htmlspecialchars($app['theme_name']); ?>: <?php echo htmlspecialchars($stage['game_title']); ?>
                 </span>
                 <h2 class="display-6 stage-title m-0">ด่านที่ <?php echo $stage_num; ?>: <?php echo htmlspecialchars($stage['title']); ?></h2>
             </div>

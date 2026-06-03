@@ -2,8 +2,12 @@
 // pages/review_work.php
 session_start();
 require_once '../includes/db.php';
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+require_once '../includes/context.php';
+require_teacher_or_admin();
+ensure_active_account($conn);
+$context = classroom_context($conn);
+if (!$context) {
+    header("Location: classrooms.php");
     exit();
 }
 ?>
@@ -73,7 +77,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             </div>
 
             <div class="p-3 border-top text-center bg-light">
-                <a href="dashboard.php" class="btn btn-outline-secondary w-100 rounded-pill"><i class="bi bi-house-door"></i> กลับ Dashboard</a>
+                <a href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-secondary w-100 rounded-pill"><i class="bi bi-house-door"></i> กลับ Dashboard</a>
             </div>
         </div>
 

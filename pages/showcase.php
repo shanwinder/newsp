@@ -4,14 +4,16 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+$app = require __DIR__ . '/../config/app.php';
 $game_id = $_GET['game_id'] ?? 1;
+$context = session_context();
 ?>
 <!DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
-    <title>Hall of Fame - ลานโชว์ผลงานฟาร์ม</title>
+    <title>ลานโชว์ผลงาน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -164,7 +166,7 @@ $game_id = $_GET['game_id'] ?? 1;
                 <?php
                 require_once '../includes/db.php';
                 $user_id = $_SESSION['user_id'];
-                $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+                $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
                 $res_work = $conn->query($sql_work);
                 $has_work = ($res_work && $res_work->num_rows > 0);
                 $work_status = $has_work ? $res_work->fetch_assoc()['status'] : null;
@@ -196,7 +198,7 @@ $game_id = $_GET['game_id'] ?? 1;
         <div id="gallery-grid" class="row g-4">
             <div class="col-12 text-center py-5">
                 <div class="spinner-border text-success" role="status"></div>
-                <p class="mt-2 text-muted fw-bold">กำลังรวบรวมผลงานจากแปลงเกษตร...</p>
+                <p class="mt-2 text-muted fw-bold">กำลังรวบรวมผลงานจากภารกิจการเรียนรู้...</p>
             </div>
         </div>
     </div>

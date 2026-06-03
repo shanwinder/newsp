@@ -2,19 +2,22 @@
 // pages/create_project_logic.php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
+$app = require __DIR__ . '/../config/app.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 $game_id = 1; 
 $user_id = $_SESSION['user_id'];
+$context = session_context();
 $existingData = null;
 $revisionFeedback = null;
 $existingBg = 'grid';
 $existingDesc = '';
 
 // Check if there is an existing work
-$sql = "SELECT * FROM student_works WHERE user_id = $user_id AND game_id = $game_id LIMIT 1";
+$sql = "SELECT * FROM student_works WHERE user_id = $user_id AND game_id = $game_id AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
 $res = $conn->query($sql);
 if ($res && $res->num_rows > 0) {
     $work = $res->fetch_assoc();
@@ -39,7 +42,7 @@ if ($res && $res->num_rows > 0) {
 
 <head>
     <meta charset="UTF-8">
-    <title>สร้างสรรค์ด่านคัดแยก - Young Smart Farmer</title>
+    <title>สร้างชิ้นงานตรรกะคัดแยก - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
@@ -116,8 +119,8 @@ if ($res && $res->num_rows > 0) {
 
     <div class="container-fluid py-4 px-lg-5">
         <div class="text-center text-white mb-3 text-shadow">
-            <h1 class="fw-bold"><i class="bi bi-controller"></i> สตูดิโอสร้างด่าน "จับผิดตรรกะ"</h1>
-            <p class="fs-5 opacity-75 mb-0">ออกแบบเงื่อนไขที่ซับซ้อน แล้วส่งให้เพื่อนๆ มาไขปริศนา!</p>
+            <h1 class="fw-bold"><i class="bi bi-controller"></i> สตูดิโอสร้างชิ้นงาน "จับผิดตรรกะ"</h1>
+            <p class="fs-5 opacity-75 mb-0">ออกแบบเงื่อนไขที่ซับซ้อน แล้วส่งให้เพื่อนๆ ฝึกแก้ปัญหาอย่างเป็นขั้นตอน!</p>
         </div>
 
         <?php if ($revisionFeedback): ?>
@@ -170,7 +173,7 @@ if ($res && $res->num_rows > 0) {
 
                         <div class="d-grid gap-2 mt-auto">
                             <button onclick="submitWork()" class="btn btn-success btn-lg rounded-pill fw-bold shadow">
-                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> สร้างด่านเสร็จสิ้น
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i> ส่งชิ้นงาน
                             </button>
                             <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-light border rounded-pill fw-bold text-secondary">
                                 ยกเลิก
@@ -395,7 +398,7 @@ if ($res && $res->num_rows > 0) {
 
             const finalDesc = `[ฉากหลัง: ${currentBgType}]\n\n` + desc;
 
-            if (!confirm('ยืนยันจะสร้างชิ้นงานนี้ใช่ไหม?')) return;
+            if (!confirm('ยืนยันจะส่งชิ้นงานนี้ใช่ไหม?')) return;
 
             const itemsData = placedItems.map(item => ({
                 type: item.getData('type'),

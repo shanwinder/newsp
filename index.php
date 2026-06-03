@@ -2,6 +2,7 @@
 // index.php - หน้าแรกของเว็บไซต์ (Landing Page)
 session_start();
 require_once 'includes/db.php';
+$app = require __DIR__ . '/config/app.php';
 
 // 1. ตรวจสอบว่า Login อยู่แล้วหรือไม่? ถ้าใช่ ให้เด้งไป Dashboard เลย
 if (isset($_SESSION['user_id'])) {
@@ -18,7 +19,7 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Young Smart Farmer - เกมฝึกทักษะการแก้ปัญหาอย่างเป็นขั้นตอน</title>
+    <title><?php echo htmlspecialchars($app['app_name'] . ' - ' . $app['app_subtitle']); ?></title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -207,14 +208,14 @@ if (isset($_SESSION['user_id'])) {
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
                 <span style="font-size: 2.2rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">🏡</span> 
-                <span class="ms-2 fw-bold navbar-brand-text fs-3">Young Smart Farmer</span>
+                <span class="ms-2 fw-bold navbar-brand-text fs-3"><?php echo htmlspecialchars($app['app_name']); ?></span>
             </a>
             <button class="navbar-toggler border-0 bg-light opacity-75" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link px-4" href="#features">เกี่ยวกับฟาร์ม</a></li>
+                    <li class="nav-item"><a class="nav-link px-4" href="#features">เกี่ยวกับบทเรียน</a></li>
                     <li class="nav-item ms-lg-2 mt-3 mt-lg-0">
                         <a href="pages/login.php" class="btn btn-light text-success rounded-pill px-4 py-2 fw-bold shadow-sm border-0">
                             <i class="bi bi-door-open-fill"></i> เข้าสู่ระบบ
@@ -240,12 +241,13 @@ if (isset($_SESSION['user_id'])) {
                     <div class="glass-badge mb-4">
                         <i class="bi bi-stars text-warning"></i> Game-Based Learning รูปแบบใหม่
                     </div>
-                    <h1 class="hero-title">ฝึกแก้ปัญหา เป็นขั้นตอน<br>ปลูกความรู้ ด้วยโค้ดดิ้ง!</h1>
+                    <h1 class="hero-title">ยินดีต้อนรับสู่<br><?php echo htmlspecialchars($app['app_name']); ?></h1>
                     <p class="hero-subtitle mb-5 px-lg-5">
-                        สวมบทบาทเกษตรกรยุคใหม่ ตะลุยภารกิจฝึกทักษะ <strong>Computational Thinking</strong> สนุกไปกับการใช้ตรรกะและอัลกอริทึม
+                        <?php echo htmlspecialchars($app['app_subtitle']); ?><br>
+                        เรียนรู้ผ่านภารกิจเกม สนุก คิดเป็นขั้นตอน และแก้ปัญหาอย่างมีเหตุผล
                     </p>
                     <a href="pages/login.php" class="btn-grand">
-                        <i class="bi bi-play-circle-fill me-2 fs-3"></i> เริ่มผจญภัยในฟาร์ม
+                        <i class="bi bi-play-circle-fill me-2 fs-3"></i> เข้าสู่บทเรียน
                     </a>
                 </div>
             </div>
@@ -261,7 +263,7 @@ if (isset($_SESSION['user_id'])) {
     <section id="features" class="container py-5 mt-5">
         <div class="text-center mb-5">
             <h6 class="text-warning fw-bold tracking-wide text-uppercase">ภารกิจหลัก</h6>
-            <h2 class="fw-bold display-5" style="color: #2c3e50;">กิจกรรมในแปลงเกษตร</h2>
+            <h2 class="fw-bold display-5" style="color: #2c3e50;">กิจกรรมภารกิจการเรียนรู้</h2>
             <div style="width: 80px; height: 6px; background: var(--primary-green); margin: 15px auto; border-radius: 10px;"></div>
         </div>
         
@@ -286,7 +288,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="glass-card text-center">
                     <div class="icon-wrapper text-primary">🏆</div>
                     <h3 class="fw-bold text-dark mb-3">ลานโชว์ผลงาน</h3>
-                    <p class="text-secondary fs-6 mb-0">เปิดพื้นที่สร้างสรรค์ให้น้องๆ สร้างโจทย์ปริศนาในฟาร์มของตัวเอง เพื่อนำไปท้าทายเพื่อนๆ และรับยอดไลก์สะสม</p>
+                    <p class="text-secondary fs-6 mb-0">เปิดพื้นที่สร้างสรรค์ให้น้องๆ สร้างโจทย์ปริศนาในภารกิจของตัวเอง เพื่อนำไปท้าทายเพื่อนๆ และรับยอดไลก์สะสม</p>
                 </div>
             </div>
         </div>
@@ -301,7 +303,7 @@ if (isset($_SESSION['user_id'])) {
             <p class="text-muted small mb-4">สำนักงานเขตพื้นที่การศึกษาประถมศึกษามุกดาหาร</p>
             
             <div class="d-inline-flex align-items-center justify-content-center px-4 py-2 bg-light rounded-pill border">
-                <span class="fw-bold text-muted small">&copy; <?php echo date("Y"); ?> Young Smart Farmer Project. All Rights Reserved.</span>
+                <span class="fw-bold text-muted small">&copy; <?php echo date("Y"); ?> <?php echo htmlspecialchars($app['app_name']); ?>. All Rights Reserved.</span>
             </div>
         </div>
     </footer>

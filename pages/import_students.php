@@ -1,9 +1,14 @@
 <?php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/context.php';
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+require_teacher_or_admin();
+ensure_active_account($conn);
+
+$context = classroom_context($conn, isset($_GET['classroom_id']) ? intval($_GET['classroom_id']) : null);
+if (!$context) {
+    header("Location: classrooms.php");
     exit();
 }
 
@@ -20,8 +25,8 @@ if (isset($_POST["import"])) {
         $row = 0;
 
         // 🟢 อัปเกรด: เตรียมคำสั่ง SQL ไว้ "นอกลูป" เพื่อความเร็วและปลอดภัย (Prepared Statements)
-        $check_stmt = $conn->prepare("SELECT user_id FROM users WHERE student_id = ?");
-        $insert_stmt = $conn->prepare("INSERT INTO users (student_id, name, class_level, password, role) VALUES (?, ?, ?, ?, ?)");
+        $check_stmt = $conn->prepare("SELECT user_id FROM users WHERE student_id = ? AND classroom_id = ?");
+        $insert_stmt = $conn->prepare("INSERT INTO users (student_id, name, class_level, password, role, school_id, classroom_id, teacher_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')");
         $role = 'student';
 
         while (($column = fgetcsv($file, 10000, ",")) !== FALSE) {
@@ -41,7 +46,7 @@ if (isset($_POST["import"])) {
             if (empty($student_id) || empty($name)) continue;
 
             // 1. เช็คซ้ำ
-            $check_stmt->bind_param("s", $student_id);
+            $check_stmt->bind_param("si", $student_id, $context['classroom_id']);
             $check_stmt->execute();
             if ($check_stmt->get_result()->num_rows > 0) {
                 $count_fail++; // ซ้ำ ข้ามไป
@@ -52,7 +57,7 @@ if (isset($_POST["import"])) {
             $password = password_hash($raw_pass, PASSWORD_DEFAULT);
 
             // 3. บันทึกข้อมูล
-            $insert_stmt->bind_param("sssss", $student_id, $name, $class_level, $password, $role);
+            $insert_stmt->bind_param("sssssiii", $student_id, $name, $class_level, $password, $role, $context['school_id'], $context['classroom_id'], $context['teacher_id']);
             if ($insert_stmt->execute()) {
                 $count_success++;
             } else {
@@ -89,8 +94,11 @@ if (isset($_POST["import"])) {
             <div class="col-md-7">
                 <div class="card border-0 shadow-sm p-4 rounded-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold text-success"><i class="bi bi-file-earmark-spreadsheet-fill"></i> นำเข้าไฟล์ CSV</h4>
-                        <a href="dashboard.php" class="btn btn-outline-secondary rounded-pill btn-sm">กลับ Dashboard</a>
+                        <div>
+                            <h4 class="fw-bold text-success mb-1"><i class="bi bi-file-earmark-spreadsheet-fill"></i> นำเข้าไฟล์ CSV</h4>
+                            <div class="small text-muted">ห้อง: <?php echo htmlspecialchars($context['classroom']['classroom_name']); ?> | Join Code: <?php echo htmlspecialchars($context['classroom']['join_code']); ?></div>
+                        </div>
+                        <a href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-secondary rounded-pill btn-sm">กลับ Dashboard</a>
                     </div>
 
                     <?php if (!empty($report)): ?>

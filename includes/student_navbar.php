@@ -10,16 +10,19 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once 'db.php'; // เรียกใช้ connection
+require_once __DIR__ . '/db.php'; // เรียกใช้ connection
+require_once __DIR__ . '/context.php';
+$app = require __DIR__ . '/../config/app.php';
 
 $user_id = $_SESSION['user_id'];
 
 // --------------------------------------------------------
 // 1️⃣ คำนวณดาวรวมทั้งหมด (Live Update)
 // --------------------------------------------------------
-$sql_stars = "SELECT SUM(score) as total_score FROM progress WHERE user_id = ?";
+$learning_session_id = intval($_SESSION['learning_session_id'] ?? 0);
+$sql_stars = "SELECT SUM(score) as total_score FROM progress WHERE user_id = ? AND (? = 0 OR learning_session_id = ?)";
 $stmt = $conn->prepare($sql_stars);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("iii", $user_id, $learning_session_id, $learning_session_id);
 $stmt->execute();
 $res_stars = $stmt->get_result();
 $row_stars = $res_stars->fetch_assoc();
@@ -43,8 +46,8 @@ if ($res_title->num_rows > 0) {
     $current_title = $title_data['title_name'];
     $badge_color = $title_data['css_class']; // เช่น badge-warning
 } else {
-    // ถ้ายังไม่มีฉายา ปรับให้เข้ากับธีม
-    $current_title = "เกษตรกรฝึกหัด";
+    // ถ้ายังไม่มีฉายา ปรับให้เข้ากับชื่อผู้เรียนใหม่
+    $current_title = "นักคิดเริ่มต้น";
     $badge_color = "bg-secondary";
 }
 ?>
@@ -54,8 +57,8 @@ if ($res_title->num_rows > 0) {
         <a class="navbar-brand d-flex align-items-center" href="student_dashboard.php">
             <span style="font-size: 2rem; margin-right: 12px; animation: wave-farm 2s infinite;">👨‍🌾</span>
             <div>
-                <span class="d-block fw-bold text-success" style="line-height: 1.2; font-size: 1.3rem;">Young Smart Farmer</span>
-                <span class="d-block text-muted" style="font-size: 0.85rem;">วิทยาการคำนวณ ป.4</span>
+                <span class="d-block fw-bold text-success" style="line-height: 1.2; font-size: 1.3rem;"><?php echo htmlspecialchars($app['app_name']); ?></span>
+                <span class="d-block text-muted" style="font-size: 0.85rem;"><?php echo htmlspecialchars($app['app_short_subtitle']); ?></span>
             </div>
         </a>
 
@@ -92,7 +95,7 @@ if ($res_title->num_rows > 0) {
                 </li>
 
                 <li class="nav-item">
-                    <a href="../logout.php" class="btn btn-outline-danger btn-sm rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="ออกจากแปลงเกษตร">
+                    <a href="../logout.php" class="btn btn-outline-danger btn-sm rounded-circle p-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="ออกจากระบบ">
                         <i class="bi bi-box-arrow-right fs-5"></i>
                     </a>
                 </li>

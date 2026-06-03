@@ -1,428 +1,927 @@
-// Shared mini-game engine for stages 5-12.
+// Phaser-based shared game engine for stages 4-12.
 (function () {
+    const WIDTH = 800;
+    const HEIGHT = 600;
     const DIRS = {
-        UP: { icon: '⬆️', dc: 0, dr: -1 },
-        DOWN: { icon: '⬇️', dc: 0, dr: 1 },
-        LEFT: { icon: '⬅️', dc: -1, dr: 0 },
-        RIGHT: { icon: '➡️', dc: 1, dr: 0 }
+        UP: { icon: '⬆️', label: 'ขึ้น', dc: 0, dr: -1 },
+        DOWN: { icon: '⬇️', label: 'ลง', dc: 0, dr: 1 },
+        LEFT: { icon: '⬅️', label: 'ซ้าย', dc: -1, dr: 0 },
+        RIGHT: { icon: '➡️', label: 'ขวา', dc: 1, dr: 0 }
+    };
+    const DPR = Math.min(window.devicePixelRatio || 1, 2);
+    const USE_EMOJI_ASSETS = true;
+
+    /**
+     * TODO:
+     * เมื่อมีภาพกราฟิก HD ครบชุดแล้ว ให้เปลี่ยน USE_EMOJI_ASSETS = false
+     * และโหลดไฟล์ภาพจริง เช่น hay.webp, barn.webp, crop.webp ใน preloadCommon()
+     */
+    const ASSET_MAP = {
+        tractor: { emoji: '🚜', texture: 'tractor', fontSize: '42px', targetSize: 58 },
+        target: { emoji: '🧺', texture: 'basket', fontSize: '42px', targetSize: 54 },
+        basket: { emoji: '🧺', texture: 'basket', fontSize: '42px', targetSize: 54 },
+        rock: { emoji: '🪨', texture: 'rock', fontSize: '42px', targetSize: 54 },
+        hay: { emoji: '🌾', texture: 'hay', fontSize: '42px', targetSize: 54 },
+        barn: { emoji: '🏚️', texture: 'barn', fontSize: '42px', targetSize: 54 },
+        crop: { emoji: '🌽', texture: 'crop', fontSize: '42px', targetSize: 54 },
+        check: { emoji: '✅', texture: 'check', fontSize: '36px', targetSize: 48 }
     };
 
-    function byId(id) {
-        return document.getElementById(id);
+    function ensureSequenceStyles() {
+        if (document.getElementById('farm-missions-sequence-style')) return;
+        const style = document.createElement('style');
+        style.id = 'farm-missions-sequence-style';
+        style.innerHTML = `
+            #game-container { width: min(1000px, 94vw); }
+            #phaser-canvas,
+            #phaser-canvas canvas {
+                touch-action: pan-y;
+            }
+            .sequence-shell * { box-sizing: border-box; }
+            .sequence-mission {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 12px 28px rgba(15,23,42,.08);
+                padding: 16px 18px;
+                margin-bottom: 14px;
+            }
+            .sequence-layout {
+                display: grid;
+                grid-template-columns: minmax(360px, 1fr) 330px;
+                gap: 18px;
+                align-items: stretch;
+            }
+            .sequence-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 16px;
+                box-shadow: 0 12px 28px rgba(15,23,42,.08);
+                padding: 16px;
+            }
+            #phaser-canvas {
+                width: 100%;
+                min-height: 420px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            .sequence-zone {
+                min-height: 132px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-content: flex-start;
+                background: #f8fafc;
+                border: 2px dashed #cbd5e1;
+                border-radius: 14px;
+                padding: 12px;
+            }
+            .sequence-block {
+                width: 44px;
+                height: 44px;
+                border: 0;
+                border-radius: 12px;
+                background: #2563eb;
+                color: #ffffff;
+                font-size: 22px;
+                box-shadow: 0 4px 10px rgba(15,23,42,.15);
+            }
+            .sequence-arrow-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+            }
+            @media (max-width: 900px) {
+                .sequence-layout { grid-template-columns: 1fr; }
+                #phaser-canvas { min-height: 360px; }
+            }
+        `;
+        document.head.appendChild(style);
     }
 
-    function escapeHtml(text) {
-        return String(text || '').replace(/[&<>"']/g, function (char) {
-            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
+    function createGame(sceneClass, parentId = 'game-container', clearParent = true) {
+        const container = document.getElementById(parentId);
+        if (clearParent && container) container.innerHTML = '';
+        return new Phaser.Game({
+            type: Phaser.AUTO,
+            width: WIDTH,
+            height: HEIGHT,
+            resolution: DPR,
+            antialias: true,
+            roundPixels: true,
+            backgroundColor: '#87CEEB',
+            parent: parentId,
+            input: {
+                mouse: { preventDefaultWheel: false },
+                touch: { capture: false }
+            },
+            physics: {
+                default: 'arcade',
+                arcade: { debug: false }
+            },
+            scene: sceneClass
         });
     }
 
-    function ensureAlert() {
-        if (window.Swal) return Promise.resolve();
-        return new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-            script.onload = resolve;
-            script.onerror = resolve;
-            document.head.appendChild(script);
-        });
-    }
-
-    function showMessage(options) {
-        if (window.Swal) {
-            return window.Swal.fire(options);
-        }
-        alert(options.text || options.title || '');
-        return Promise.resolve();
-    }
-
-    function buildShell(theme, title, subtitle) {
-        const container = byId('game-container');
+    function createSequenceGame(sceneClass) {
+        ensureSequenceStyles();
+        const container = document.getElementById('game-container');
         if (!container) return null;
+        if (container) container.innerHTML = '';
         container.innerHTML = `
-            <div class="farm-mission-shell" style="width:min(1000px, 92vw);">
-                <style>
-                    .farm-mission-shell * { box-sizing: border-box; }
-                    .farm-mission-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:16px; }
-                    .farm-mission-title { font-weight:800; color:#1f2937; margin:0; }
-                    .farm-mission-subtitle { color:#64748b; margin:4px 0 0; }
-                    .farm-mission-badge { background:${theme}; color:#fff; border-radius:999px; padding:8px 14px; font-weight:800; white-space:nowrap; }
-                    .farm-game-grid { display:grid; gap:4px; background:#94a3b8; padding:4px; border-radius:16px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.5); }
-                    .farm-cell { aspect-ratio:1; min-width:54px; display:flex; align-items:center; justify-content:center; background:#ecfdf5; border-radius:10px; font-size:30px; position:relative; }
-                    .farm-cell.path { background:#fef3c7; }
-                    .farm-cell.rock { background:#e2e8f0; }
-                    .farm-cell.target { background:#dcfce7; outline:3px solid #22c55e; }
-                    .farm-cell.collected { background:#dbeafe; }
-                    .farm-panel { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:18px; box-shadow:0 12px 28px rgba(15,23,42,.08); }
-                    .command-zone { min-height:76px; display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; background:#f8fafc; border:2px dashed #cbd5e1; border-radius:14px; padding:12px; }
-                    .cmd-block { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:${theme}; color:#fff; font-size:22px; cursor:pointer; box-shadow:0 4px 10px rgba(15,23,42,.15); }
-                    .choice-card { border:2px solid #e2e8f0; border-radius:14px; padding:14px; background:#fff; height:100%; }
-                    .choice-card.correct { border-color:#22c55e; background:#f0fdf4; }
-                    .choice-card.wrong { border-color:#ef4444; background:#fef2f2; }
-                    .debug-row { display:flex; gap:10px; align-items:center; padding:10px; border:1px solid #e2e8f0; border-radius:12px; background:#fff; margin-bottom:8px; }
-                    .debug-handle { width:36px; height:36px; border-radius:10px; border:0; background:#e0f2fe; color:#0369a1; font-weight:800; }
-                    .summary-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:14px; }
-                    @media (max-width: 800px) {
-                        .farm-mission-head { flex-direction:column; }
-                        .farm-cell { min-width:42px; font-size:24px; }
-                    }
-                </style>
-                <div class="farm-mission-head">
-                    <div>
-                        <h3 class="farm-mission-title">${escapeHtml(title)}</h3>
-                        <p class="farm-mission-subtitle">${escapeHtml(subtitle)}</p>
+            <div class="sequence-shell">
+                <div class="sequence-mission">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <div id="level-indicator" class="fw-bold text-primary">ด่านย่อยที่ 1 / 3</div>
+                            <h4 id="mission-title" class="fw-bold mb-1 text-dark">ภารกิจรถไถ</h4>
+                            <div id="mission-text" class="text-secondary">วางแผนลำดับคำสั่งให้รถไถ</div>
+                        </div>
+                        <div id="attempt-badge" class="badge text-bg-primary fs-6 rounded-pill px-3 py-2">ลอง 0 | พลาด 0</div>
                     </div>
-                    <div class="farm-mission-badge" id="mission-attempts">ลอง: 0 ครั้ง</div>
+                    <div id="feedback-box" class="alert alert-info rounded-4 shadow-sm mt-3 mb-0 py-2">เริ่มวางแผนเส้นทางได้เลย</div>
                 </div>
-                <div id="mission-root"></div>
+                <div class="sequence-layout">
+                    <div class="sequence-card">
+                        <div id="phaser-canvas"></div>
+                    </div>
+                    <div class="sequence-card">
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                            <span class="fw-bold text-dark">บล็อกคำสั่ง</span>
+                            <span id="command-count" class="badge text-bg-secondary">0 / 10</span>
+                        </div>
+                        <div id="sequence-container" class="sequence-zone mb-3">
+                            <span id="sequence-placeholder" class="text-muted small">กดปุ่มลูกศรด้านล่างเพื่อเพิ่มคำสั่ง</span>
+                        </div>
+                        <div class="sequence-arrow-grid mb-3">
+                            <button class="btn btn-outline-primary fw-bold py-2" data-dir="UP">⬆️</button>
+                            <button class="btn btn-outline-primary fw-bold py-2" data-dir="DOWN">⬇️</button>
+                            <button class="btn btn-outline-primary fw-bold py-2" data-dir="LEFT">⬅️</button>
+                            <button class="btn btn-outline-primary fw-bold py-2" data-dir="RIGHT">➡️</button>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="clear-commands" class="btn btn-outline-danger flex-fill fw-bold">ล้าง</button>
+                            <button id="run-commands" class="btn btn-success flex-fill fw-bold">รันคำสั่ง</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
-        return byId('mission-root');
-    }
-
-    function finish(stars, startedAt, attempts) {
-        const duration = Math.max(1, Math.floor((Date.now() - startedAt) / 1000));
-        showMessage({
-            title: 'ภารกิจสำเร็จ!',
-            text: `ได้ ${stars} ดาว | ใช้เวลา ${duration} วินาที | ทดลอง ${attempts} ครั้ง`,
-            icon: 'success',
-            confirmButtonText: 'ไปสรุปผล'
-        }).then(() => {
-            if (typeof window.sendResult === 'function') {
-                window.sendResult(window.STAGE_ID, stars, duration, attempts);
-            }
+        return new Phaser.Game({
+            type: Phaser.AUTO,
+            width: 480,
+            height: 400,
+            resolution: DPR,
+            antialias: true,
+            roundPixels: true,
+            transparent: true,
+            parent: 'phaser-canvas',
+            input: {
+                mouse: { preventDefaultWheel: false },
+                touch: { capture: false }
+            },
+            physics: {
+                default: 'arcade',
+                arcade: { debug: false }
+            },
+            scene: sceneClass
         });
     }
 
-    function starsFromAttempts(attempts) {
-        if (attempts <= 1) return 3;
-        if (attempts <= 3) return 2;
+    function addButton(scene, x, y, w, h, label, color, callback) {
+        const bg = scene.add.rectangle(x, y, w, h, color, 1)
+            .setStrokeStyle(2, 0xffffff, 0.9)
+            .setInteractive({ useHandCursor: true });
+        const text = scene.add.text(x, y, label, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '18px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        bg.on('pointerover', () => bg.setScale(1.03));
+        bg.on('pointerout', () => bg.setScale(1));
+        bg.on('pointerdown', callback);
+        return scene.add.container(0, 0, [bg, text]);
+    }
+
+    function addPanel(scene, x, y, w, h, color = 0xffffff, alpha = 0.95) {
+        return scene.add.rectangle(x, y, w, h, color, alpha)
+            .setStrokeStyle(2, 0xd1d5db, 1);
+    }
+
+    function playSound(scene, key) {
+        if (scene.sound && scene.cache.audio.exists(key)) {
+            scene.sound.play(key, { volume: 0.6 });
+        }
+    }
+
+    function addGameObject(scene, key, x, y, size = null) {
+        const asset = ASSET_MAP[key] || ASSET_MAP.target;
+        if (USE_EMOJI_ASSETS) {
+            return scene.add.text(x, y, asset.emoji, {
+                fontSize: asset.fontSize,
+                fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+            }).setOrigin(0.5);
+        }
+
+        return scene.add.image(x, y, asset.texture)
+            .setDisplaySize(size || asset.targetSize, size || asset.targetSize)
+            .setOrigin(0.5);
+    }
+
+    function starsFromState(attempts, mistakes, hintUsed) {
+        if (hintUsed) return 1;
+        if (attempts <= 3 && mistakes === 0) return 3;
+        if (attempts <= 6 || mistakes <= 2) return 2;
         return 1;
     }
 
-    function initSequence(config) {
-        ensureAlert().then(() => {
-            const startedAt = Date.now();
-            let attempts = 0;
-            let levelIndex = 0;
-            let commands = [];
-            let player = null;
-            let collected = new Set();
-            const root = buildShell('#2563eb', config.title, config.subtitle);
-            if (!root) return;
+    function showToast(scene, message, type = 'info') {
+        if (scene.toastGroup) scene.toastGroup.destroy(true);
+        const colors = { info: 0x0ea5e9, success: 0x16a34a, warning: 0xf59e0b, error: 0xdc2626 };
+        const group = scene.add.container(400, 548).setDepth(1000);
+        const bg = scene.add.rectangle(0, 0, 700, 54, colors[type] || colors.info, 0.95)
+            .setStrokeStyle(2, 0xffffff, 0.9);
+        const txt = scene.add.text(0, 0, message, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '20px',
+            color: '#ffffff',
+            fontStyle: 'bold',
+            align: 'center',
+            wordWrap: { width: 650 }
+        }).setOrigin(0.5);
+        group.add([bg, txt]);
+        scene.toastGroup = group;
+        scene.tweens.add({ targets: group, y: 532, duration: 160, ease: 'Back.out' });
+        scene.time.delayedCall(2600, () => {
+            if (group.active) scene.tweens.add({ targets: group, alpha: 0, duration: 250, onComplete: () => group.destroy(true) });
+        });
+    }
 
-            function level() {
-                return config.levels[levelIndex];
+    function endGame(scene, state, praise) {
+        if (state.ended) return;
+        state.ended = true;
+        const duration = Math.max(1, Math.floor((Date.now() - state.startedAt) / 1000));
+        const stars = starsFromState(state.attempts, state.mistakes, state.hintUsed);
+        const starText = '⭐'.repeat(stars);
+
+        const overlay = scene.add.container(400, 300).setDepth(2000);
+        overlay.add(scene.add.rectangle(0, 0, WIDTH, HEIGHT, 0x000000, 0.75));
+        overlay.add(scene.add.text(0, -110, '🏆 ภารกิจสำเร็จ!', {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '48px',
+            color: '#facc15',
+            fontStyle: 'bold'
+        }).setOrigin(0.5));
+        overlay.add(scene.add.text(0, -42, praise, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '24px',
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: 650 }
+        }).setOrigin(0.5));
+        overlay.add(scene.add.text(0, 30, starText, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '50px',
+            color: '#ffffff'
+        }).setOrigin(0.5));
+        overlay.add(scene.add.text(0, 96, `ใช้เวลา ${duration} วินาที | พยายาม ${state.attempts} ครั้ง`, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '22px',
+            color: '#e5e7eb'
+        }).setOrigin(0.5));
+
+        scene.time.delayedCall(1900, () => {
+            if (typeof window.sendResult === 'function') {
+                window.sendResult(window.STAGE_ID, stars, duration, state.attempts);
+            }
+        });
+    }
+
+    function drawCommonHeader(scene, title, subtitle, state) {
+        scene.add.rectangle(400, 38, 760, 58, 0xffffff, 0.95)
+            .setStrokeStyle(2, 0xe5e7eb, 1);
+        scene.add.text(38, 20, title, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '23px',
+            color: '#1f2937',
+            fontStyle: 'bold'
+        });
+        scene.add.text(38, 48, subtitle, {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '15px',
+            color: '#64748b'
+        });
+        state.attemptText = scene.add.text(650, 25, 'ลอง: 0 | พลาด: 0', {
+            fontFamily: 'Kanit, sans-serif',
+            fontSize: '17px',
+            color: '#0f172a',
+            fontStyle: 'bold'
+        });
+    }
+
+    function updateAttemptText(state) {
+        if (state.attemptText) {
+            state.attemptText.setText(`ลอง: ${state.attempts} | พลาด: ${state.mistakes}`);
+        }
+    }
+
+    function preloadCommon(scene) {
+        scene.load.image('bg_farm', '../assets/img/bg_farm.webp');
+        scene.load.image('bg_garden', '../assets/img/bg_v_garden.webp');
+        scene.load.image('tractor', '../assets/img/tractor.webp');
+        scene.load.image('rock', '../assets/img/rock.webp');
+        scene.load.image('basket', '../assets/img/basket.webp');
+        scene.load.image('plant', '../assets/img/newplant.webp');
+        scene.load.image('sprout', '../assets/img/newsprout.webp');
+        scene.load.audio('correct', '../assets/sound/correct.mp3');
+        scene.load.audio('wrong', '../assets/sound/wrong.mp3');
+    }
+
+    function initSequence(gameConfig) {
+        class SequenceScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'SequenceScene' });
+                this.state = {
+                    startedAt: Date.now(),
+                    attempts: 0,
+                    mistakes: 0,
+                    hintUsed: false,
+                    ended: false
+                };
+                this.levelIndex = 0;
+                this.commands = [];
+                this.collected = new Set();
+                this.isRunning = false;
             }
 
-            function updateAttempts() {
-                const badge = byId('mission-attempts');
-                if (badge) badge.textContent = `ลอง: ${attempts} ครั้ง`;
+            preload() {
+                preloadCommon(this);
             }
 
-            function key(pos) {
+            create() {
+                this.add.image(400, 300, 'bg_farm').setDisplaySize(WIDTH, HEIGHT).setAlpha(0.55);
+                drawCommonHeader(this, gameConfig.title, gameConfig.subtitle, this.state);
+                this.boardLayer = this.add.container(0, 0);
+                this.commandLayer = this.add.container(0, 0);
+                this.uiLayer = this.add.container(0, 0);
+                this.loadLevel();
+            }
+
+            level() {
+                return gameConfig.levels[this.levelIndex];
+            }
+
+            posKey(pos) {
                 return `${pos.c},${pos.r}`;
             }
 
-            function isRock(c, r) {
-                return (level().rocks || []).some((rock) => rock.c === c && rock.r === r);
+            point(raw) {
+                if (!raw) return null;
+                return {
+                    c: Number.isInteger(raw.c) ? raw.c : raw.col,
+                    r: Number.isInteger(raw.r) ? raw.r : raw.row,
+                    type: raw.type
+                };
             }
 
-            function drawBoard() {
-                const data = level();
-                player = { c: data.start.c, r: data.start.r };
-                collected = new Set();
-                render();
+            obstacles() {
+                return (this.level().obstacles || this.level().rocks || []).map((item) => this.point(item));
             }
 
-            function render() {
-                const data = level();
-                const targets = data.targets || [data.target];
-                let html = `
-                    <div class="d-flex flex-column flex-lg-row gap-4 align-items-stretch">
-                        <div class="farm-panel flex-grow-1">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <strong>${escapeHtml(data.name)}</strong>
-                                <span class="badge text-bg-light">${levelIndex + 1} / ${config.levels.length}</span>
-                            </div>
-                            <div id="farm-board" class="farm-game-grid" style="grid-template-columns:repeat(${data.cols}, minmax(42px, 1fr));">
-                `;
-                for (let r = 0; r < data.rows; r++) {
-                    for (let c = 0; c < data.cols; c++) {
-                        const posKey = `${c},${r}`;
-                        let cls = 'farm-cell';
-                        let text = '';
-                        if (player.c === c && player.r === r) {
-                            text = '🚜';
-                            cls += ' path';
-                        } else if (isRock(c, r)) {
-                            text = data.rockIcon || '🪨';
-                            cls += ' rock';
-                        } else if (targets.some((target) => target.c === c && target.r === r)) {
-                            text = collected.has(posKey) ? '✅' : (data.targetIcon || '🧺');
-                            cls += collected.has(posKey) ? ' collected' : ' target';
-                        } else if (data.finish && data.finish.c === c && data.finish.r === r) {
-                            text = '🏠';
-                            cls += ' target';
-                        } else {
-                            text = '·';
+            crops() {
+                return (this.level().crops || this.level().targets || []).map((item) => ({ ...this.point(item), type: item.type || 'crop' }));
+            }
+
+            destination() {
+                const level = this.level();
+                return this.point(level.barn || level.finish || level.target || null);
+            }
+
+            isObstacle(c, r) {
+                return this.obstacles().find((obstacle) => obstacle.c === c && obstacle.r === r) || null;
+            }
+
+            loadLevel() {
+                const level = this.level();
+                this.player = { c: level.start.c, r: level.start.r };
+                this.collected = new Set();
+                this.commands = [];
+                this.renderBoard();
+                this.renderCommandPanel();
+                showToast(this, level.goal, 'info');
+            }
+
+            renderBoard() {
+                const level = this.level();
+                const tile = level.rows >= 6 || level.cols >= 6 ? 54 : 62;
+                this.tile = tile;
+                this.originX = 36;
+                this.originY = 108;
+                this.boardLayer.removeAll(true);
+
+                this.boardLayer.add(addPanel(this, 224, 310, 410, 420, 0xffffff, 0.9));
+                this.boardLayer.add(this.add.text(44, 92, `${level.name} (${this.levelIndex + 1}/${gameConfig.levels.length})`, {
+                    fontFamily: 'Kanit, sans-serif',
+                    fontSize: '18px',
+                    color: '#1e40af',
+                    fontStyle: 'bold'
+                }));
+
+                const crops = this.crops();
+                const destination = this.destination();
+                for (let r = 0; r < level.rows; r++) {
+                    for (let c = 0; c < level.cols; c++) {
+                        const x = this.originX + c * tile + tile / 2;
+                        const y = this.originY + r * tile + tile / 2;
+                        const fill = (r + c) % 2 === 0 ? 0xecfdf5 : 0xdcfce7;
+                        const cell = this.add.rectangle(x, y, tile - 4, tile - 4, fill, 0.95)
+                            .setStrokeStyle(1, 0x94a3b8, 0.9);
+                        this.boardLayer.add(cell);
+
+                        const obstacle = this.isObstacle(c, r);
+                        if (obstacle) {
+                            this.boardLayer.add(addGameObject(this, obstacle.type || 'rock', x, y, tile * 0.72));
                         }
-                        html += `<div class="${cls}">${text}</div>`;
+                        crops.forEach((crop) => {
+                            if (crop.c === c && crop.r === r && !this.collected.has(this.posKey(crop))) {
+                                this.boardLayer.add(addGameObject(this, crop.type || 'crop', x, y, tile * 0.68));
+                            }
+                        });
+                        if (destination && destination.c === c && destination.r === r) {
+                            this.boardLayer.add(addGameObject(this, level.barn ? 'barn' : 'target', x, y, tile * 0.72));
+                        }
                     }
                 }
-                html += `
-                            </div>
-                            <div id="sequence-feedback" class="alert alert-info mt-3 mb-0 py-2">${escapeHtml(data.goal)}</div>
-                        </div>
-                        <div class="farm-panel" style="width:min(360px, 100%);">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <strong>พื้นที่เรียงคำสั่ง</strong>
-                                <span class="badge text-bg-secondary">${commands.length} / ${data.maxCommands}</span>
-                            </div>
-                            <div id="sequence-zone" class="command-zone mb-3"></div>
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                ${Object.keys(DIRS).map((dir) => `<button class="btn btn-outline-primary fw-bold" data-dir="${dir}">${DIRS[dir].icon}</button>`).join('')}
-                            </div>
-                            <div class="d-flex gap-2">
-                                <button id="clear-commands" class="btn btn-outline-danger flex-fill">ล้าง</button>
-                                <button id="run-commands" class="btn btn-success flex-fill fw-bold">รันคำสั่ง</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                root.innerHTML = html;
-                renderCommands();
-                root.querySelectorAll('[data-dir]').forEach((btn) => {
-                    btn.addEventListener('click', () => {
-                        if (commands.length >= data.maxCommands) {
-                            showMessage({ title: 'คำสั่งเต็มแล้ว', text: 'ลองลบคำสั่งบางตัวก่อนนะ', icon: 'warning' });
+
+                const px = this.originX + this.player.c * tile + tile / 2;
+                const py = this.originY + this.player.r * tile + tile / 2;
+                this.tractor = addGameObject(this, 'tractor', px, py, tile * 0.82);
+                this.boardLayer.add(this.tractor);
+
+                if (crops.length > 0) {
+                    this.boardLayer.add(this.add.rectangle(340, 92, 126, 30, 0x0f766e, 0.92).setStrokeStyle(1, 0xffffff, 0.7));
+                    this.boardLayer.add(this.add.text(340, 92, `เก็บแล้ว ${this.collected.size} / ${crops.length}`, {
+                        fontFamily: 'Kanit, sans-serif',
+                        fontSize: '15px',
+                        color: '#ffffff',
+                        fontStyle: 'bold'
+                    }).setOrigin(0.5));
+                }
+            }
+
+            renderCommandPanel() {
+                const level = this.level();
+                this.commandLayer.removeAll(true);
+                this.commandLayer.add(addPanel(this, 620, 310, 318, 420, 0xffffff, 0.96));
+                this.commandLayer.add(this.add.text(480, 102, 'บล็อกคำสั่ง', {
+                    fontFamily: 'Kanit, sans-serif',
+                    fontSize: '20px',
+                    color: '#1f2937',
+                    fontStyle: 'bold'
+                }));
+                this.commandLayer.add(this.add.text(670, 106, `${this.commands.length}/${level.maxCommands}`, {
+                    fontFamily: 'Kanit, sans-serif',
+                    fontSize: '16px',
+                    color: '#475569'
+                }));
+
+                const zone = this.add.rectangle(620, 205, 266, 150, 0xf8fafc, 1)
+                    .setStrokeStyle(2, 0xcbd5e1, 1);
+                this.commandLayer.add(zone);
+
+                if (this.commands.length === 0) {
+                    this.commandLayer.add(this.add.text(620, 205, 'คลิกบล็อกลูกศร\nเพื่อเรียงคำสั่ง', {
+                        fontFamily: 'Kanit, sans-serif',
+                        fontSize: '17px',
+                        color: '#94a3b8',
+                        align: 'center'
+                    }).setOrigin(0.5));
+                }
+
+                this.commands.forEach((cmd, index) => {
+                    const x = 504 + (index % 5) * 54;
+                    const y = 155 + Math.floor(index / 5) * 52;
+                    const rect = this.add.rectangle(x, y, 42, 42, 0x2563eb, 1)
+                        .setStrokeStyle(2, 0xffffff, 0.9)
+                        .setInteractive({ useHandCursor: true });
+                    const txt = this.add.text(x, y, DIRS[cmd].icon, { fontSize: '22px' }).setOrigin(0.5);
+                    rect.on('pointerdown', () => {
+                        if (this.isRunning) return;
+                        this.commands.splice(index, 1);
+                        this.renderCommandPanel();
+                    });
+                    this.commandLayer.add([rect, txt]);
+                });
+
+                Object.keys(DIRS).forEach((dir, index) => {
+                    const x = 505 + index * 72;
+                    const button = addButton(this, x, 335, 58, 48, DIRS[dir].icon, 0x2563eb, () => {
+                        if (this.isRunning) return;
+                        if (this.commands.length >= level.maxCommands) {
+                            showToast(this, 'คำสั่งเต็มแล้ว ลบคำสั่งบางตัวก่อนนะ', 'warning');
                             return;
                         }
-                        commands.push(btn.dataset.dir);
-                        renderCommands();
+                        this.commands.push(dir);
+                        this.renderCommandPanel();
                     });
+                    this.commandLayer.add(button);
                 });
-                byId('clear-commands').addEventListener('click', () => {
-                    commands = [];
-                    drawBoard();
-                });
-                byId('run-commands').addEventListener('click', runCommands);
+
+                this.commandLayer.add(addButton(this, 548, 438, 112, 48, 'ล้าง', 0xdc2626, () => {
+                    if (this.isRunning) return;
+                    this.commands = [];
+                    this.player = { c: level.start.c, r: level.start.r };
+                    this.collected = new Set();
+                    this.renderBoard();
+                    this.renderCommandPanel();
+                }));
+                this.commandLayer.add(addButton(this, 678, 438, 112, 48, 'รันรถไถ', 0x16a34a, () => this.runCommands()));
             }
 
-            function renderCommands() {
-                const zone = byId('sequence-zone');
-                if (!zone) return;
-                if (commands.length === 0) {
-                    zone.innerHTML = '<span class="text-muted small">กดลูกศรเพื่อเพิ่มคำสั่ง แล้วกดรัน</span>';
+            async runCommands() {
+                if (this.isRunning || this.commands.length === 0) {
+                    showToast(this, 'ต้องเรียงคำสั่งอย่างน้อย 1 บล็อกก่อนรันรถไถ', 'warning');
                     return;
                 }
-                zone.innerHTML = commands.map((cmd, index) => `<button class="cmd-block" data-remove="${index}" title="คลิกเพื่อลบ">${DIRS[cmd].icon}</button>`).join('');
-                zone.querySelectorAll('[data-remove]').forEach((btn) => {
-                    btn.addEventListener('click', () => {
-                        commands.splice(Number(btn.dataset.remove), 1);
-                        renderCommands();
-                    });
-                });
-            }
+                this.isRunning = true;
+                this.state.attempts++;
+                updateAttemptText(this.state);
+                const level = this.level();
+                this.player = { c: level.start.c, r: level.start.r };
+                this.collected = new Set();
+                this.renderBoard();
 
-            async function runCommands() {
-                if (commands.length === 0) {
-                    showMessage({ title: 'ยังไม่มีคำสั่ง', text: 'ลองเรียงลูกศรก่อนรันนะ', icon: 'info' });
-                    return;
-                }
-                attempts++;
-                updateAttempts();
-                const data = level();
-                player = { c: data.start.c, r: data.start.r };
-                collected = new Set();
-                for (const cmd of commands) {
+                for (const cmd of this.commands) {
                     const dir = DIRS[cmd];
-                    const next = { c: player.c + dir.dc, r: player.r + dir.dr };
-                    if (next.c < 0 || next.r < 0 || next.c >= data.cols || next.r >= data.rows) {
-                        render();
-                        byId('sequence-feedback').className = 'alert alert-danger mt-3 mb-0 py-2';
-                        byId('sequence-feedback').textContent = 'รถไถตกขอบแปลง ลองนับช่องใหม่อีกครั้ง';
+                    const next = { c: this.player.c + dir.dc, r: this.player.r + dir.dr };
+                    const badOut = next.c < 0 || next.r < 0 || next.c >= level.cols || next.r >= level.rows;
+                    const obstacle = !badOut ? this.isObstacle(next.c, next.r) : null;
+                    if (badOut || obstacle) {
+                        this.state.mistakes++;
+                        updateAttemptText(this.state);
+                        playSound(this, 'wrong');
+                        this.tweens.add({ targets: this.tractor, x: this.tractor.x + dir.dc * 16, y: this.tractor.y + dir.dr * 16, yoyo: true, duration: 120 });
+                        const obstacleText = obstacle && obstacle.type === 'hay'
+                            ? 'รถไถชนกองฟาง ลองวางเส้นทางอ้อมดูนะ'
+                            : 'เส้นทางนี้มีหินหรือสิ่งกีดขวาง ลองเปลี่ยนทิศทาง';
+                        showToast(this, badOut ? 'รถไถออกนอกแปลง ลองตรวจทิศทางอีกครั้ง' : (level.crashFeedback || obstacleText), 'error');
+                        this.isRunning = false;
                         return;
                     }
-                    if (isRock(next.c, next.r)) {
-                        render();
-                        byId('sequence-feedback').className = 'alert alert-danger mt-3 mb-0 py-2';
-                        byId('sequence-feedback').textContent = data.crashFeedback || 'รถไถชนสิ่งกีดขวาง ลองเลี้ยวหลบก่อนเดินต่อ';
-                        return;
+                    this.player = next;
+                    const x = this.originX + next.c * this.tile + this.tile / 2;
+                    const y = this.originY + next.r * this.tile + this.tile / 2;
+                    await new Promise((resolve) => {
+                        this.tweens.add({ targets: this.tractor, x, y, duration: 330, onComplete: resolve });
+                    });
+                    const cropHit = this.crops().find((crop) => crop.c === next.c && crop.r === next.r);
+                    if (cropHit && !this.collected.has(this.posKey(cropHit))) {
+                        this.collected.add(this.posKey(cropHit));
+                        playSound(this, 'correct');
+                        showToast(this, 'เก็บผลผลิตแล้ว!', 'success');
+                        this.add.text(x, y - 28, '+1', { fontFamily: 'Kanit', fontSize: '22px', color: '#16a34a', fontStyle: 'bold' }).setOrigin(0.5);
+                        this.renderBoard();
                     }
-                    player = next;
-                    const targetHit = (data.targets || []).find((target) => target.c === player.c && target.r === player.r);
-                    if (targetHit) collected.add(key(targetHit));
-                    render();
-                    await new Promise((resolve) => setTimeout(resolve, 220));
                 }
-                const allCollected = !data.targets || data.targets.every((target) => collected.has(key(target)));
-                const destination = data.finish || data.target || (data.targets || [])[0];
-                const atDestination = destination && player.c === destination.c && player.r === destination.r;
-                if (allCollected && atDestination) {
-                    if (levelIndex < config.levels.length - 1) {
-                        showMessage({ title: 'ผ่านด่านย่อยแล้ว!', text: 'ลำดับคำสั่งถูกต้อง ไปต่อกันเลย', icon: 'success' }).then(() => {
-                            levelIndex++;
-                            commands = [];
-                            drawBoard();
+
+                this.isRunning = false;
+                const crops = this.crops();
+                const allCollected = crops.every((crop) => this.collected.has(this.posKey(crop)));
+                const destination = this.destination() || crops[0];
+                const atDestination = destination && this.player.c === destination.c && this.player.r === destination.r;
+                if (atDestination && crops.length > 0 && !allCollected) {
+                    this.state.mistakes++;
+                    updateAttemptText(this.state);
+                    playSound(this, 'wrong');
+                    showToast(this, 'ยังมีผลผลิตเหลืออยู่ ต้องเก็บให้ครบก่อนกลับโรงนา', 'warning');
+                } else if (allCollected && atDestination) {
+                    playSound(this, 'correct');
+                    if (this.levelIndex < gameConfig.levels.length - 1) {
+                        showToast(this, 'ยอดเยี่ยม! ลำดับคำสั่งถูกต้อง ไปด่านย่อยถัดไป', 'success');
+                        this.time.delayedCall(1200, () => {
+                            this.levelIndex++;
+                            this.loadLevel();
                         });
                     } else {
-                        finish(starsFromAttempts(attempts), startedAt, attempts);
+                        endGame(this, this.state, 'คุณวางแผนเส้นทางและเรียงคำสั่งได้ดีมาก');
                     }
                 } else {
-                    const feedback = !allCollected ? 'คำสั่งถูกบางส่วนแล้ว แต่ยังเก็บผลผลิตไม่ครบ' : 'รถไถยังไม่หยุดที่เป้าหมาย ลองตรวจลำดับคำสั่งอีกครั้ง';
-                    byId('sequence-feedback').className = 'alert alert-warning mt-3 mb-0 py-2';
-                    byId('sequence-feedback').textContent = feedback;
+                    this.state.mistakes++;
+                    updateAttemptText(this.state);
+                    playSound(this, 'wrong');
+                    showToast(this, crops.length > 0 && !allCollected ? 'คำสั่งถูกบางส่วนแล้ว แต่ยังเก็บผลผลิตไม่ครบ' : 'ยังไม่ถึงจุดหมาย ลองเพิ่มหรือเปลี่ยนคำสั่ง', 'warning');
                 }
             }
+        }
 
-            drawBoard();
-        });
+        createGame(SequenceScene);
     }
 
-    function initCondition(config) {
-        ensureAlert().then(() => {
-            const startedAt = Date.now();
-            let attempts = 0;
-            const root = buildShell('#0891b2', config.title, config.subtitle);
-            if (!root) return;
-            root.innerHTML = `
-                <div class="farm-panel">
-                    <div class="row g-3" id="scenario-list"></div>
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <button id="hint-btn" class="btn btn-outline-secondary">คำใบ้</button>
-                        <button id="check-conditions" class="btn btn-info text-white fw-bold">ทดสอบระบบ</button>
-                    </div>
-                </div>
-            `;
-            const list = byId('scenario-list');
-            list.innerHTML = config.scenarios.map((scenario, index) => `
-                <div class="col-md-${config.scenarios.length > 2 ? '4' : '6'}">
-                    <div class="choice-card h-100" id="scenario-${index}">
-                        <h5 class="fw-bold">${escapeHtml(scenario.icon)} ${escapeHtml(scenario.name)}</h5>
-                        <p class="text-secondary small">${escapeHtml(scenario.status)}</p>
-                        <select class="form-select" data-answer="${index}">
-                            <option value="">เลือกคำสั่ง...</option>
-                            ${config.actions.map((action) => `<option value="${escapeHtml(action.value)}">${escapeHtml(action.label)}</option>`).join('')}
-                        </select>
-                        <div class="small text-muted mt-2">${escapeHtml(scenario.prompt)}</div>
-                    </div>
-                </div>
-            `).join('');
-            byId('hint-btn').addEventListener('click', () => {
-                attempts++;
-                const badge = byId('mission-attempts');
-                if (badge) badge.textContent = `ลอง: ${attempts} ครั้ง`;
-                showMessage({ title: 'คำใบ้', text: config.hint, icon: 'info' });
-            });
-            byId('check-conditions').addEventListener('click', () => {
-                attempts++;
-                const badge = byId('mission-attempts');
-                if (badge) badge.textContent = `ลอง: ${attempts} ครั้ง`;
-                let allCorrect = true;
-                config.scenarios.forEach((scenario, index) => {
-                    const card = byId(`scenario-${index}`);
-                    const selected = root.querySelector(`[data-answer="${index}"]`).value;
-                    card.classList.remove('correct', 'wrong');
-                    if (selected === scenario.answer) {
-                        card.classList.add('correct');
-                    } else {
-                        card.classList.add('wrong');
-                        allCorrect = false;
+    function initCondition(gameConfig) {
+        class ConditionScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'ConditionScene' });
+                this.state = {
+                    startedAt: Date.now(),
+                    attempts: 0,
+                    mistakes: 0,
+                    hintUsed: false,
+                    ended: false
+                };
+                this.assignments = {};
+            }
+
+            preload() {
+                preloadCommon(this);
+            }
+
+            create() {
+                this.add.image(400, 300, 'bg_garden').setDisplaySize(WIDTH, HEIGHT).setAlpha(0.55);
+                drawCommonHeader(this, gameConfig.title, gameConfig.subtitle, this.state);
+                this.slotRects = [];
+                this.slotTexts = [];
+                this.drawPlots();
+                this.drawActionBlocks();
+                this.drawControls();
+                showToast(this, gameConfig.hint, 'info');
+            }
+
+            drawPlots() {
+                const count = gameConfig.scenarios.length;
+                const width = count > 2 ? 230 : 300;
+                const startX = count > 2 ? 150 : 250;
+                gameConfig.scenarios.forEach((scenario, index) => {
+                    const x = startX + index * (width + 20);
+                    addPanel(this, x, 245, width, 250, 0xffffff, 0.95);
+                    this.add.text(x, 135, `${scenario.icon} ${scenario.name}`, {
+                        fontFamily: 'Kanit',
+                        fontSize: '23px',
+                        color: '#0f172a',
+                        fontStyle: 'bold'
+                    }).setOrigin(0.5);
+                    this.add.text(x, 172, scenario.status, {
+                        fontFamily: 'Kanit',
+                        fontSize: '16px',
+                        color: '#475569',
+                        align: 'center',
+                        wordWrap: { width: width - 24 }
+                    }).setOrigin(0.5);
+                    this.add.text(x, 226, scenario.status.includes('ฝน') ? '☁️💧' : '☀️', { fontSize: '42px' }).setOrigin(0.5);
+                    this.add.image(x - 40, 274, scenario.status.includes('เหี่ยว') || scenario.status.includes('แห้ง') ? 'sprout' : 'plant').setDisplaySize(58, 58);
+                    this.add.text(x + 36, 274, '🚿', { fontSize: '44px' }).setOrigin(0.5);
+                    const slot = this.add.rectangle(x, 345, width - 42, 56, 0xecfeff, 1)
+                        .setStrokeStyle(3, 0x0891b2, 1)
+                        .setData('scenarioIndex', index);
+                    const label = this.add.text(x, 345, 'ลากคำสั่งมาวางที่นี่', {
+                        fontFamily: 'Kanit',
+                        fontSize: '15px',
+                        color: '#0891b2'
+                    }).setOrigin(0.5);
+                    this.slotRects[index] = slot;
+                    this.slotTexts[index] = label;
+                });
+            }
+
+            drawActionBlocks() {
+                const paletteY = 455;
+                const startX = 400 - ((gameConfig.actions.length - 1) * 155) / 2;
+                gameConfig.actions.forEach((action, index) => {
+                    const x = startX + index * 155;
+                    const block = this.add.container(x, paletteY);
+                    const rect = this.add.rectangle(0, 0, 136, 54, 0x0891b2, 1)
+                        .setStrokeStyle(2, 0xffffff, 1);
+                    const txt = this.add.text(0, 0, action.label, {
+                        fontFamily: 'Kanit',
+                        fontSize: '17px',
+                        color: '#ffffff',
+                        fontStyle: 'bold'
+                    }).setOrigin(0.5);
+                    block.add([rect, txt]);
+                    block.setSize(136, 54).setInteractive({ draggable: true, useHandCursor: true });
+                    block.setData('value', action.value);
+                    block.setData('label', action.label);
+                    block.setData('homeX', x);
+                    block.setData('homeY', paletteY);
+                    this.input.setDraggable(block);
+                });
+
+                this.input.on('dragstart', (pointer, obj) => obj.setDepth(500).setAlpha(0.82));
+                this.input.on('drag', (pointer, obj, dragX, dragY) => {
+                    obj.x = dragX;
+                    obj.y = dragY;
+                });
+                this.input.on('dragend', (pointer, obj) => {
+                    obj.setDepth(1).setAlpha(1);
+                    const slotIndex = this.slotRects.findIndex((slot) => Phaser.Geom.Rectangle.Contains(slot.getBounds(), obj.x, obj.y));
+                    if (slotIndex >= 0) {
+                        this.assignments[slotIndex] = obj.getData('value');
+                        this.slotTexts[slotIndex].setText(obj.getData('label'));
+                        this.slotTexts[slotIndex].setColor('#0f172a');
                     }
+                    this.tweens.add({ targets: obj, x: obj.getData('homeX'), y: obj.getData('homeY'), duration: 180, ease: 'Back.out' });
                 });
-                if (allCorrect) {
-                    finish(starsFromAttempts(attempts), startedAt, attempts);
-                } else {
-                    showMessage({
-                        title: 'ระบบยังตัดสินใจไม่ครบ',
-                        text: config.feedback,
-                        icon: 'warning',
-                        confirmButtonText: 'ปรับเงื่อนไข'
-                    });
-                }
-            });
-        });
-    }
-
-    function initDebug(config) {
-        ensureAlert().then(() => {
-            const startedAt = Date.now();
-            let attempts = 0;
-            let rows = config.rows.map((row) => ({ ...row }));
-            const root = buildShell('#d97706', config.title, config.subtitle);
-            if (!root) return;
-
-            function render() {
-                root.innerHTML = `
-                    <div class="farm-panel">
-                        <div class="alert alert-warning border-0">${escapeHtml(config.problem)}</div>
-                        <div id="debug-list"></div>
-                        <div class="d-flex flex-wrap justify-content-between gap-2 mt-4">
-                            <button id="hint-btn" class="btn btn-outline-secondary">คำใบ้</button>
-                            <button id="check-debug" class="btn btn-warning fw-bold text-dark">ทดสอบหลังแก้บั๊ก</button>
-                        </div>
-                    </div>
-                `;
-                const list = byId('debug-list');
-                list.innerHTML = rows.map((row, index) => `
-                    <div class="debug-row">
-                        <div class="d-flex flex-column gap-1">
-                            <button class="debug-handle" data-up="${index}" ${index === 0 ? 'disabled' : ''}>↑</button>
-                            <button class="debug-handle" data-down="${index}" ${index === rows.length - 1 ? 'disabled' : ''}>↓</button>
-                        </div>
-                        <div class="flex-grow-1">
-                            <label class="small text-muted">${escapeHtml(row.label || `ขั้นตอนที่ ${index + 1}`)}</label>
-                            ${row.options ? `<select class="form-select" data-edit="${index}">${row.options.map((option) => `<option value="${escapeHtml(option.value)}" ${option.value === row.value ? 'selected' : ''}>${escapeHtml(option.label)}</option>`).join('')}</select>` : `<div class="fw-bold">${escapeHtml(row.value)}</div>`}
-                        </div>
-                    </div>
-                `).join('');
-                list.querySelectorAll('[data-up]').forEach((btn) => {
-                    btn.addEventListener('click', () => moveRow(Number(btn.dataset.up), -1));
-                });
-                list.querySelectorAll('[data-down]').forEach((btn) => {
-                    btn.addEventListener('click', () => moveRow(Number(btn.dataset.down), 1));
-                });
-                list.querySelectorAll('[data-edit]').forEach((select) => {
-                    select.addEventListener('change', () => {
-                        rows[Number(select.dataset.edit)].value = select.value;
-                    });
-                });
-                byId('hint-btn').addEventListener('click', () => {
-                    attempts++;
-                    updateAttempts();
-                    showMessage({ title: 'คำใบ้', text: config.hint, icon: 'info' });
-                });
-                byId('check-debug').addEventListener('click', check);
             }
 
-            function updateAttempts() {
-                const badge = byId('mission-attempts');
-                if (badge) badge.textContent = `ลอง: ${attempts} ครั้ง`;
+            drawControls() {
+                addButton(this, 295, 532, 148, 44, 'คำใบ้', 0x64748b, () => {
+                    this.state.hintUsed = true;
+                    showToast(this, gameConfig.hint, 'info');
+                });
+                addButton(this, 470, 532, 210, 44, 'ทดสอบระบบ', 0x0891b2, () => this.checkSystem());
             }
 
-            function moveRow(index, offset) {
-                const nextIndex = index + offset;
-                const temp = rows[index];
-                rows[index] = rows[nextIndex];
-                rows[nextIndex] = temp;
-                render();
-            }
+            checkSystem() {
+                this.state.attempts++;
+                updateAttemptText(this.state);
+                let correct = true;
+                gameConfig.scenarios.forEach((scenario, index) => {
+                    const ok = this.assignments[index] === scenario.answer;
+                    if (!ok) correct = false;
+                    this.slotRects[index].setFillStyle(ok ? 0xdcfce7 : 0xfee2e2);
+                    this.slotRects[index].setStrokeStyle(3, ok ? 0x16a34a : 0xdc2626);
+                    const x = this.slotRects[index].x;
+                    const y = this.slotRects[index].y - 102;
+                    this.add.text(x, y, ok ? '✅' : '⚠️', { fontSize: '34px' }).setOrigin(0.5);
+                });
 
-            function check() {
-                attempts++;
-                updateAttempts();
-                const values = rows.map((row) => row.value);
-                const correct = values.length === config.solution.length && values.every((value, index) => value === config.solution[index]);
                 if (correct) {
-                    finish(starsFromAttempts(attempts), startedAt, attempts);
+                    playSound(this, 'correct');
+                    this.waterEffect();
+                    endGame(this, this.state, 'คุณตั้งเงื่อนไขให้ระบบรดน้ำทำงานถูกต้อง');
                 } else {
-                    showMessage({ title: 'ยังมีบั๊กอยู่', text: config.feedback, icon: 'warning' });
+                    this.state.mistakes++;
+                    updateAttemptText(this.state);
+                    playSound(this, 'wrong');
+                    showToast(this, gameConfig.feedback, 'error');
                 }
             }
 
-            render();
-        });
+            waterEffect() {
+                for (let i = 0; i < 18; i++) {
+                    const drop = this.add.text(Phaser.Math.Between(120, 690), Phaser.Math.Between(180, 360), '💧', { fontSize: '24px' }).setOrigin(0.5);
+                    this.tweens.add({ targets: drop, y: drop.y + 60, alpha: 0, duration: 900, delay: i * 30, onComplete: () => drop.destroy() });
+                }
+            }
+        }
+
+        createGame(ConditionScene);
+    }
+
+    function initDebug(gameConfig) {
+        class DebugScene extends Phaser.Scene {
+            constructor() {
+                super({ key: 'DebugScene' });
+                this.state = {
+                    startedAt: Date.now(),
+                    attempts: 0,
+                    mistakes: 0,
+                    hintUsed: false,
+                    ended: false
+                };
+                this.rows = gameConfig.rows.map((row) => ({ ...row }));
+            }
+
+            preload() {
+                preloadCommon(this);
+            }
+
+            create() {
+                this.add.image(400, 300, 'bg_farm').setDisplaySize(WIDTH, HEIGHT).setAlpha(0.48);
+                drawCommonHeader(this, gameConfig.title, gameConfig.subtitle, this.state);
+                this.cardLayer = this.add.container(0, 0);
+                this.drawCrisisScene();
+                this.renderCards();
+                this.drawControls();
+                showToast(this, gameConfig.problem, 'warning');
+            }
+
+            drawCrisisScene() {
+                addPanel(this, 215, 308, 350, 390, 0xfffbeb, 0.96);
+                this.add.text(215, 128, 'สถานการณ์วิกฤต', {
+                    fontFamily: 'Kanit',
+                    fontSize: '21px',
+                    color: '#92400e',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+                this.add.text(215, 185, '⚠️', { fontSize: '60px' }).setOrigin(0.5);
+                this.add.text(215, 250, gameConfig.problem, {
+                    fontFamily: 'Kanit',
+                    fontSize: '18px',
+                    color: '#1f2937',
+                    align: 'center',
+                    wordWrap: { width: 295 }
+                }).setOrigin(0.5);
+                this.add.text(160, 350, '🔧', { fontSize: '54px' }).setOrigin(0.5);
+                this.add.text(235, 350, '🐞', { fontSize: '54px' }).setOrigin(0.5);
+                this.add.text(215, 426, 'ลากการ์ดเพื่อสลับลำดับ\nหรือกด “เปลี่ยน” เพื่อแก้คำสั่ง', {
+                    fontFamily: 'Kanit',
+                    fontSize: '17px',
+                    color: '#64748b',
+                    align: 'center'
+                }).setOrigin(0.5);
+            }
+
+            renderCards() {
+                this.cardLayer.removeAll(true);
+                this.cardLayer.add(addPanel(this, 580, 308, 390, 390, 0xffffff, 0.96));
+                this.cardLayer.add(this.add.text(430, 122, 'แผงคำสั่งที่ต้อง Debug', {
+                    fontFamily: 'Kanit',
+                    fontSize: '21px',
+                    color: '#1f2937',
+                    fontStyle: 'bold'
+                }));
+
+                this.rows.forEach((row, index) => {
+                    const y = 168 + index * 60;
+                    const card = this.add.container(580, y);
+                    const rect = this.add.rectangle(0, 0, 310, 48, 0xfef3c7, 1)
+                        .setStrokeStyle(2, 0xf59e0b, 1);
+                    const label = this.add.text(-142, 0, `${index + 1}. ${this.displayValue(row)}`, {
+                        fontFamily: 'Kanit',
+                        fontSize: '17px',
+                        color: '#1f2937',
+                        fontStyle: 'bold'
+                    }).setOrigin(0, 0.5);
+                    card.add([rect, label]);
+                    card.setSize(310, 48).setInteractive({ draggable: true, useHandCursor: true });
+                    card.setData('index', index);
+                    this.input.setDraggable(card);
+                    this.cardLayer.add(card);
+
+                    if (row.options) {
+                        const btn = addButton(this, 725, y, 78, 34, 'เปลี่ยน', 0xd97706, () => this.cycleOption(index));
+                        this.cardLayer.add(btn);
+                    }
+                });
+
+                this.input.off('drag');
+                this.input.off('dragend');
+                this.input.on('drag', (pointer, obj, dragX, dragY) => {
+                    if (typeof obj.getData('index') === 'undefined') return;
+                    obj.y = dragY;
+                });
+                this.input.on('dragend', (pointer, obj) => {
+                    if (typeof obj.getData('index') === 'undefined') return;
+                    const from = obj.getData('index');
+                    const to = Phaser.Math.Clamp(Math.round((obj.y - 168) / 60), 0, this.rows.length - 1);
+                    const item = this.rows.splice(from, 1)[0];
+                    this.rows.splice(to, 0, item);
+                    this.renderCards();
+                });
+            }
+
+            displayValue(row) {
+                if (!row.options) return row.value;
+                const found = row.options.find((option) => option.value === row.value);
+                return found ? found.label : row.value;
+            }
+
+            cycleOption(index) {
+                const row = this.rows[index];
+                if (!row.options) return;
+                const current = row.options.findIndex((option) => option.value === row.value);
+                row.value = row.options[(current + 1) % row.options.length].value;
+                this.renderCards();
+            }
+
+            drawControls() {
+                addButton(this, 420, 532, 122, 44, 'รันระบบเดิม', 0x64748b, () => {
+                    playSound(this, 'wrong');
+                    this.cameras.main.shake(160, 0.004);
+                    showToast(this, gameConfig.feedback, 'warning');
+                });
+                addButton(this, 555, 532, 92, 44, 'คำใบ้', 0x475569, () => {
+                    this.state.hintUsed = true;
+                    showToast(this, gameConfig.hint, 'info');
+                });
+                addButton(this, 690, 532, 180, 44, 'ทดสอบหลังแก้', 0xd97706, () => this.checkDebug());
+            }
+
+            checkDebug() {
+                this.state.attempts++;
+                updateAttemptText(this.state);
+                const values = this.rows.map((row) => row.value);
+                const correct = values.length === gameConfig.solution.length && values.every((value, index) => value === gameConfig.solution[index]);
+                if (correct) {
+                    playSound(this, 'correct');
+                    this.add.text(215, 185, '✅', { fontSize: '68px' }).setOrigin(0.5);
+                    endGame(this, this.state, 'คุณค้นพบบั๊กและแก้ไขระบบฟาร์มได้สำเร็จ');
+                } else {
+                    this.state.mistakes++;
+                    updateAttemptText(this.state);
+                    playSound(this, 'wrong');
+                    this.cameras.main.shake(180, 0.006);
+                    showToast(this, gameConfig.feedback, 'error');
+                }
+            }
+        }
+
+        createGame(DebugScene);
     }
 
     window.FarmMissions = {

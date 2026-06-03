@@ -5,30 +5,60 @@
         subtitle: 'เรียงคำสั่งให้รถไถอ้อมสิ่งกีดขวางโดยไม่ชนกองฟางหรือก้อนหิน',
         levels: [
             {
-                name: 'เส้นทางอ้อมกองฟาง',
-                goal: 'พารถไถจากมุมซ้ายไปตะกร้า โดยหลบกองฟางกลางแปลง',
-                cols: 5,
-                rows: 5,
-                start: { c: 0, r: 4 },
-                target: { c: 4, r: 0 },
-                rocks: [{ c: 1, r: 3 }, { c: 2, r: 3 }, { c: 2, r: 2 }],
-                rockIcon: '🟨',
-                targetIcon: '🧺',
-                maxCommands: 10,
-                crashFeedback: 'รถไถชนกองฟาง เพราะยังไม่ได้เลี้ยวหลบสิ่งกีดขวาง'
-            },
-            {
-                name: 'ทางคดรอบคันนา',
-                goal: 'เลือกเส้นทางที่ปลอดภัยแล้วหยุดให้ตรงเป้าหมาย',
+                title: 'กองฟางขวางทาง',
+                name: 'กองฟางขวางทาง',
+                mission: 'พารถไถไปถึงตะกร้าโดยไม่ชนกองฟาง',
+                goal: 'พารถไถไปถึงตะกร้าโดยไม่ชนกองฟาง',
                 cols: 6,
                 rows: 5,
                 start: { c: 0, r: 2 },
                 target: { c: 5, r: 2 },
-                rocks: [{ c: 2, r: 1 }, { c: 2, r: 2 }, { c: 2, r: 3 }, { c: 4, r: 3 }],
-                rockIcon: '🪨',
-                targetIcon: '🏁',
+                obstacles: [
+                    { col: 2, row: 2, type: 'hay' }
+                ],
+                crops: [],
+                barn: null,
+                maxCommands: 10,
+                crashFeedback: 'รถไถชนกองฟาง เพราะยังไม่ได้เลี้ยวหลบสิ่งกีดขวาง'
+            },
+            {
+                title: 'กำแพงกองฟาง',
+                name: 'กำแพงกองฟาง',
+                mission: 'วางแผนเส้นทางอ้อมกำแพงกองฟาง',
+                goal: 'วางแผนเส้นทางอ้อมกำแพงกองฟาง',
+                cols: 6,
+                rows: 5,
+                start: { c: 0, r: 2 },
+                target: { c: 5, r: 2 },
+                obstacles: [
+                    { col: 2, row: 1, type: 'hay' },
+                    { col: 2, row: 2, type: 'hay' },
+                    { col: 2, row: 3, type: 'hay' }
+                ],
+                crops: [],
+                barn: null,
                 maxCommands: 12,
-                crashFeedback: 'ลำดับคำสั่งพาไปชนหิน ลองวางแผนเส้นทางอ้อมก่อนรัน'
+                crashFeedback: 'รถไถชนกองฟาง ลองวางเส้นทางอ้อมดูนะ'
+            },
+            {
+                title: 'เส้นทางปลอดภัย',
+                name: 'เส้นทางปลอดภัย',
+                mission: 'หลบกองฟางและหินเพื่อไปถึงจุดหมาย',
+                goal: 'หลบกองฟางและหินเพื่อไปถึงจุดหมาย',
+                cols: 6,
+                rows: 5,
+                start: { c: 0, r: 4 },
+                target: { c: 5, r: 0 },
+                obstacles: [
+                    { col: 1, row: 3, type: 'rock' },
+                    { col: 2, row: 3, type: 'hay' },
+                    { col: 3, row: 2, type: 'rock' },
+                    { col: 4, row: 2, type: 'hay' }
+                ],
+                crops: [],
+                barn: null,
+                maxCommands: 14,
+                crashFeedback: 'รถไถชนสิ่งกีดขวาง ลองวางเส้นทางใหม่'
             }
         ]
     };

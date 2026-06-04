@@ -88,6 +88,39 @@ if ($work) {
             cursor: not-allowed;
         }
 
+        .tool-button.tool-erase {
+            grid-column: 1 / -1;
+            border-color: #ef4444;
+            background: #fff1f2;
+            color: #991b1b;
+        }
+
+        .tool-button.tool-erase:hover:not(:disabled),
+        .tool-button.tool-erase.active {
+            border-color: #dc2626;
+            background: #fee2e2;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, .12);
+            transform: translateY(-1px);
+        }
+
+        .tool-button.tool-erase .erase-label {
+            font-weight: 800;
+        }
+
+        .tool-button.tool-erase .erase-help {
+            font-size: .75rem;
+            color: #b91c1c;
+        }
+
+        .tool-button.tool-erase .count-badge {
+            display: none;
+        }
+
+        #selected-tool-label.erase-mode {
+            background: #dc2626 !important;
+            color: #ffffff !important;
+        }
+
         #phaser-canvas,
         #phaser-canvas canvas {
             touch-action: pan-y;
@@ -140,6 +173,27 @@ if ($work) {
 
         .count-badge {
             font-size: .78rem;
+        }
+
+        .studio-checklist {
+            border: 1px solid #dbe7f3;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .check-item.done {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .check-item.missing {
+            color: #b91c1c;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -221,6 +275,13 @@ if ($work) {
                             </div>
                         </div>
 
+                        <div class="studio-checklist rounded-3 p-3 bg-light">
+                            <h6 class="fw-bold mb-2">
+                                <i class="bi bi-list-check text-primary"></i> เช็กลิสต์ก่อนส่ง
+                            </h6>
+                            <ul class="list-unstyled small mb-0" id="project-checklist"></ul>
+                        </div>
+
                         <div class="flex-grow-1 d-flex flex-column">
                             <label class="form-label fw-bold"><i class="bi bi-chat-text-fill text-primary"></i> คำอธิบายวิธีคิด</label>
                             <textarea id="thinking-input" class="form-control flex-grow-1" style="min-height: 150px; resize: vertical;" placeholder="อธิบายว่ารถไถเริ่มจากไหน ต้องหลบหรือเก็บอะไร และทำไมลำดับคำสั่งนี้จึงพาไปถึงเป้าหมายได้"><?php echo htmlspecialchars($existingDesc); ?></textarea>
@@ -272,6 +333,8 @@ if ($work) {
         let missionType = 'target';
         let testPassed = false;
         let isTesting = false;
+        let tractorFacing = null;
+        let lastTestPath = [];
         let commands = [];
         let objects = {
             start: null,
@@ -321,6 +384,13 @@ if ($work) {
             return 0;
         }
 
+        function updateSelectedToolLabel(key) {
+            const asset = ASSET_MAP[key] || ASSET_MAP.start;
+            const selectedLabel = document.getElementById('selected-tool-label');
+            selectedLabel.textContent = key === 'erase' ? 'โหมดลบวัตถุ' : asset.label;
+            selectedLabel.classList.toggle('erase-mode', key === 'erase');
+        }
+
         function renderToolbox() {
             const toolbox = document.getElementById('toolbox');
             toolbox.innerHTML = '';
@@ -331,20 +401,29 @@ if ($work) {
                 const disabled = !toolAllowed(key);
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = `tool-button ${selectedTool === key ? 'active' : ''}`;
+                button.className = `tool-button ${key === 'erase' ? 'tool-erase' : ''} ${selectedTool === key ? 'active' : ''}`;
                 button.disabled = disabled;
-                button.innerHTML = `
-                    <div class="fs-3">${asset.emoji}</div>
-                    <div class="fw-bold small">${asset.label}</div>
-                    <span class="badge text-bg-light border count-badge">${maxText}</span>
-                `;
+                if (key === 'erase') {
+                    button.innerHTML = `
+                        <div class="fs-3">${asset.emoji}</div>
+                        <div class="erase-label">โหมดลบวัตถุ</div>
+                        <div class="erase-help">เลือกแล้วคลิกช่องที่ต้องการลบ</div>
+                    `;
+                } else {
+                    button.innerHTML = `
+                        <div class="fs-3">${asset.emoji}</div>
+                        <div class="fw-bold small">${asset.label}</div>
+                        <span class="badge text-bg-light border count-badge">${maxText}</span>
+                    `;
+                }
                 button.addEventListener('click', () => {
                     selectedTool = key;
-                    document.getElementById('selected-tool-label').textContent = asset.label;
+                    updateSelectedToolLabel(key);
                     renderToolbox();
                 });
                 toolbox.appendChild(button);
             });
+            updateChecklist();
         }
 
         function renderMissionButtons() {
@@ -356,9 +435,12 @@ if ($work) {
 
         function invalidateTest() {
             testPassed = false;
+            tractorFacing = null;
+            lastTestPath = [];
             const badge = document.getElementById('validation-badge');
             badge.className = 'badge text-bg-secondary rounded-pill px-3 py-2';
             badge.textContent = 'ยังไม่ได้ทดสอบ';
+            updateChecklist();
         }
 
         function showFeedback(message, type = 'info') {
@@ -394,6 +476,7 @@ if ($work) {
             if (sameCell(objects.barn, col, row)) objects.barn = null;
             objects.obstacles = objects.obstacles.filter(item => !(item.col === col && item.row === row));
             objects.crops = objects.crops.filter(item => !(item.col === col && item.row === row));
+            updateChecklist();
         }
 
         function placeObject(col, row) {
@@ -403,7 +486,7 @@ if ($work) {
                 invalidateTest();
                 redrawBoard();
                 renderToolbox();
-                showFeedback('ลบวัตถุในช่องแล้ว', 'info');
+                showFeedback('ลบวัตถุในช่องแล้ว สามารถเลือกเครื่องมืออื่นเพื่อวางใหม่ได้', 'info');
                 return;
             }
 
@@ -450,7 +533,7 @@ if ($work) {
                 objects.crops = [];
             }
             if (!toolAllowed(selectedTool)) selectedTool = 'start';
-            document.getElementById('selected-tool-label').textContent = ASSET_MAP[selectedTool].label;
+            updateSelectedToolLabel(selectedTool);
             invalidateTest();
             renderMissionButtons();
             renderToolbox();
@@ -473,6 +556,33 @@ if ($work) {
             return '';
         }
 
+        function updateChecklist() {
+            const list = document.getElementById('project-checklist');
+            if (!list) return;
+
+            const thinking = document.getElementById('thinking-input').value.trim();
+            const hasDestination = missionType === 'harvest' ? !!objects.barn : !!objects.target;
+            const hasMissionRequirement =
+                missionType === 'target'
+                || (missionType === 'obstacle' && objects.obstacles.length > 0)
+                || (missionType === 'harvest' && objects.crops.length > 0);
+            const checks = [
+                { label: 'วางรถไถจุดเริ่มต้นแล้ว', ok: !!objects.start },
+                { label: missionType === 'harvest' ? 'วางโรงนาแล้ว' : 'วางเป้าหมายแล้ว', ok: hasDestination },
+                { label: 'ทำตามเงื่อนไขของประเภทภารกิจแล้ว', ok: hasMissionRequirement },
+                { label: 'มีคำสั่งเฉลยแล้ว', ok: commands.length > 0 },
+                { label: 'ทดสอบเส้นทางผ่านแล้ว', ok: testPassed },
+                { label: 'เขียนคำอธิบายวิธีคิดแล้ว', ok: thinking.length > 0 }
+            ];
+
+            list.innerHTML = checks.map(item => `
+                <li class="check-item ${item.ok ? 'done' : 'missing'}">
+                    <span>${item.ok ? '✅' : '⬜'}</span>
+                    <span>${item.label}</span>
+                </li>
+            `).join('');
+        }
+
         function routeDestination() {
             return missionType === 'harvest' ? objects.barn : objects.target;
         }
@@ -488,6 +598,8 @@ if ($work) {
             setCommandControls(false);
             let pos = { ...objects.start };
             let collected = new Set();
+            tractorFacing = null;
+            lastTestPath = [{ col: pos.col, row: pos.row, step: 0 }];
             redrawBoard(pos, collected);
             showFeedback('รถไถกำลังทดสอบเส้นทาง', 'info');
 
@@ -502,17 +614,19 @@ if ($work) {
                         return finishTest(false, 'ยังเก็บผลผลิตไม่ครบก่อนกลับโรงนา');
                     }
                     if (atDestination && (missionType !== 'harvest' || allCollected)) {
+                        redrawBoard(pos, collected, null, tractorFacing, lastTestPath);
                         return finishTest(true, 'โจทย์นี้ใช้งานได้ พร้อมส่งชิ้นงานแล้ว');
                     }
                     return finishTest(false, missionType === 'harvest' ? 'ยังไม่กลับถึงโรงนา' : 'รถไถยังไม่ถึงเป้าหมาย');
                 }
 
                 const dir = DIRS[commands[index]];
+                tractorFacing = commands[index];
                 const next = { col: pos.col + dir.dc, row: pos.row + dir.dr };
                 if (next.col < 0 || next.row < 0 || next.col >= GRID.cols || next.row >= GRID.rows) {
                     isTesting = false;
                     setCommandControls(true);
-                    redrawBoard(pos, collected);
+                    redrawBoard(pos, collected, null, tractorFacing);
                     return finishTest(false, 'รถไถออกนอกแผนที่');
                 }
 
@@ -520,14 +634,20 @@ if ($work) {
                 if (obstacle) {
                     isTesting = false;
                     setCommandControls(true);
-                    redrawBoard(pos, collected, next);
+                    redrawBoard(pos, collected, next, tractorFacing);
                     return finishTest(false, obstacle.type === 'hay' ? 'รถไถชนกองฟาง' : 'รถไถชนหิน');
                 }
 
                 pos = next;
                 const crop = objects.crops.find(item => item.col === pos.col && item.row === pos.row);
                 if (crop) collected.add(`${crop.col},${crop.row}`);
-                redrawBoard(pos, collected);
+                lastTestPath.push({
+                    col: pos.col,
+                    row: pos.row,
+                    step: index + 1,
+                    dir: commands[index]
+                });
+                redrawBoard(pos, collected, null, tractorFacing);
                 window.setTimeout(() => runStep(index + 1), animated ? 280 : 0);
                 return null;
             };
@@ -556,6 +676,7 @@ if ($work) {
             badge.className = ok ? 'badge text-bg-success rounded-pill px-3 py-2' : 'badge text-bg-danger rounded-pill px-3 py-2';
             badge.textContent = ok ? 'ทดสอบผ่าน' : 'ทดสอบไม่ผ่าน';
             showFeedback(message, ok ? 'success' : 'danger');
+            updateChecklist();
         }
 
         function renderCommands() {
@@ -564,6 +685,7 @@ if ($work) {
             zone.innerHTML = '';
             if (commands.length === 0) {
                 zone.innerHTML = '<span class="text-muted small">กดปุ่มลูกศรเพื่อเพิ่มคำสั่ง</span>';
+                updateChecklist();
                 return;
             }
             commands.forEach((cmd, index) => {
@@ -577,9 +699,11 @@ if ($work) {
                     commands.splice(index, 1);
                     invalidateTest();
                     renderCommands();
+                    redrawBoard();
                 });
                 zone.appendChild(button);
             });
+            updateChecklist();
         }
 
         function setCommandControls(enabled) {
@@ -648,7 +772,33 @@ if ($work) {
             .catch(() => showFeedback('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้', 'danger'));
         }
 
-        function addGameObject(scene, key, x, y, size) {
+        function addTractorObject(scene, x, y, size, facingDir = null) {
+            const group = scene.add.container(x, y);
+            const tractor = scene.add.text(0, 0, ASSET_MAP.start.emoji, {
+                fontSize: `${Math.max(30, Math.floor(size * .72))}px`,
+                fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+            }).setOrigin(.5);
+
+            group.add(tractor);
+
+            if (facingDir && DIRS[facingDir]) {
+                const badgeBg = scene.add.circle(size * .28, -size * .28, 13, 0x2563eb, 1)
+                    .setStrokeStyle(2, 0xffffff, 1);
+                const arrow = scene.add.text(size * .28, -size * .28, DIRS[facingDir].icon, {
+                    fontSize: '16px',
+                    fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'
+                }).setOrigin(.5);
+                group.add([badgeBg, arrow]);
+            }
+
+            return group;
+        }
+
+        function addGameObject(scene, key, x, y, size, facingDir = null) {
+            if (key === 'start') {
+                return addTractorObject(scene, x, y, size, facingDir);
+            }
+
             const asset = ASSET_MAP[key] || ASSET_MAP.target;
             if (USE_EMOJI_ASSETS) {
                 return scene.add.text(x, y, asset.emoji, {
@@ -659,7 +809,7 @@ if ($work) {
             return scene.add.image(x, y, key).setDisplaySize(size, size).setOrigin(.5);
         }
 
-        function redrawBoard(testPos = null, collected = new Set(), dangerCell = null) {
+        function redrawBoard(testPos = null, collected = new Set(), dangerCell = null, facingDir = null, routePath = []) {
             if (!sceneRef) return;
             sceneRef.boardLayer.removeAll(true);
             const tile = 66;
@@ -678,6 +828,23 @@ if ($work) {
                         .setInteractive({ useHandCursor: true });
                     cell.on('pointerdown', () => placeObject(col, row));
                     sceneRef.boardLayer.add(cell);
+
+                    let pathStep = null;
+                    for (let i = routePath.length - 1; i >= 0; i--) {
+                        if (routePath[i].col === col && routePath[i].row === row) {
+                            pathStep = routePath[i];
+                            break;
+                        }
+                    }
+                    if (pathStep) {
+                        const dot = sceneRef.add.circle(x, y + tile * .28, 10, 0x2563eb, .95);
+                        const num = sceneRef.add.text(x, y + tile * .28, String(pathStep.step), {
+                            fontSize: '12px',
+                            color: '#ffffff',
+                            fontFamily: '"Kanit", sans-serif'
+                        }).setOrigin(.5);
+                        sceneRef.boardLayer.add([dot, num]);
+                    }
                 }
             }
 
@@ -688,12 +855,12 @@ if ($work) {
                 if (!collected.has(`${item.col},${item.row}`)) addObjectAt('crop', item);
             });
             const tractorPos = testPos || objects.start;
-            if (tractorPos) addObjectAt('start', tractorPos);
+            if (tractorPos) addObjectAt('start', tractorPos, facingDir);
 
-            function addObjectAt(key, point) {
+            function addObjectAt(key, point, objectFacingDir = null) {
                 const x = originX + point.col * tile + tile / 2;
                 const y = originY + point.row * tile + tile / 2;
-                sceneRef.boardLayer.add(addGameObject(sceneRef, key, x, y, tile * .82));
+                sceneRef.boardLayer.add(addGameObject(sceneRef, key, x, y, tile * .82, objectFacingDir));
             }
         }
 
@@ -716,7 +883,7 @@ if ($work) {
                     sceneRef = this;
                     this.add.rectangle(270, 200, 540, 400, 0xf8fafc, 1);
                     this.boardLayer = this.add.container(0, 0);
-                    redrawBoard();
+                    redrawBoard(null, new Set(), null, tractorFacing, testPassed ? lastTestPath : []);
                 }
             }
         };
@@ -733,17 +900,21 @@ if ($work) {
                 commands.push(button.dataset.dir);
                 invalidateTest();
                 renderCommands();
+                redrawBoard();
             });
         });
         document.getElementById('clear-commands').addEventListener('click', () => {
             commands = [];
             invalidateTest();
             renderCommands();
+            redrawBoard();
         });
         document.getElementById('test-route').addEventListener('click', () => testRoute(true));
         document.getElementById('submit-work').addEventListener('click', submitWork);
+        document.getElementById('thinking-input').addEventListener('input', updateChecklist);
 
         loadExistingWork();
+        updateSelectedToolLabel(selectedTool);
         renderMissionButtons();
         renderToolbox();
         renderCommands();
@@ -751,7 +922,19 @@ if ($work) {
             const badge = document.getElementById('validation-badge');
             badge.className = 'badge text-bg-success rounded-pill px-3 py-2';
             badge.textContent = 'ทดสอบผ่าน';
+            lastTestPath = objects.start ? [{ col: objects.start.col, row: objects.start.row, step: 0 }] : [];
+            let previewPos = objects.start ? { ...objects.start } : null;
+            commands.forEach((cmd, index) => {
+                const dir = DIRS[cmd];
+                if (!previewPos || !dir) return;
+                previewPos = { col: previewPos.col + dir.dc, row: previewPos.row + dir.dr };
+                if (previewPos.col >= 0 && previewPos.row >= 0 && previewPos.col < GRID.cols && previewPos.row < GRID.rows) {
+                    lastTestPath.push({ col: previewPos.col, row: previewPos.row, step: index + 1, dir: cmd });
+                    tractorFacing = cmd;
+                }
+            });
         }
+        updateChecklist();
         new Phaser.Game(phaserConfig);
     </script>
 </body>

@@ -16,6 +16,33 @@ $project_pages = [
     4 => 'create_project_debug.php'
 ];
 $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
+$game_meta = [
+    1 => [
+        'lesson_no' => 'บทที่ 1',
+        'title' => 'ตรรกะคัดแยก',
+        'icon' => 'bi-diagram-3-fill',
+        'theme' => 'success'
+    ],
+    2 => [
+        'lesson_no' => 'บทที่ 2',
+        'title' => 'เส้นทางเดินรถไถ',
+        'icon' => 'bi-signpost-2-fill',
+        'theme' => 'primary'
+    ],
+    3 => [
+        'lesson_no' => 'บทที่ 3',
+        'title' => 'เครื่องรดน้ำอัจฉริยะ',
+        'icon' => 'bi-droplet-half',
+        'theme' => 'info'
+    ],
+    4 => [
+        'lesson_no' => 'บทที่ 4',
+        'title' => 'กู้วิกฤตฟาร์ม',
+        'icon' => 'bi-bug-fill',
+        'theme' => 'danger'
+    ]
+];
+$current_game = $game_meta[$game_id] ?? $game_meta[1];
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -86,6 +113,27 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
             z-index: 20;
             box-shadow: 0 4px 10px rgba(217, 119, 6, 0.4);
             pointer-events: none;
+        }
+
+        .lesson-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 20;
+            background: rgba(37, 99, 235, .95);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+            pointer-events: none;
+        }
+
+        .project-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .preview-box {
@@ -169,8 +217,12 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
 
     <div class="header-section text-center">
         <div class="container">
-            <h1 class="fw-bold display-4 mb-2"><i class="bi bi-star-fill text-warning"></i> ลานโชว์ผลงาน</h1>
-            <p class="fs-5 opacity-75">รวมผลงานสุดสร้างสรรค์จากเพื่อนๆ</p>
+            <h1 class="fw-bold display-5 mb-2">
+                <i class="bi <?php echo $current_game['icon']; ?> text-warning"></i>
+                ลานโชว์ผลงาน <?php echo $current_game['lesson_no']; ?>
+            </h1>
+            <p class="fs-5 opacity-75 mb-1"><?php echo htmlspecialchars($current_game['title']); ?></p>
+            <p class="opacity-75 mb-0">รวมผลงานสร้างสรรค์จากภารกิจของบทเรียนนี้</p>
             <div class="mt-4">
                 <?php
                 $user_id = $_SESSION['user_id'];
@@ -224,6 +276,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                     </div>
                     <div class="p-4 bg-white">
                         <div id="modal-members-area"></div>
+                        <div id="modal-project-summary" class="mb-3"></div>
                         
                         <div class="row align-items-start">
                             <div class="col-md-8">
@@ -246,6 +299,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
     <script>
         const ASSET_PATH = '../assets/img/';
         const GAME_ID = <?php echo $game_id; ?>;
+        const GAME_META = <?php echo json_encode($current_game, JSON_UNESCAPED_UNICODE); ?>;
         
         const ITEM_SIZES = {
             'basket': 160, 'weed_spiky': 120, 'weed_round': 120, 'bug_red': 100, 'bug_blue': 100,
@@ -265,6 +319,47 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
         };
 
         let worksList = {}; 
+
+        function parseWorkData(jsonData) {
+            try {
+                return JSON.parse(jsonData);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getTractorRouteSummary(data) {
+            if (!data || data.project_type !== 'tractor_route') return null;
+
+            const missionLabels = {
+                target: 'ไปถึงจุดหมาย',
+                obstacle: 'หลบสิ่งกีดขวาง',
+                harvest: 'เก็บเกี่ยวผลผลิต'
+            };
+
+            return {
+                mission: missionLabels[data.mission_type] || 'เส้นทางรถไถ',
+                commandCount: Array.isArray(data.commands) ? data.commands.length : 0,
+                obstacleCount: Array.isArray(data.obstacles) ? data.obstacles.length : 0,
+                cropCount: Array.isArray(data.crops) ? data.crops.length : 0,
+                validated: !!data.validated
+            };
+        }
+
+        function renderProjectSummary(summary) {
+            if (!summary) return '';
+            return `
+                <div class="project-summary small mt-2">
+                    <span class="badge text-bg-primary rounded-pill">${summary.mission}</span>
+                    <span class="badge text-bg-light border rounded-pill">คำสั่ง ${summary.commandCount}</span>
+                    <span class="badge text-bg-light border rounded-pill">อุปสรรค ${summary.obstacleCount}</span>
+                    ${summary.cropCount > 0 ? `<span class="badge text-bg-light border rounded-pill">ผลผลิต ${summary.cropCount}</span>` : ''}
+                    <span class="badge ${summary.validated ? 'text-bg-success' : 'text-bg-danger'} rounded-pill">
+                        ${summary.validated ? 'ทดสอบผ่าน' : 'ยังไม่ผ่าน'}
+                    </span>
+                </div>
+            `;
+        }
 
         function loadShowcase() {
             fetch(`../api/get_showcase.php?game_id=${GAME_ID}`)
@@ -306,6 +401,14 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                         const isReviewed = work.status === 'reviewed';
                         const reviewedClass = isReviewed ? 'reviewed-card' : '';
                         const reviewedBadge = isReviewed ? '<div class="badge-reviewed"><i class="bi bi-award-fill"></i> ตรวจแล้ว</div>' : '';
+                        const lessonBadge = `
+                            <div class="lesson-badge">
+                                ${GAME_META.lesson_no}: ${GAME_META.title}
+                            </div>
+                        `;
+                        const parsedWorkData = parseWorkData(work.work_data);
+                        const tractorSummary = getTractorRouteSummary(parsedWorkData);
+                        const projectSummaryHTML = renderProjectSummary(tractorSummary);
 
                         let teamInfoHTML = '';
                         if (work.mode === 'group') {
@@ -313,15 +416,15 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                                 <div style="width: calc(100% - 70px);">
                                     <h5 class="fw-bold mb-0" style="color: #d35400;"><i class="bi bi-people-fill"></i> กลุ่มที่ ${work.group_number}</h5>
                                     <div class="member-list-box text-muted">
-                                        <strong>สมาชิก:</strong> ${work.member_names || '-'}
+                                        <strong>สมาชิก:</strong> ${escapeHtml(work.member_names || '-')}
                                     </div>
                                 </div>
                             `;
                         } else {
                             teamInfoHTML = `
                                 <div style="width: calc(100% - 70px);">
-                                    <h5 class="fw-bold text-success mb-0 text-truncate"><i class="bi bi-person-circle"></i> ${work.student_name}</h5>
-                                    <small class="text-muted d-block mt-1">รหัสนักเรียน: ${work.student_id}</small>
+                                    <h5 class="fw-bold text-success mb-0 text-truncate"><i class="bi bi-person-circle"></i> ${escapeHtml(work.student_name)}</h5>
+                                    <small class="text-muted d-block mt-1">รหัสนักเรียน: ${escapeHtml(work.student_id)}</small>
                                 </div>
                             `;
                         }
@@ -331,7 +434,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                         if (isReviewed && work.feedback && work.feedback.trim() !== '') {
                             feedbackHTML = `
                                 <div class="feedback-box">
-                                    <span class="text-success"><i class="bi bi-chat-heart-fill"></i> <strong>ครูณัฐดนัย:</strong> ${work.feedback}</span>
+                                    <span class="text-success"><i class="bi bi-chat-heart-fill"></i> <strong>ครูณัฐดนัย:</strong> ${escapeHtml(work.feedback)}</span>
                                 </div>
                             `;
                         }
@@ -339,6 +442,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                         col.innerHTML = `
                             <div class="work-card shadow-sm w-100 ${reviewedClass}">
                                 ${reviewedBadge}
+                                ${lessonBadge}
                                 <div class="preview-box" onclick="openPresentation(${work.id})" title="คลิกเพื่อนำเสนอจอใหญ่">
                                     <div class="preview-content" id="canvas-${work.id}"></div>
                                     <div class="zoom-hint"><i class="bi bi-arrows-fullscreen"></i> ขยายเต็มจอ</div>
@@ -350,9 +454,10 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                                             <i class="bi bi-heart-fill"></i> <span class="like-count">${work.like_count}</span>
                                         </button>
                                     </div>
+                                    ${projectSummaryHTML}
                                     <div class="bg-light p-2 rounded flex-grow-1 border d-flex flex-column">
                                         <p class="text-secondary small mb-0" style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
-                                            <strong>📜 คำอธิบาย:</strong><br>${descText}
+                                            <strong>📜 คำอธิบาย:</strong><br>${escapeHtml(descText)}
                                         </p>
                                         ${feedbackHTML}
                                     </div>
@@ -373,18 +478,36 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
             const work = worksList[workId];
             if(!work) return;
 
-            let modalTitleStr = work.mode === 'group' ? `กลุ่มที่ ${work.group_number}` : work.student_name;
-            document.getElementById('modal-title-text').innerHTML = `<i class="bi bi-easel-fill me-2"></i> ผลงานของ: ${modalTitleStr}`;
+            let modalTitleStr = work.mode === 'group' ? `กลุ่มที่ ${work.group_number}` : escapeHtml(work.student_name);
+            document.getElementById('modal-title-text').innerHTML = `
+                <i class="bi bi-easel-fill me-2"></i> ผลงานของ: ${modalTitleStr}
+                <div class="small fw-normal opacity-75 mt-1">
+                    ${GAME_META.lesson_no}: ${GAME_META.title}
+                </div>
+            `;
             
             let membersHtml = '';
             if (work.mode === 'group') {
                 membersHtml = `
                     <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
                         <strong class="text-dark"><i class="bi bi-people-fill text-warning fs-5 align-middle me-1"></i> สมาชิกทีม:</strong> 
-                        <span class="text-secondary ms-1">${work.member_names || '-'}</span>
+                        <span class="text-secondary ms-1">${escapeHtml(work.member_names || '-')}</span>
                     </div>`;
             }
             document.getElementById('modal-members-area').innerHTML = membersHtml;
+
+            const summary = getTractorRouteSummary(parseWorkData(work.work_data));
+            const modalSummaryHTML = summary ? `
+                <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
+                    <strong>${GAME_META.lesson_no}: ${GAME_META.title}</strong><br>
+                    ประเภทภารกิจ: ${summary.mission} |
+                    คำสั่ง ${summary.commandCount} |
+                    อุปสรรค ${summary.obstacleCount} |
+                    ผลผลิต ${summary.cropCount} |
+                    ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
+                </div>
+            ` : '';
+            document.getElementById('modal-project-summary').innerHTML = modalSummaryHTML;
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
             document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
@@ -395,7 +518,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                 feedbackModalHtml = `
                     <div class="alert alert-success py-2 mt-2 border-0 shadow-sm rounded-3">
                         <strong class="text-success"><i class="bi bi-chat-heart-fill fs-5 align-middle me-1"></i> ข้อเสนอแนะจากคุณครู:</strong> 
-                        <span class="text-dark ms-1">${work.feedback}</span>
+                        <span class="text-dark ms-1">${escapeHtml(work.feedback)}</span>
                     </div>`;
             }
             document.getElementById('modal-feedback-area').innerHTML = feedbackModalHtml;
@@ -489,6 +612,40 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
             container.appendChild(stage);
         }
 
+        function buildRoutePath(data) {
+            const dirs = {
+                UP: { dc: 0, dr: -1, icon: '⬆️' },
+                DOWN: { dc: 0, dr: 1, icon: '⬇️' },
+                LEFT: { dc: -1, dr: 0, icon: '⬅️' },
+                RIGHT: { dc: 1, dr: 0, icon: '➡️' }
+            };
+            const start = data.start;
+            if (!start || !Array.isArray(data.commands)) return [];
+
+            let pos = {
+                col: start.col ?? start.c,
+                row: start.row ?? start.r
+            };
+            const path = [{ ...pos, step: 0 }];
+
+            data.commands.forEach((cmd, index) => {
+                const dir = dirs[cmd];
+                if (!dir) return;
+                pos = {
+                    col: pos.col + dir.dc,
+                    row: pos.row + dir.dr
+                };
+                path.push({
+                    ...pos,
+                    step: index + 1,
+                    dir: cmd,
+                    icon: dir.icon
+                });
+            });
+
+            return path;
+        }
+
         function renderTractorRoutePreview(stage, data) {
             const missionLabels = {
                 target: 'ไปถึงจุดหมาย',
@@ -505,6 +662,7 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
             };
             const cols = data.grid?.cols || 6;
             const rows = data.grid?.rows || 5;
+            const path = buildRoutePath(data).filter(item => item.col >= 0 && item.row >= 0 && item.col < cols && item.row < rows);
             stage.classList.remove('bg-grid-pattern');
             stage.style.background = '#eff6ff';
             stage.style.padding = '24px';
@@ -534,7 +692,24 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                     cell.style.alignItems = 'center';
                     cell.style.justifyContent = 'center';
                     cell.style.fontSize = '30px';
-                    cell.textContent = tractorIconAt(data, col, row, icons);
+                    const objectIcon = tractorIconAt(data, col, row, icons);
+                    let pathStep = null;
+                    for (let i = path.length - 1; i >= 0; i--) {
+                        if (path[i].col === col && path[i].row === row && path[i].step > 0) {
+                            pathStep = path[i];
+                            break;
+                        }
+                    }
+                    if (objectIcon) {
+                        cell.textContent = objectIcon;
+                    } else if (pathStep) {
+                        cell.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; line-height:1;">
+                                <span style="font-size:16px;">${pathStep.icon || ''}</span>
+                                <span style="font-size:12px; font-weight:800; color:#1d4ed8;">${pathStep.step}</span>
+                            </div>
+                        `;
+                    }
                     grid.appendChild(cell);
                 }
             }

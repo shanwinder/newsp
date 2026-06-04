@@ -2,24 +2,65 @@
 (function () {
     const config = {
         title: 'ด่าน 9: ระบบน้ำครอบจักรวาล',
-        subtitle: 'ตัดสินใจหลายเงื่อนไขให้เหมาะกับแต่ละแปลงผัก',
-        hint: 'ถังน้ำหมดต้องแจ้งเตือนก่อนรดน้ำ ฝนตกต้องหยุดรดน้ำ ดินแห้งและไม่มีฝนจึงค่อยรดน้ำ',
-        feedback: 'คำสั่งบางแปลงยังไม่ตรงกับเงื่อนไข ลองตรวจถังน้ำ ฝน และความชื้นตามลำดับ',
+        subtitle: 'สร้างกฎหลายเงื่อนไขให้ฟาร์มรอดจากถังน้ำหมด ฝนตก และดินแห้ง',
+        hint: 'วางกฎเป็น: ถ้าถังน้ำหมด -> แจ้งเตือนเติมน้ำ / มิฉะนั้นถ้าฝนตก -> หยุดรดน้ำ / มิฉะนั้นถ้าดินแห้ง -> รดน้ำ / มิฉะนั้น -> สังเกตต่อ',
+        strictPriority: true,
+        solutionPriority: ['tank_empty', 'rain', 'soil_dry', 'else'],
+        conditions: [
+            { value: 'tank_empty', label: 'ถังน้ำหมด' },
+            { value: 'rain', label: 'ฝนตก' },
+            { value: 'soil_dry', label: 'ดินแห้ง' },
+            { value: 'soil_wet', label: 'ดินชื้น' },
+            { value: 'tank_ready', label: 'ถังน้ำพร้อม' }
+        ],
         actions: [
-            { value: 'water', label: 'รดน้ำ' },
-            { value: 'stop', label: 'หยุดรดน้ำ' },
             { value: 'refill', label: 'แจ้งเตือนเติมน้ำ' },
+            { value: 'stop', label: 'หยุดรดน้ำ' },
+            { value: 'water', label: 'รดน้ำ' },
             { value: 'observe', label: 'สังเกตต่อ' }
         ],
-        scenarios: [
-            { icon: '🌽', name: 'แปลง A', status: 'ดินแห้ง ไม่มีฝน ถังน้ำพร้อม', prompt: 'ควรดูแลอย่างไร?', answer: 'water' },
-            { icon: '🥬', name: 'แปลง B', status: 'ฝนกำลังตก ดินเริ่มชื้น', prompt: 'ควรเปิดน้ำหรือหยุด?', answer: 'stop' },
-            { icon: '🍅', name: 'แปลง C', status: 'ถังน้ำหมดและพืชเริ่มเหี่ยว', prompt: 'ระบบควรทำสิ่งใดก่อน?', answer: 'refill' }
+        plots: [
+            {
+                name: 'แปลง A',
+                soil: 'dry',
+                rain: false,
+                tank: 'ready',
+                health: 55,
+                expectedAction: 'water',
+                note: 'ดินแห้ง ไม่มีฝน ถังน้ำพร้อม'
+            },
+            {
+                name: 'แปลง B',
+                soil: 'wet',
+                rain: true,
+                tank: 'ready',
+                health: 88,
+                expectedAction: 'stop',
+                note: 'ฝนตกและดินชื้น'
+            },
+            {
+                name: 'แปลง C',
+                soil: 'dry',
+                rain: false,
+                tank: 'empty',
+                health: 50,
+                expectedAction: 'refill',
+                note: 'ถังน้ำหมดและพืชเริ่มเหี่ยว'
+            },
+            {
+                name: 'แปลง D',
+                soil: 'wet',
+                rain: false,
+                tank: 'ready',
+                health: 92,
+                expectedAction: 'observe',
+                note: 'ดินชื้น ไม่มีฝน ถังน้ำพร้อม'
+            }
         ]
     };
 
     function boot() {
-        window.FarmMissions.condition(config);
+        window.FarmMissions.irrigationBuilder(config);
     }
 
     if (window.FarmMissions) {

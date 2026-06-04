@@ -39,12 +39,12 @@ if ($game_id === 1) {
 } else if ($game_id === 3) {
     $game_title = "บทที่ 3: เครื่องรดน้ำอัจฉริยะ (Condition)";
     $game_theme = "info";
-    $mission_desc = "สร้างกฎแบบ ถ้า...แล้ว...มิฉะนั้น เพื่อให้เครื่องรดน้ำอัตโนมัติตัดสินใจถูกต้องตามสภาพดิน ฝน และน้ำในถัง";
+    $mission_desc = "คุณคือวิศวกรระบบน้ำอัจฉริยะของฟาร์ม ภารกิจคือสร้างกฎแบบ ถ้า...แล้ว...มิฉะนั้น ให้เครื่องรดน้ำตัดสินใจเองจากข้อมูลดิน ฝน และถังน้ำ จากนั้นทดสอบผลลัพธ์และปรับกฎให้ฟาร์มรอดทุกแปลง";
 
     $steps = [
-        ['icon' => 'bi-cloud-rain', 'title' => '1. อ่านสถานการณ์', 'desc' => 'ดูว่าดินแห้งหรือชื้น ฝนตกหรือไม่ และถังน้ำพร้อมใช้งานไหม'],
-        ['icon' => 'bi-diagram-3', 'title' => '2. เลือกเงื่อนไข', 'desc' => 'จับคู่สถานการณ์กับคำสั่ง เช่น รดน้ำ หยุดรดน้ำ หรือแจ้งเตือนเติมน้ำ'],
-        ['icon' => 'bi-check2-circle', 'title' => '3. ทดสอบระบบ', 'desc' => 'กดทดสอบเพื่อดูว่ากฎที่ตั้งไว้ดูแลทุกแปลงได้ถูกต้องหรือไม่']
+        ['icon' => 'bi-cloud-rain', 'title' => '1. อ่านข้อมูลเซ็นเซอร์', 'desc' => 'ดูว่าดินแห้งหรือชื้น ฝนตกหรือไม่ และถังน้ำพร้อมใช้งานไหม'],
+        ['icon' => 'bi-diagram-3', 'title' => '2. สร้างกฎ', 'desc' => 'ลากบล็อกเงื่อนไขและคำสั่งลงในแผง If, Else If และ Else ตามลำดับที่ต้องการ'],
+        ['icon' => 'bi-check2-circle', 'title' => '3. ทดสอบและปรับปรุง', 'desc' => 'กดทดสอบระบบ ดูผลลัพธ์ เช่น พืชฟื้น น้ำท่วม หรือถังน้ำหมด แล้วแก้กฎจนผ่านภารกิจ']
     ];
     $start_link = "../pages/game_select.php?game_id=3";
     $is_under_construction = false;
@@ -280,8 +280,8 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 3): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
                     <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If-Then-Else</div>
-                    <p class="text-dark fw-bold mb-2 mt-2">การใช้เงื่อนไขช่วยให้ระบบเลือกคำสั่งตามสถานการณ์จริง</p>
-                    <p class="text-secondary small mb-3">ตัวอย่างเช่น <strong>ถ้าฝนตก ให้หยุดรดน้ำ</strong> มิฉะนั้นจึงค่อยตรวจว่าดินแห้งหรือไม่ ลำดับของการตรวจเงื่อนไขจึงสำคัญมาก</p>
+                    <p class="text-dark fw-bold mb-2 mt-2">การใช้เงื่อนไขช่วยให้ระบบเลือกคำสั่งตามสถานการณ์จริง และต้องอ่านกฎจากบนลงล่าง</p>
+                    <p class="text-secondary small mb-3">ตัวอย่างเช่น <strong>ถ้าถังน้ำหมด ให้แจ้งเตือนเติมน้ำ</strong> มิฉะนั้นถ้าฝนตกจึงหยุดรดน้ำ แล้วค่อยตรวจว่าดินแห้งหรือไม่ ลำดับของเงื่อนไขจึงมีผลต่อผลลัพธ์ของฟาร์ม</p>
                     <div class="row g-2">
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">ถ้า</span><br>ตรวจสถานการณ์ก่อนตัดสินใจ</div></div>
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">แล้ว</span><br>ทำคำสั่งเมื่อเงื่อนไขเป็นจริง</div></div>
@@ -346,9 +346,9 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 3): ?>
                 <h5 class="fw-bold text-info mb-3"><i class="bi bi-droplet-half"></i> สิ่งที่ต้องคิดก่อนตั้งเงื่อนไข</h5>
                 <div class="row g-3 mb-5">
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ตรวจฝนก่อน</b><p class="small text-muted mb-0 mt-2">ถ้าฝนตกอยู่ แม้ดินแห้งก็ไม่ควรรดน้ำเพิ่ม</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ดูความชื้นดิน</b><p class="small text-muted mb-0 mt-2">ดินแห้งจึงต้องการน้ำ ดินชื้นแล้วควรหยุด</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ถังน้ำหมด</b><p class="small text-muted mb-0 mt-2">ต้องแจ้งเตือนเติมน้ำก่อนสั่งให้ระบบรดน้ำ</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ตรวจถังน้ำก่อน</b><p class="small text-muted mb-0 mt-2">ถ้าน้ำหมด ระบบต้องแจ้งเตือนก่อน ไม่ควรสั่งรดน้ำทันที</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ตรวจฝนก่อนดิน</b><p class="small text-muted mb-0 mt-2">ถ้าฝนตกอยู่ แม้ดินแห้งก็ไม่ควรรดน้ำเพิ่ม เพราะอาจน้ำท่วม</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ใช้ Else ให้ครบ</b><p class="small text-muted mb-0 mt-2">กรณีที่ไม่เข้าเงื่อนไขใด ควรมีคำสั่งสำรอง เช่น สังเกตต่อ</p></div></div>
                 </div>
                 <?php elseif ($game_id === 4): ?>
                 <h5 class="fw-bold text-danger mb-3"><i class="bi bi-search"></i> วิธีคิดแบบนักแก้บั๊ก</h5>

@@ -257,9 +257,12 @@ if ($work) {
                     <div class="h-100 d-flex flex-column gap-3">
                         <div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="fw-bold mb-0"><i class="bi bi-arrow-repeat text-primary"></i> คำสั่งเฉลย</h5>
+                                <h5 class="fw-bold mb-0"><i class="bi bi-arrow-repeat text-primary"></i> คำสั่งตัวอย่าง</h5>
                                 <span id="command-count" class="badge text-bg-secondary rounded-pill">0 / 15</span>
                             </div>
+                            <p class="small text-muted mb-2">
+                                ใส่อย่างน้อย 1 วิธีที่ทำให้รถไถผ่านภารกิจได้ เพื่อนอาจใช้เส้นทางอื่นได้หากทำภารกิจสำเร็จเหมือนกัน
+                            </p>
                             <div id="command-zone" class="command-zone mb-2">
                                 <span class="text-muted small">กดปุ่มลูกศรเพื่อเพิ่มคำสั่ง</span>
                             </div>
@@ -552,7 +555,7 @@ if ($work) {
             if (missionType === 'obstacle' && objects.obstacles.length === 0) {
                 return 'ภารกิจหลบสิ่งกีดขวางต้องมีกองฟางหรือหินอย่างน้อย 1 จุด';
             }
-            if (commands.length === 0) return 'เพิ่มคำสั่งลูกศรก่อนส่งชิ้นงานนะ';
+            if (commands.length === 0) return 'เพิ่มคำสั่งตัวอย่างอย่างน้อย 1 วิธี ก่อนส่งชิ้นงานนะ';
             return '';
         }
 
@@ -570,7 +573,7 @@ if ($work) {
                 { label: 'วางรถไถจุดเริ่มต้นแล้ว', ok: !!objects.start },
                 { label: missionType === 'harvest' ? 'วางโรงนาแล้ว' : 'วางเป้าหมายแล้ว', ok: hasDestination },
                 { label: 'ทำตามเงื่อนไขของประเภทภารกิจแล้ว', ok: hasMissionRequirement },
-                { label: 'มีคำสั่งเฉลยแล้ว', ok: commands.length > 0 },
+                { label: 'มีคำสั่งตัวอย่างแล้ว', ok: commands.length > 0 },
                 { label: 'ทดสอบเส้นทางผ่านแล้ว', ok: testPassed },
                 { label: 'เขียนคำอธิบายวิธีคิดแล้ว', ok: thinking.length > 0 }
             ];

@@ -2,22 +2,42 @@
 (function () {
     const config = {
         title: 'ด่าน 7: เช็คดินแห้งหรือเปียก',
-        subtitle: 'ใช้เงื่อนไข If อย่างง่ายเพื่อเลือกว่าควรรดน้ำหรือหยุดรดน้ำ',
-        hint: 'ถ้าดินแห้งให้รดน้ำ แต่ถ้าดินชื้นแล้วให้หยุดรดน้ำ',
-        feedback: 'คำสั่งนี้ยังไม่ครอบคลุมกรณีดินแห้ง/ดินชื้น ลองจับคู่สถานะกับการกระทำอีกครั้ง',
+        subtitle: 'สร้างกฎ If-Else ให้เครื่องรดน้ำตัดสินใจจากความชื้นของดิน',
+        hint: 'วางกฎเป็น: ถ้าดินแห้ง -> รดน้ำ / มิฉะนั้น -> หยุดรดน้ำ',
+        strictPriority: true,
+        solutionPriority: ['soil_dry', 'else'],
+        conditions: [
+            { value: 'soil_dry', label: 'ดินแห้ง' },
+            { value: 'soil_wet', label: 'ดินชื้น' }
+        ],
         actions: [
             { value: 'water', label: 'รดน้ำ' },
-            { value: 'stop', label: 'ไม่ต้องรดน้ำ' },
-            { value: 'alert', label: 'แจ้งเตือนครู' }
+            { value: 'stop', label: 'หยุดรดน้ำ' }
         ],
-        scenarios: [
-            { icon: '🌱', name: 'แปลง A', status: 'ดินแห้ง ใบเริ่มเหี่ยว', prompt: 'ถ้าดินแห้ง ระบบควรทำอะไร?', answer: 'water' },
-            { icon: '🥬', name: 'แปลง B', status: 'ดินชื้นพอดี ต้นกล้าสดชื่น', prompt: 'ถ้าดินชื้นแล้ว ระบบควรทำอะไร?', answer: 'stop' }
+        plots: [
+            {
+                name: 'แปลง A',
+                soil: 'dry',
+                rain: false,
+                tank: 'ready',
+                health: 55,
+                expectedAction: 'water',
+                note: 'ดินแห้ง ใบเริ่มเหี่ยว'
+            },
+            {
+                name: 'แปลง B',
+                soil: 'wet',
+                rain: false,
+                tank: 'ready',
+                health: 90,
+                expectedAction: 'stop',
+                note: 'ดินชื้นพอดี ต้นกล้าสดชื่น'
+            }
         ]
     };
 
     function boot() {
-        window.FarmMissions.condition(config);
+        window.FarmMissions.irrigationBuilder(config);
     }
 
     if (window.FarmMissions) {

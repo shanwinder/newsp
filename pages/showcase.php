@@ -287,6 +287,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                             </div>
                             <div class="col-md-4 text-end">
                                 <span class="badge bg-light text-secondary border fs-6 px-3 py-2" id="modal-time"></span>
+                                <div id="modal-action-area"></div>
                             </div>
                         </div>
                     </div>
@@ -309,7 +310,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
 
         const STRUCTURED_LABELS = {
             map: 'แผนที่หรือฉากที่ออกแบบ',
-            commands: 'ลำดับคำสั่ง',
+            commands: 'ลำดับคำสั่งตัวอย่าง',
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
@@ -351,7 +352,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             return `
                 <div class="project-summary small mt-2">
                     <span class="badge text-bg-primary rounded-pill">${summary.mission}</span>
-                    <span class="badge text-bg-light border rounded-pill">คำสั่ง ${summary.commandCount}</span>
+                    <span class="badge text-bg-light border rounded-pill">วิธีตัวอย่าง ${summary.commandCount}</span>
                     <span class="badge text-bg-light border rounded-pill">อุปสรรค ${summary.obstacleCount}</span>
                     ${summary.cropCount > 0 ? `<span class="badge text-bg-light border rounded-pill">ผลผลิต ${summary.cropCount}</span>` : ''}
                     <span class="badge ${summary.validated ? 'text-bg-success' : 'text-bg-danger'} rounded-pill">
@@ -409,6 +410,15 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         const parsedWorkData = parseWorkData(work.work_data);
                         const tractorSummary = getTractorRouteSummary(parsedWorkData);
                         const projectSummaryHTML = renderProjectSummary(tractorSummary);
+                        const playButtonHTML = tractorSummary?.validated ? `
+                            <a href="play_student_work.php?work_id=${work.id}" class="btn btn-primary btn-sm rounded-pill fw-bold mt-2 align-self-start">
+                                <i class="bi bi-play-fill"></i> ลองเล่นโจทย์นี้
+                            </a>
+                        ` : (tractorSummary ? `
+                            <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
+                                ยังไม่พร้อมให้เล่น
+                            </span>
+                        ` : '');
 
                         let teamInfoHTML = '';
                         if (work.mode === 'group') {
@@ -460,6 +470,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                                             <strong>📜 คำอธิบาย:</strong><br>${escapeHtml(descText)}
                                         </p>
                                         ${feedbackHTML}
+                                        ${playButtonHTML}
                                     </div>
                                 </div>
                             </div>
@@ -501,7 +512,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                 <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
                     <strong>${GAME_META.lesson_no}: ${GAME_META.title}</strong><br>
                     ประเภทภารกิจ: ${summary.mission} |
-                    คำสั่ง ${summary.commandCount} |
+                    วิธีตัวอย่าง ${summary.commandCount} |
                     อุปสรรค ${summary.obstacleCount} |
                     ผลผลิต ${summary.cropCount} |
                     ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
@@ -511,6 +522,15 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
             document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
+            const modalActionArea = document.getElementById('modal-action-area');
+            if (modalActionArea) {
+                modalActionArea.innerHTML = summary?.validated ? `
+                    <a href="play_student_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
+                        <i class="bi bi-controller"></i> ลองเล่นโจทย์นี้
+                    </a>
+                    <div class="small text-muted mt-2">ลองแก้โจทย์ของเพื่อนด้วยวิธีของคุณเอง</div>
+                ` : '';
+            }
             
             // 🟢 แสดงคอมเมนต์คุณครูในหน้าจอใหญ่ด้วย
             let feedbackModalHtml = '';
@@ -675,7 +695,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                     </div>
                     <div style="background:white; border:1px solid #dbe7f3; border-radius:12px; padding:18px; overflow:hidden;">
                         <div style="font-weight:800; color:#0f172a; font-size:20px;">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
-                        <div style="color:#64748b; margin:10px 0 14px;">คำสั่งเฉลย ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
+                        <div style="color:#64748b; margin:10px 0 14px;">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
                         <div style="font-size:22px; line-height:1.8; word-break:break-word;">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
                         <div style="margin-top:16px; color:${data.validated ? '#16a34a' : '#dc2626'}; font-weight:800;">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
                     </div>

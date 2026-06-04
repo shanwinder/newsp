@@ -930,6 +930,927 @@
         createGame(ConditionScene);
     }
 
+    function ensureIrrigationStyles() {
+        if (document.getElementById('farm-missions-irrigation-style')) return;
+        const style = document.createElement('style');
+        style.id = 'farm-missions-irrigation-style';
+        style.innerHTML = `
+            #game-container { width: min(1000px, 94vw); }
+            .irrigation-shell,
+            .irrigation-shell * { box-sizing: border-box; }
+            .irrigation-shell {
+                width: min(1000px, 94vw);
+                font-family: 'Kanit', sans-serif;
+                color: #0f172a;
+            }
+            .irrigation-top,
+            .irrigation-panel {
+                background: #ffffff;
+                border: 1px solid #dbeafe;
+                border-radius: 8px;
+                box-shadow: 0 12px 28px rgba(15, 23, 42, .08);
+            }
+            .irrigation-top {
+                padding: 14px 16px;
+                margin-bottom: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .irrigation-title {
+                font-weight: 800;
+                font-size: 22px;
+                margin: 0 0 4px;
+                color: #0f172a;
+            }
+            .irrigation-subtitle {
+                margin: 0;
+                color: #475569;
+                font-size: 15px;
+            }
+            .irrigation-badges {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+                min-width: 210px;
+            }
+            .irrigation-badge {
+                border-radius: 999px;
+                padding: 7px 11px;
+                font-weight: 700;
+                font-size: 13px;
+                background: #ecfeff;
+                color: #0e7490;
+                border: 1px solid #a5f3fc;
+            }
+            .irrigation-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1.08fr) minmax(320px, .92fr);
+                gap: 12px;
+                align-items: stretch;
+            }
+            .irrigation-panel { padding: 14px; }
+            .irrigation-panel-title {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                font-size: 18px;
+                font-weight: 800;
+                margin: 0 0 12px;
+                color: #164e63;
+            }
+            .irrigation-plots {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .irrigation-plot {
+                min-height: 178px;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                padding: 10px;
+                background: #f8fafc;
+                position: relative;
+                overflow: hidden;
+            }
+            .irrigation-plot.result-healthy,
+            .irrigation-plot.result-safe,
+            .irrigation-plot.result-refill_needed,
+            .irrigation-plot.result-observe { border-color: #22c55e; background: #f0fdf4; }
+            .irrigation-plot.result-flood,
+            .irrigation-plot.result-dry,
+            .irrigation-plot.result-no_water,
+            .irrigation-plot.result-no_action,
+            .irrigation-plot.result-unnecessary_refill { border-color: #ef4444; background: #fef2f2; }
+            .plot-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                font-weight: 800;
+                margin-bottom: 8px;
+            }
+            .plot-icon { font-size: 30px; line-height: 1; }
+            .plot-status {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-bottom: 8px;
+            }
+            .sensor-pill {
+                border-radius: 999px;
+                padding: 5px 8px;
+                font-size: 12px;
+                font-weight: 700;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                color: #334155;
+            }
+            .plot-health {
+                height: 9px;
+                border-radius: 999px;
+                background: #e2e8f0;
+                overflow: hidden;
+                margin: 8px 0;
+            }
+            .plot-health > span {
+                display: block;
+                height: 100%;
+                min-width: 4px;
+                border-radius: 999px;
+                background: #22c55e;
+                transition: width .24s ease;
+            }
+            .plot-result {
+                min-height: 46px;
+                font-size: 13px;
+                color: #475569;
+                line-height: 1.45;
+            }
+            .rule-list {
+                display: grid;
+                gap: 9px;
+            }
+            .rule-row {
+                display: grid;
+                grid-template-columns: 96px minmax(0, 1fr);
+                gap: 8px;
+                align-items: center;
+                border: 1px solid #bae6fd;
+                border-radius: 8px;
+                background: #f0f9ff;
+                padding: 8px;
+            }
+            .rule-label {
+                font-weight: 800;
+                color: #0369a1;
+                font-size: 14px;
+            }
+            .rule-slots {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 8px;
+            }
+            .rule-slot {
+                min-height: 44px;
+                border: 2px dashed #7dd3fc;
+                border-radius: 8px;
+                background: #ffffff;
+                color: #64748b;
+                font-weight: 700;
+                font-size: 14px;
+                padding: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                cursor: pointer;
+                transition: transform .15s ease, border-color .15s ease, background .15s ease;
+            }
+            .rule-slot:hover,
+            .rule-slot.slot-target {
+                transform: translateY(-1px);
+                border-color: #0891b2;
+                background: #ecfeff;
+            }
+            .rule-slot.filled {
+                border-style: solid;
+                background: #ffffff;
+                color: #0f172a;
+            }
+            .rule-slot.fixed {
+                cursor: default;
+                border-style: solid;
+                background: #e0f2fe;
+                color: #075985;
+            }
+            .block-palette {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin-top: 12px;
+            }
+            .block-group {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                background: #ffffff;
+                padding: 10px;
+            }
+            .block-group-title {
+                font-size: 14px;
+                font-weight: 800;
+                color: #334155;
+                margin-bottom: 8px;
+            }
+            .block-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .logic-block {
+                border: 0;
+                border-radius: 8px;
+                min-height: 42px;
+                padding: 8px 11px;
+                font-weight: 800;
+                color: #ffffff;
+                box-shadow: 0 4px 10px rgba(15, 23, 42, .14);
+                cursor: grab;
+                touch-action: manipulation;
+            }
+            .logic-block.condition { background: #0284c7; }
+            .logic-block.action { background: #16a34a; }
+            .logic-block.selected {
+                outline: 3px solid #facc15;
+                outline-offset: 2px;
+                transform: translateY(-1px);
+            }
+            .irrigation-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+            }
+            .irrigation-control {
+                border: 0;
+                border-radius: 999px;
+                padding: 10px 15px;
+                font-weight: 800;
+                color: #ffffff;
+                background: #0891b2;
+                cursor: pointer;
+            }
+            .irrigation-control.secondary { background: #64748b; }
+            .irrigation-control.warning { background: #d97706; }
+            .irrigation-control.danger { background: #dc2626; }
+            .feedback-panel {
+                margin-top: 12px;
+                border-radius: 8px;
+                border: 1px solid #bae6fd;
+                background: #ecfeff;
+                padding: 12px;
+            }
+            .feedback-panel.success { border-color: #86efac; background: #f0fdf4; }
+            .feedback-panel.error { border-color: #fecaca; background: #fef2f2; }
+            .feedback-title {
+                font-weight: 800;
+                margin-bottom: 6px;
+                color: #164e63;
+            }
+            .feedback-panel.error .feedback-title { color: #991b1b; }
+            .feedback-panel.success .feedback-title { color: #166534; }
+            .feedback-body {
+                color: #334155;
+                line-height: 1.55;
+                font-size: 14px;
+            }
+            .run-log {
+                margin: 8px 0 0;
+                padding-left: 18px;
+                color: #475569;
+                font-size: 13px;
+            }
+            .irrigation-finish {
+                position: fixed;
+                inset: 0;
+                z-index: 3000;
+                background: rgba(15, 23, 42, .78);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            }
+            .finish-card {
+                width: min(560px, 92vw);
+                background: #ffffff;
+                border-radius: 8px;
+                padding: 28px;
+                text-align: center;
+                box-shadow: 0 24px 80px rgba(15, 23, 42, .35);
+            }
+            .finish-card h3 {
+                font-size: 34px;
+                font-weight: 800;
+                color: #166534;
+                margin: 0 0 10px;
+            }
+            .finish-stars {
+                font-size: 42px;
+                margin: 12px 0;
+                color: #f59e0b;
+            }
+            @media (max-width: 900px) {
+                .irrigation-top { flex-direction: column; }
+                .irrigation-badges { justify-content: flex-start; min-width: 0; }
+                .irrigation-layout,
+                .block-palette { grid-template-columns: 1fr; }
+                .irrigation-plots { grid-template-columns: 1fr; }
+            }
+            @media (max-width: 560px) {
+                .rule-row,
+                .rule-slots { grid-template-columns: 1fr; }
+                .irrigation-title { font-size: 19px; }
+                .logic-block,
+                .irrigation-control { width: 100%; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function initIrrigationBuilder(gameConfig) {
+        ensureIrrigationStyles();
+        const container = document.getElementById('game-container');
+        if (!container) return;
+
+        const conditionMap = Object.fromEntries((gameConfig.conditions || []).map((item) => [item.value, item]));
+        const actionMap = Object.fromEntries((gameConfig.actions || []).map((item) => [item.value, item]));
+        const rows = (gameConfig.ruleRows || buildRuleRows(gameConfig.solutionPriority || [])).map((row, index) => ({
+            ...row,
+            label: row.label || (index === 0 ? 'ถ้า' : row.fixedCondition === 'else' ? 'มิฉะนั้น' : 'มิฉะนั้นถ้า')
+        }));
+        const state = {
+            startedAt: Date.now(),
+            attempts: 0,
+            mistakes: 0,
+            hints: 0,
+            ended: false,
+            selected: null,
+            history: [],
+            rules: rows.map((row) => ({
+                condition: row.fixedCondition || null,
+                action: null
+            })),
+            results: null
+        };
+
+        renderShell();
+        bindEvents();
+        renderAll();
+        showFeedback('เริ่มจากเลือกบล็อกเงื่อนไขและคำสั่ง แล้ววางลงในแผงกฎจากบนลงล่าง', 'info');
+
+        function buildRuleRows(priority) {
+            const source = priority.length ? priority : ['soil_dry', 'else'];
+            return source.map((condition, index) => ({
+                label: index === 0 ? 'ถ้า' : condition === 'else' ? 'มิฉะนั้น' : 'มิฉะนั้นถ้า',
+                fixedCondition: condition === 'else' ? 'else' : null
+            }));
+        }
+
+        function renderShell() {
+            container.innerHTML = `
+                <div class="irrigation-shell">
+                    <div class="irrigation-top">
+                        <div>
+                            <h3 class="irrigation-title">${escapeHtml(gameConfig.title)}</h3>
+                            <p class="irrigation-subtitle">${escapeHtml(gameConfig.subtitle)}</p>
+                        </div>
+                        <div class="irrigation-badges">
+                            <span class="irrigation-badge" id="irrigation-attempts">ลอง 0 ครั้ง</span>
+                            <span class="irrigation-badge" id="irrigation-mistakes">พลาด 0 ครั้ง</span>
+                            <span class="irrigation-badge" id="irrigation-hints">คำใบ้ 0</span>
+                        </div>
+                    </div>
+
+                    <div class="irrigation-layout">
+                        <section class="irrigation-panel">
+                            <h4 class="irrigation-panel-title">
+                                <span>แปลงผักและข้อมูลเซ็นเซอร์</span>
+                                <span>🚿</span>
+                            </h4>
+                            <div id="irrigation-plots" class="irrigation-plots"></div>
+                        </section>
+
+                        <section class="irrigation-panel">
+                            <h4 class="irrigation-panel-title">
+                                <span>แผงสร้างกฎ If-Then-Else</span>
+                                <span>🧩</span>
+                            </h4>
+                            <div id="irrigation-rules" class="rule-list"></div>
+                            <div class="irrigation-controls">
+                                <button type="button" class="irrigation-control" id="run-irrigation">ทดสอบระบบ</button>
+                                <button type="button" class="irrigation-control secondary" id="hint-irrigation">คำใบ้</button>
+                                <button type="button" class="irrigation-control warning" id="undo-irrigation">ย้อนกลับ</button>
+                                <button type="button" class="irrigation-control danger" id="clear-irrigation">ล้างกฎ</button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="block-palette">
+                        <section class="block-group">
+                            <div class="block-group-title">บล็อกเงื่อนไข</div>
+                            <div id="condition-blocks" class="block-list"></div>
+                        </section>
+                        <section class="block-group">
+                            <div class="block-group-title">บล็อกคำสั่ง</div>
+                            <div id="action-blocks" class="block-list"></div>
+                        </section>
+                    </div>
+
+                    <section id="irrigation-feedback" class="feedback-panel">
+                        <div class="feedback-title">คำแนะนำ</div>
+                        <div class="feedback-body">เลือกบล็อกเพื่อเริ่มสร้างกฎ</div>
+                    </section>
+                </div>
+            `;
+        }
+
+        function bindEvents() {
+            container.querySelector('#run-irrigation').addEventListener('click', runSimulation);
+            container.querySelector('#hint-irrigation').addEventListener('click', showHint);
+            container.querySelector('#undo-irrigation').addEventListener('click', undo);
+            container.querySelector('#clear-irrigation').addEventListener('click', clearRules);
+
+            container.addEventListener('click', (event) => {
+                const block = event.target.closest('.logic-block');
+                if (block) {
+                    state.selected = { kind: block.dataset.kind, value: block.dataset.value };
+                    renderBlocks();
+                    showFeedback(`เลือกบล็อก "${block.textContent.trim()}" แล้ว แตะช่องที่ต้องการวาง`, 'info');
+                    return;
+                }
+
+                const slot = event.target.closest('.rule-slot');
+                if (slot && !slot.classList.contains('fixed')) {
+                    handleSlotChoice(slot);
+                }
+            });
+
+            container.addEventListener('dragstart', (event) => {
+                const block = event.target.closest('.logic-block');
+                if (!block) return;
+                event.dataTransfer.setData('text/plain', JSON.stringify({
+                    kind: block.dataset.kind,
+                    value: block.dataset.value
+                }));
+                event.dataTransfer.effectAllowed = 'copy';
+                state.selected = { kind: block.dataset.kind, value: block.dataset.value };
+                renderBlocks();
+            });
+
+            container.addEventListener('dragover', (event) => {
+                const slot = event.target.closest('.rule-slot');
+                if (!slot || slot.classList.contains('fixed')) return;
+                event.preventDefault();
+                slot.classList.add('slot-target');
+            });
+
+            container.addEventListener('dragleave', (event) => {
+                const slot = event.target.closest('.rule-slot');
+                if (slot) slot.classList.remove('slot-target');
+            });
+
+            container.addEventListener('drop', (event) => {
+                const slot = event.target.closest('.rule-slot');
+                if (!slot || slot.classList.contains('fixed')) return;
+                event.preventDefault();
+                slot.classList.remove('slot-target');
+                try {
+                    const payload = JSON.parse(event.dataTransfer.getData('text/plain'));
+                    applyToSlot(slot, payload);
+                } catch (error) {
+                    showFeedback('วางบล็อกนี้ไม่ได้ ลองเลือกบล็อกอีกครั้ง', 'error');
+                }
+            });
+        }
+
+        function handleSlotChoice(slot) {
+            const ruleIndex = Number(slot.dataset.ruleIndex);
+            const kind = slot.dataset.kind;
+            if (!state.selected) {
+                const current = state.rules[ruleIndex][kind];
+                if (current) {
+                    pushHistory();
+                    state.rules[ruleIndex][kind] = null;
+                    state.results = null;
+                    renderAll();
+                    showFeedback('ลบบล็อกออกจากช่องแล้ว', 'info');
+                    return;
+                }
+                showFeedback('เลือกบล็อกจากด้านล่างก่อน แล้วค่อยแตะช่องนี้', 'info');
+                return;
+            }
+            applyToSlot(slot, state.selected);
+        }
+
+        function applyToSlot(slot, payload) {
+            const ruleIndex = Number(slot.dataset.ruleIndex);
+            const kind = slot.dataset.kind;
+            if (payload.kind !== kind) {
+                showFeedback(kind === 'condition'
+                    ? 'ช่องนี้ต้องใช้บล็อกเงื่อนไข เช่น ดินแห้ง ฝนตก หรือถังน้ำหมด'
+                    : 'ช่องนี้ต้องใช้บล็อกคำสั่ง เช่น รดน้ำ หยุดรดน้ำ หรือแจ้งเตือนเติมน้ำ', 'error');
+                return;
+            }
+            pushHistory();
+            state.rules[ruleIndex][kind] = payload.value;
+            state.results = null;
+            state.selected = null;
+            renderAll();
+        }
+
+        function pushHistory() {
+            state.history.push(JSON.stringify(state.rules));
+            if (state.history.length > 20) state.history.shift();
+        }
+
+        function undo() {
+            const previous = state.history.pop();
+            if (!previous) {
+                showFeedback('ยังไม่มีขั้นตอนให้ย้อนกลับ', 'info');
+                return;
+            }
+            state.rules = JSON.parse(previous);
+            state.results = null;
+            state.selected = null;
+            renderAll();
+            showFeedback('ย้อนกลับ 1 ขั้นแล้ว', 'info');
+        }
+
+        function clearRules() {
+            pushHistory();
+            state.rules = rows.map((row) => ({ condition: row.fixedCondition || null, action: null }));
+            state.results = null;
+            state.selected = null;
+            renderAll();
+            showFeedback('ล้างกฎแล้ว เริ่มวางเงื่อนไขใหม่ได้เลย', 'info');
+        }
+
+        function showHint() {
+            state.hints++;
+            renderBadges();
+            showFeedback(gameConfig.hint || buildSolutionHint(), 'info');
+        }
+
+        function buildSolutionHint() {
+            const priority = gameConfig.solutionPriority || [];
+            if (!priority.length) return 'ลองอ่านข้อมูลเซ็นเซอร์ แล้วเรียงเงื่อนไขจากสิ่งที่ต้องระวังก่อน';
+            return `ลองเรียงกฎเป็น ${priority.map((condition) => conditionLabel(condition)).join(' → ')}`;
+        }
+
+        function renderAll() {
+            renderBadges();
+            renderPlots();
+            renderRules();
+            renderBlocks();
+        }
+
+        function renderBadges() {
+            container.querySelector('#irrigation-attempts').textContent = `ลอง ${state.attempts} ครั้ง`;
+            container.querySelector('#irrigation-mistakes').textContent = `พลาด ${state.mistakes} ครั้ง`;
+            container.querySelector('#irrigation-hints').textContent = `คำใบ้ ${state.hints}`;
+        }
+
+        function renderPlots() {
+            const wrap = container.querySelector('#irrigation-plots');
+            const results = state.results || [];
+            wrap.innerHTML = gameConfig.plots.map((plot, index) => {
+                const result = results[index];
+                const health = result ? result.health : plot.health;
+                const className = result ? ` result-${result.result}` : '';
+                return `
+                    <article class="irrigation-plot${className}">
+                        <div class="plot-head">
+                            <span>${escapeHtml(plot.name)}</span>
+                            <span class="plot-icon">${plotIcon(plot, result)}</span>
+                        </div>
+                        <div class="plot-status">
+                            <span class="sensor-pill">${plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น'}</span>
+                            <span class="sensor-pill">${plot.rain ? 'ฝนตก' : 'ไม่มีฝน'}</span>
+                            <span class="sensor-pill">${plot.tank === 'empty' ? 'ถังน้ำหมด' : 'ถังน้ำพร้อม'}</span>
+                        </div>
+                        <div class="plot-health"><span style="width:${Math.max(4, health)}%"></span></div>
+                        <div class="plot-result">${result ? escapeHtml(result.message) : escapeHtml(plot.note || 'รอทดสอบกฎของเครื่องรดน้ำ')}</div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderRules() {
+            const wrap = container.querySelector('#irrigation-rules');
+            wrap.innerHTML = rows.map((row, index) => {
+                const rule = state.rules[index];
+                const fixed = row.fixedCondition === 'else';
+                return `
+                    <div class="rule-row">
+                        <div class="rule-label">${escapeHtml(row.label)}</div>
+                        <div class="rule-slots">
+                            <button type="button"
+                                class="rule-slot ${fixed ? 'fixed filled' : rule.condition ? 'filled' : ''}"
+                                data-rule-index="${index}"
+                                data-kind="condition">
+                                ${escapeHtml(fixed ? 'กรณีอื่น ๆ' : rule.condition ? conditionLabel(rule.condition) : 'วางเงื่อนไข')}
+                            </button>
+                            <button type="button"
+                                class="rule-slot ${rule.action ? 'filled' : ''}"
+                                data-rule-index="${index}"
+                                data-kind="action">
+                                ${escapeHtml(rule.action ? actionLabel(rule.action) : 'วางคำสั่ง')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderBlocks() {
+            const conditionWrap = container.querySelector('#condition-blocks');
+            const actionWrap = container.querySelector('#action-blocks');
+            conditionWrap.innerHTML = (gameConfig.conditions || []).map((condition) => blockHtml(condition, 'condition')).join('');
+            actionWrap.innerHTML = (gameConfig.actions || []).map((action) => blockHtml(action, 'action')).join('');
+        }
+
+        function blockHtml(item, kind) {
+            const selected = state.selected && state.selected.kind === kind && state.selected.value === item.value;
+            return `
+                <button type="button"
+                    class="logic-block ${kind} ${selected ? 'selected' : ''}"
+                    draggable="true"
+                    data-kind="${kind}"
+                    data-value="${escapeHtml(item.value)}">
+                    ${escapeHtml(item.label)}
+                </button>
+            `;
+        }
+
+        function runSimulation() {
+            if (state.ended) return;
+            state.attempts++;
+            renderBadges();
+
+            const missing = findMissingRule();
+            if (missing) {
+                state.mistakes++;
+                renderBadges();
+                showFeedback(missing, 'error');
+                return;
+            }
+
+            const simulation = simulateRules();
+            state.results = simulation.results;
+            renderPlots();
+
+            if (simulation.passed) {
+                finishGame(simulation);
+                return;
+            }
+
+            state.mistakes++;
+            renderBadges();
+            showFeedback(simulation.feedback, 'error', simulation.logs);
+        }
+
+        function findMissingRule() {
+            for (let i = 0; i < state.rules.length; i++) {
+                const row = rows[i];
+                const rule = state.rules[i];
+                if (!row.fixedCondition && !rule.condition) {
+                    return `กฎแถวที่ ${i + 1} ยังไม่มีเงื่อนไข ลองวางบล็อกเงื่อนไขก่อน`;
+                }
+                if (!rule.action) {
+                    return `กฎแถวที่ ${i + 1} ยังไม่มีคำสั่ง ระบบจึงยังตัดสินใจไม่ครบ`;
+                }
+            }
+            return '';
+        }
+
+        function simulateRules() {
+            const rules = state.rules.map((rule) => ({ ...rule }));
+            const priorityIssue = checkPriority(rules);
+            const logs = [];
+            const errors = [];
+            let waterWaste = 0;
+            const results = gameConfig.plots.map((plot) => {
+                const decision = evaluateRules(plot, rules);
+                const outcome = applyAction(plot, decision.action);
+                waterWaste += outcome.waterWaste;
+                const expectedAction = plot.expectedAction;
+                const actionOk = expectedAction ? decision.action === expectedAction : outcome.safe;
+                const ok = actionOk && outcome.safe;
+                const log = `${plot.name}: ${describePlot(plot)} → ${actionLabel(decision.action)} → ${outcome.label}`;
+                logs.push(log);
+                if (!ok) {
+                    errors.push(buildPlotError(plot, decision, outcome, expectedAction));
+                }
+                return {
+                    ...outcome,
+                    action: decision.action,
+                    ruleIndex: decision.ruleIndex,
+                    message: `${actionLabel(decision.action)}: ${outcome.label}`
+                };
+            });
+
+            if (priorityIssue) errors.unshift(priorityIssue);
+            return {
+                results,
+                logs,
+                waterWaste,
+                passed: errors.length === 0,
+                feedback: errors[0] || 'กฎยังไม่ครอบคลุมทุกสถานการณ์ ลองปรับลำดับเงื่อนไขอีกครั้ง'
+            };
+        }
+
+        function checkPriority(rules) {
+            const expected = gameConfig.solutionPriority || [];
+            if (!gameConfig.strictPriority || !expected.length) return '';
+            const actual = rules.map((rule) => rule.condition);
+            for (let i = 0; i < expected.length; i++) {
+                if (actual[i] !== expected[i]) {
+                    return `ลำดับเงื่อนไขยังไม่ถูกต้อง ควรตรวจ "${conditionLabel(expected[i])}" ในแถวที่ ${i + 1} เพราะระบบอ่านกฎจากบนลงล่าง`;
+                }
+            }
+            return '';
+        }
+
+        function evaluateRules(plot, rules) {
+            for (let i = 0; i < rules.length; i++) {
+                const rule = rules[i];
+                if (rule.condition === 'else' || checkCondition(plot, rule.condition)) {
+                    return { action: rule.action || 'no_action', ruleIndex: i };
+                }
+            }
+            return { action: 'no_action', ruleIndex: -1 };
+        }
+
+        function checkCondition(plot, condition) {
+            if (condition === 'soil_dry') return plot.soil === 'dry';
+            if (condition === 'soil_wet') return plot.soil === 'wet';
+            if (condition === 'rain') return plot.rain === true;
+            if (condition === 'tank_empty') return plot.tank === 'empty';
+            if (condition === 'tank_ready') return plot.tank === 'ready';
+            return false;
+        }
+
+        function applyAction(plot, action) {
+            let health = plot.health;
+            let result = 'safe';
+            let label = 'ปลอดภัย';
+            let safe = true;
+            let waterWaste = 0;
+
+            if (action === 'water') {
+                if (plot.tank === 'empty') {
+                    result = 'no_water';
+                    label = 'ถังน้ำหมด พืชยังไม่ได้รับน้ำ';
+                    health -= 18;
+                    safe = false;
+                } else if (plot.rain || plot.soil === 'wet') {
+                    result = 'flood';
+                    label = 'น้ำมากเกินไป';
+                    health -= 24;
+                    safe = false;
+                    waterWaste = 1;
+                } else {
+                    result = 'healthy';
+                    label = 'พืชฟื้นและดินชุ่มพอดี';
+                    health += 24;
+                }
+            } else if (action === 'stop') {
+                if (plot.soil === 'dry' && !plot.rain) {
+                    result = 'dry';
+                    label = 'พืชยังขาดน้ำ';
+                    health -= 18;
+                    safe = false;
+                } else {
+                    result = 'safe';
+                    label = 'หยุดรดน้ำได้ถูกต้อง';
+                }
+            } else if (action === 'refill') {
+                if (plot.tank === 'empty') {
+                    result = 'refill_needed';
+                    label = 'แจ้งเตือนเติมน้ำก่อนรดน้ำ';
+                } else {
+                    result = 'unnecessary_refill';
+                    label = 'แจ้งเติมน้ำทั้งที่ถังยังพร้อม';
+                    safe = false;
+                }
+            } else if (action === 'observe') {
+                if (plot.soil === 'dry' && !plot.rain && plot.tank !== 'empty') {
+                    result = 'dry';
+                    label = 'สังเกตเฉย ๆ ทำให้พืชยังขาดน้ำ';
+                    health -= 12;
+                    safe = false;
+                } else {
+                    result = 'observe';
+                    label = 'สังเกตต่อได้อย่างปลอดภัย';
+                }
+            } else {
+                result = 'no_action';
+                label = 'ระบบไม่รู้ว่าต้องทำอะไร';
+                health -= 12;
+                safe = false;
+            }
+
+            return {
+                result,
+                label,
+                safe,
+                waterWaste,
+                health: Math.max(0, Math.min(100, health))
+            };
+        }
+
+        function buildPlotError(plot, decision, outcome, expectedAction) {
+            if (expectedAction && decision.action !== expectedAction) {
+                return `${plot.name} ควรเป็น "${actionLabel(expectedAction)}" แต่ระบบเลือก "${actionLabel(decision.action)}" ลองตรวจว่ากฎแถวบน ๆ ครอบคลุมสถานการณ์นี้ก่อนหรือไม่`;
+            }
+            if (outcome.result === 'flood') {
+                return `${plot.name} น้ำมากเกินไป เพราะระบบสั่งรดน้ำทั้งที่${plot.rain ? 'ฝนตกอยู่' : 'ดินชื้นแล้ว'} ลองตรวจฝนหรือความชื้นก่อนสั่งรดน้ำ`;
+            }
+            if (outcome.result === 'dry') {
+                return `${plot.name} ยังขาดน้ำ เพราะระบบไม่ได้รดน้ำเมื่อดินแห้งและไม่มีฝน`;
+            }
+            if (outcome.result === 'no_water') {
+                return `${plot.name} ถังน้ำหมด แต่ระบบยังพยายามรดน้ำ ลองตรวจถังน้ำก่อนเงื่อนไขอื่น`;
+            }
+            if (outcome.result === 'unnecessary_refill') {
+                return `${plot.name} ถังน้ำยังพร้อม จึงไม่ควรแจ้งเติมน้ำในกรณีนี้`;
+            }
+            return `${plot.name} ยังไม่ผ่าน ลองดูรายงานผลแล้วปรับกฎอีกครั้ง`;
+        }
+
+        function finishGame(simulation) {
+            state.ended = true;
+            const duration = Math.max(1, Math.floor((Date.now() - state.startedAt) / 1000));
+            const stars = calculateIrrigationStars(simulation);
+            showFeedback('กฎของคุณครอบคลุมทุกสถานการณ์แล้ว ระบบดูแลฟาร์มได้สำเร็จ', 'success', simulation.logs);
+            const overlay = document.createElement('div');
+            overlay.className = 'irrigation-finish';
+            overlay.innerHTML = `
+                <div class="finish-card">
+                    <h3>ภารกิจสำเร็จ!</h3>
+                    <p>คุณสร้างกฎ If-Then-Else ให้เครื่องรดน้ำตัดสินใจได้ถูกต้อง</p>
+                    <div class="finish-stars">${'⭐'.repeat(stars)}</div>
+                    <p>ใช้เวลา ${duration} วินาที | ทดสอบ ${state.attempts} ครั้ง</p>
+                    <p class="text-secondary small">กำลังบันทึกคะแนน...</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            window.setTimeout(() => {
+                if (typeof window.sendResult === 'function') {
+                    window.sendResult(window.STAGE_ID, stars, duration, state.attempts);
+                }
+            }, 1700);
+        }
+
+        function calculateIrrigationStars(simulation) {
+            if (state.hints === 0 && state.attempts <= 2 && state.mistakes === 0 && simulation.waterWaste === 0) return 3;
+            if (state.attempts <= 4 && state.mistakes <= 2 && state.hints <= 1) return 2;
+            return 1;
+        }
+
+        function showFeedback(message, type = 'info', logs = []) {
+            const panel = container.querySelector('#irrigation-feedback');
+            panel.className = `feedback-panel ${type === 'success' ? 'success' : type === 'error' ? 'error' : ''}`;
+            panel.innerHTML = `
+                <div class="feedback-title">${type === 'success' ? 'ผลการทดสอบ' : type === 'error' ? 'ลองปรับกฎอีกครั้ง' : 'คำแนะนำ'}</div>
+                <div class="feedback-body">
+                    ${escapeHtml(message)}
+                    ${logs.length ? `<ol class="run-log">${logs.map((log) => `<li>${escapeHtml(log)}</li>`).join('')}</ol>` : ''}
+                </div>
+            `;
+        }
+
+        function conditionLabel(value) {
+            if (value === 'else') return 'กรณีอื่น ๆ';
+            return conditionMap[value]?.label || value || 'ยังไม่เลือก';
+        }
+
+        function actionLabel(value) {
+            if (value === 'no_action') return 'ไม่ทำอะไร';
+            return actionMap[value]?.label || value || 'ยังไม่เลือก';
+        }
+
+        function describePlot(plot) {
+            return [
+                plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น',
+                plot.rain ? 'ฝนตก' : 'ไม่มีฝน',
+                plot.tank === 'empty' ? 'ถังน้ำหมด' : 'ถังน้ำพร้อม'
+            ].join(', ');
+        }
+
+        function plotIcon(plot, result) {
+            if (result?.result === 'flood') return '🌊';
+            if (result?.result === 'dry' || result?.result === 'no_water') return '🥀';
+            if (result?.result === 'refill_needed') return '🚨';
+            if (result?.result === 'healthy') return '🌱';
+            if (plot.rain) return '⛈️';
+            if (plot.soil === 'dry') return '🌾';
+            return '🥬';
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    }
+
     function initDebug(gameConfig) {
         class DebugScene extends Phaser.Scene {
             constructor() {
@@ -1085,6 +2006,8 @@
     window.FarmMissions = {
         sequence: initSequence,
         condition: initCondition,
+        irrigationBuilder: initIrrigationBuilder,
+        conditionSimulator: initIrrigationBuilder,
         debug: initDebug
     };
 })();

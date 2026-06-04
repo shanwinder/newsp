@@ -2,23 +2,53 @@
 (function () {
     const config = {
         title: 'ด่าน 8: รับมือฝนฟ้าคะนอง',
-        subtitle: 'ใช้ If-Else และตรวจฝนก่อนตรวจดิน เพื่อไม่ให้น้ำมากเกินไป',
-        hint: 'ฝนตกควรหยุดรดน้ำก่อนเสมอ แม้ดินจะแห้งอยู่ก็ตาม',
-        feedback: 'ลองตรวจเงื่อนไขฝนตกก่อนตรวจดิน โดยเฉพาะกรณีฝนตกและดินแห้งพร้อมกัน',
+        subtitle: 'จัดลำดับเงื่อนไขให้ถูกต้อง เพราะฝนตกต้องตรวจมาก่อนดินแห้ง',
+        hint: 'วางกฎเป็น: ถ้าฝนตก -> หยุดรดน้ำ / มิฉะนั้นถ้าดินแห้ง -> รดน้ำ / มิฉะนั้น -> หยุดรดน้ำ',
+        strictPriority: true,
+        solutionPriority: ['rain', 'soil_dry', 'else'],
+        conditions: [
+            { value: 'rain', label: 'ฝนตก' },
+            { value: 'soil_dry', label: 'ดินแห้ง' },
+            { value: 'soil_wet', label: 'ดินชื้น' }
+        ],
         actions: [
             { value: 'stop', label: 'หยุดรดน้ำ' },
             { value: 'water', label: 'รดน้ำ' },
-            { value: 'wait', label: 'รอดูสถานการณ์' }
+            { value: 'observe', label: 'รอดูสถานการณ์' }
         ],
-        scenarios: [
-            { icon: '⛈️', name: 'แปลง A', status: 'ฝนตกและดินแห้ง', prompt: 'ควรเปิดน้ำเพิ่มไหม?', answer: 'stop' },
-            { icon: '☀️', name: 'แปลง B', status: 'ไม่มีฝนและดินแห้ง', prompt: 'เมื่อไม่มีฝนและดินแห้ง ระบบควรทำอะไร?', answer: 'water' },
-            { icon: '🌤️', name: 'แปลง C', status: 'ไม่มีฝนแต่ดินยังชื้น', prompt: 'ระบบควรตัดสินใจอย่างไร?', answer: 'stop' }
+        plots: [
+            {
+                name: 'แปลง A',
+                soil: 'dry',
+                rain: true,
+                tank: 'ready',
+                health: 65,
+                expectedAction: 'stop',
+                note: 'ฝนตกและดินแห้ง ต้องระวังน้ำท่วม'
+            },
+            {
+                name: 'แปลง B',
+                soil: 'dry',
+                rain: false,
+                tank: 'ready',
+                health: 60,
+                expectedAction: 'water',
+                note: 'ไม่มีฝนและดินแห้ง'
+            },
+            {
+                name: 'แปลง C',
+                soil: 'wet',
+                rain: false,
+                tank: 'ready',
+                health: 90,
+                expectedAction: 'stop',
+                note: 'ไม่มีฝนแต่ดินยังชื้น'
+            }
         ]
     };
 
     function boot() {
-        window.FarmMissions.condition(config);
+        window.FarmMissions.irrigationBuilder(config);
     }
 
     if (window.FarmMissions) {

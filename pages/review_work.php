@@ -145,7 +145,7 @@ if (!$context) {
 
         const STRUCTURED_LABELS = {
             map: 'แผนที่หรือฉากที่ออกแบบ',
-            commands: 'ลำดับคำสั่ง',
+            commands: 'ลำดับคำสั่งตัวอย่าง',
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
@@ -375,7 +375,7 @@ if (!$context) {
                     </div>
                     <div style="background:white; border:1px solid #dbe7f3; border-radius:12px; padding:18px; overflow:hidden;">
                         <div style="font-weight:800; color:#0f172a; font-size:20px;">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
-                        <div style="color:#64748b; margin:10px 0 14px;">คำสั่งเฉลย ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
+                        <div style="color:#64748b; margin:10px 0 14px;">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
                         <div style="font-size:22px; line-height:1.8; word-break:break-word;">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
                         <div style="margin-top:16px; color:${data.validated ? '#16a34a' : '#dc2626'}; font-weight:800;">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
                     </div>

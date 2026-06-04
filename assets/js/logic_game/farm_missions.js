@@ -151,7 +151,10 @@
                             <h4 id="mission-title" class="fw-bold mb-1 text-dark">ภารกิจรถไถ</h4>
                             <div id="mission-text" class="text-secondary">วางแผนลำดับคำสั่งให้รถไถ</div>
                         </div>
-                        <div id="attempt-badge" class="badge text-bg-primary fs-6 rounded-pill px-3 py-2">ลอง 0 | พลาด 0</div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="sound-toggle" type="button" class="btn btn-light btn-sm rounded-pill border">🔊 เสียง</button>
+                            <div id="attempt-badge" class="badge text-bg-primary fs-6 rounded-pill px-3 py-2">ลอง 0 | พลาด 0</div>
+                        </div>
                     </div>
                     <div id="feedback-box" class="alert alert-info rounded-3 shadow-sm mt-3 mb-0 py-2">เริ่มวางแผนเส้นทางได้เลย</div>
                 </div>
@@ -228,6 +231,31 @@
     function playSound(scene, key) {
         if (scene.sound && scene.cache.audio.exists(key)) {
             scene.sound.play(key, { volume: 0.6 });
+        }
+    }
+
+    function playGameSound(scene, key) {
+        const fallbackKeys = {
+            click: 'correct',
+            run: 'correct',
+            crash: 'wrong',
+            collect: 'correct',
+            success: 'correct',
+            victory: 'correct'
+        };
+
+        if (window.GameAudio && typeof window.GameAudio.play === 'function') {
+            if (typeof window.GameAudio.isEnabled === 'function' && !window.GameAudio.isEnabled()) {
+                return;
+            }
+            if (window.GameAudio.play(key)) {
+                return;
+            }
+        }
+
+        const fallbackKey = fallbackKeys[key] || key;
+        if (scene && scene.sound && scene.cache.audio.exists(fallbackKey)) {
+            scene.sound.play(fallbackKey, { volume: 0.6 });
         }
     }
 
@@ -343,6 +371,7 @@
         const attemptBadge = document.getElementById('attempt-badge');
         if (attemptBadge) {
             attemptBadge.textContent = `ลอง ${state.attempts} | พลาด ${state.mistakes}`;
+            window.GameMotion?.badgeUpdate?.();
         }
     }
 
@@ -403,6 +432,7 @@
                     title: root.querySelector('#mission-title'),
                     mission: root.querySelector('#mission-text'),
                     feedback: root.querySelector('#feedback-box'),
+                    soundToggle: root.querySelector('#sound-toggle'),
                     commandCount: root.querySelector('#command-count'),
                     sequence: root.querySelector('#sequence-container'),
                     clear: root.querySelector('#clear-commands'),
@@ -413,11 +443,30 @@
             }
 
             bindDomControls() {
+                window.GameAudio?.init?.();
+
                 this.dom.arrows.forEach((button) => {
                     button.addEventListener('click', () => this.addCommand(button.dataset.dir));
                 });
                 this.dom.clear.addEventListener('click', () => this.clearCommands());
                 this.dom.run.addEventListener('click', () => this.runCommands());
+
+                if (this.dom.soundToggle && window.GameAudio) {
+                    const updateSoundLabel = () => {
+                        const soundEnabled = window.GameAudio.isEnabled();
+                        this.dom.soundToggle.textContent = soundEnabled ? '🔊 เสียง' : '🔇 ปิดเสียง';
+                        this.dom.soundToggle.setAttribute('aria-label', soundEnabled ? 'ปิดเสียงเกม' : 'เปิดเสียงเกม');
+                    };
+
+                    updateSoundLabel();
+                    this.dom.soundToggle.addEventListener('click', () => {
+                        window.GameAudio.toggle();
+                        updateSoundLabel();
+                        playGameSound(this, 'click');
+                    });
+                } else if (this.dom.soundToggle) {
+                    this.dom.soundToggle.style.display = 'none';
+                }
             }
 
             level() {
@@ -463,6 +512,7 @@
                 this.renderDom();
                 this.renderBoard();
                 this.showFeedback(level.goal || level.mission, 'info');
+                window.GameMotion?.missionEnter?.();
             }
 
             renderDom() {
@@ -485,6 +535,7 @@
                     placeholder.className = 'text-muted small';
                     placeholder.textContent = 'กดปุ่มลูกศรด้านล่างเพื่อเพิ่มคำสั่ง';
                     this.dom.sequence.appendChild(placeholder);
+                    this.animateLatestCommand = false;
                     return;
                 }
 
@@ -499,15 +550,21 @@
                     button.addEventListener('click', () => {
                         if (this.isRunning) return;
                         this.commands.splice(index, 1);
+                        playGameSound(this, 'click');
                         this.renderCommandPanel();
                     });
                     this.dom.sequence.appendChild(button);
+                    if (this.animateLatestCommand && index === this.commands.length - 1) {
+                        window.GameMotion?.commandAdded?.(button);
+                    }
                 });
+                this.animateLatestCommand = false;
             }
 
             showFeedback(message, type = 'info') {
                 this.dom.feedback.className = feedbackClasses[type] || feedbackClasses.info;
                 this.dom.feedback.textContent = message;
+                window.GameMotion?.feedback?.(type);
             }
 
             setControlsDisabled(disabled) {
@@ -521,10 +578,13 @@
                 const level = this.level();
                 if (this.isRunning || !DIRS[dir]) return;
                 if (this.commands.length >= level.maxCommands) {
+                    playGameSound(this, 'wrong');
                     this.showFeedback('คำสั่งเต็มแล้ว ลบคำสั่งบางตัวก่อนนะ', 'warning');
                     return;
                 }
                 this.commands.push(dir);
+                this.animateLatestCommand = true;
+                playGameSound(this, 'click');
                 this.renderCommandPanel();
             }
 
@@ -535,6 +595,7 @@
                 this.facingDir = null;
                 this.player = { c: level.start.c, r: level.start.r };
                 this.collected = new Set();
+                playGameSound(this, 'click');
                 this.renderBoard();
                 this.renderCommandPanel();
                 this.showFeedback('ล้างคำสั่งแล้ว ลองวางเส้นทางใหม่ได้เลย', 'info');
@@ -617,6 +678,7 @@
 
             async runCommands() {
                 if (this.isRunning || this.commands.length === 0) {
+                    playGameSound(this, 'wrong');
                     this.showFeedback('ต้องเรียงคำสั่งอย่างน้อย 1 บล็อกก่อนรันรถไถ', 'warning');
                     return;
                 }
@@ -624,6 +686,7 @@
                 this.setControlsDisabled(true);
                 this.state.attempts++;
                 updateAttemptText(this.state);
+                playGameSound(this, 'run');
                 const level = this.level();
                 this.player = { c: level.start.c, r: level.start.r };
                 this.collected = new Set();
@@ -639,7 +702,7 @@
                     if (badOut || obstacle) {
                         this.state.mistakes++;
                         updateAttemptText(this.state);
-                        playSound(this, 'wrong');
+                        playGameSound(this, obstacle ? 'crash' : 'wrong');
                         this.tweens.add({ targets: this.tractor, x: this.tractor.x + dir.dc * 16, y: this.tractor.y + dir.dr * 16, yoyo: true, duration: 120 });
                         const obstacleText = obstacle && obstacle.type === 'hay'
                             ? 'รถไถชนกองฟาง ลองวางเส้นทางอ้อมดูนะ'
@@ -658,7 +721,7 @@
                     const cropHit = this.crops().find((crop) => crop.c === next.c && crop.r === next.r);
                     if (cropHit && !this.collected.has(this.posKey(cropHit))) {
                         this.collected.add(this.posKey(cropHit));
-                        playSound(this, 'correct');
+                        playGameSound(this, 'collect');
                         this.showFeedback('เก็บผลผลิตแล้ว!', 'success');
                         const effect = this.add.text(x, y - 28, '+1', { fontFamily: 'Arial, sans-serif', fontSize: '22px', color: '#16a34a', fontStyle: 'bold' }).setOrigin(0.5);
                         this.tweens.add({ targets: effect, y: effect.y - 20, alpha: 0, duration: 700, onComplete: () => effect.destroy() });
@@ -675,11 +738,11 @@
                 if (atDestination && crops.length > 0 && !allCollected) {
                     this.state.mistakes++;
                     updateAttemptText(this.state);
-                    playSound(this, 'wrong');
+                    playGameSound(this, 'wrong');
                     this.showFeedback('ยังมีผลผลิตเหลืออยู่ ต้องเก็บให้ครบก่อนกลับโรงนา', 'warning');
                 } else if (allCollected && atDestination) {
-                    playSound(this, 'correct');
                     if (this.levelIndex < gameConfig.levels.length - 1) {
+                        playGameSound(this, 'success');
                         this.showFeedback('ยอดเยี่ยม! ลำดับคำสั่งถูกต้อง ไปด่านย่อยถัดไป', 'success');
                         this.time.delayedCall(1200, () => {
                             this.levelIndex++;
@@ -691,7 +754,7 @@
                 } else {
                     this.state.mistakes++;
                     updateAttemptText(this.state);
-                    playSound(this, 'wrong');
+                    playGameSound(this, 'wrong');
                     this.showFeedback(crops.length > 0 && !allCollected ? 'คำสั่งถูกบางส่วนแล้ว แต่ยังเก็บผลผลิตไม่ครบ' : 'ยังไม่ถึงจุดหมาย ลองเพิ่มหรือเปลี่ยนคำสั่ง', 'warning');
                 }
             }
@@ -700,6 +763,7 @@
                 if (this.state.ended) return;
                 this.state.ended = true;
                 this.setControlsDisabled(true);
+                playGameSound(this, 'victory');
                 const duration = Math.max(1, Math.floor((Date.now() - this.state.startedAt) / 1000));
                 const stars = starsFromState(this.state.attempts, this.state.mistakes, this.state.hintUsed);
                 this.dom.title.textContent = 'ภารกิจสำเร็จ!';

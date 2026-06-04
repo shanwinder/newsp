@@ -27,6 +27,7 @@ if ($result->num_rows == 0) {
 $stage = $result->fetch_assoc();
 $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
+$is_sequence_stage = in_array($stage_id, [4, 5, 6], true);
 
 // 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 ภารกิจการเรียนรู้)
 $game_script = "";
@@ -198,6 +199,12 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         };
     </script>
 
+    <?php if ($is_sequence_stage): ?>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+        <script src="../assets/js/game_audio.js"></script>
+        <script src="../assets/js/game_ui_motion.js"></script>
+    <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

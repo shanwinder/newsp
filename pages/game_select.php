@@ -49,6 +49,82 @@ $stmt_stages->bind_param("iii", $user_id, $context['learning_session_id'], $game
 $stmt_stages->execute();
 $stages_result = $stmt_stages->get_result();
 
+$stages = [];
+$passed_count = 0;
+$total_stages = 0;
+while ($stage = $stages_result->fetch_assoc()) {
+    $total_stages++;
+    $stage['score'] = $stage['score'] ?? 0;
+    if ($stage['score'] > 0) {
+        $passed_count++;
+    }
+    $stages[] = $stage;
+}
+
+$can_create_project = ($passed_count >= $total_stages && $total_stages > 0);
+$project_pages = [
+    1 => 'create_project_logic.php',
+    2 => 'create_project_algo.php',
+    3 => 'create_project_condition.php',
+    4 => 'create_project_debug.php'
+];
+$target_page = $project_pages[$game_id] ?? 'create_project_logic.php';
+$project_status = null;
+
+if ($can_create_project) {
+    $stmt_work = $conn->prepare("SELECT status FROM student_works WHERE user_id = ? AND game_id = ? AND learning_session_id = ? LIMIT 1");
+    $stmt_work->bind_param("iii", $user_id, $game_id, $context['learning_session_id']);
+    $stmt_work->execute();
+    $work_row = $stmt_work->get_result()->fetch_assoc();
+    $project_status = $work_row['status'] ?? null;
+}
+
+$project_cta = [
+    'hero_class' => 'project-hero-new',
+    'icon' => 'bi-stars',
+    'title' => 'เยี่ยมมาก! คุณผ่านบทเรียนนี้ครบทุกด่านแล้ว',
+    'text' => 'ขั้นต่อไป: ออกแบบภารกิจเส้นทางรถไถของคุณเอง',
+    'button' => 'เข้าห้องสร้างชิ้นงาน',
+    'sticky' => 'พร้อมสร้างชิ้นงานแล้ว'
+];
+if ($project_status === 'revision') {
+    $project_cta = [
+        'hero_class' => 'project-hero-revision',
+        'icon' => 'bi-exclamation-triangle-fill',
+        'title' => 'คุณครูส่งชิ้นงานกลับให้แก้ไข',
+        'text' => 'อ่านคำแนะนำแล้วปรับปรุงผลงานให้ดีขึ้น',
+        'button' => 'แก้ไขชิ้นงาน',
+        'sticky' => 'มีชิ้นงานที่ต้องแก้ไข'
+    ];
+} elseif ($project_status === 'submitted') {
+    $project_cta = [
+        'hero_class' => 'project-hero-submitted',
+        'icon' => 'bi-check-circle-fill',
+        'title' => 'คุณสร้างชิ้นงานแล้ว',
+        'text' => 'สามารถเข้าไปดูหรือปรับปรุงชิ้นงานล่าสุดได้',
+        'button' => 'ดู/แก้ไขชิ้นงานล่าสุด',
+        'sticky' => 'ชิ้นงานถูกส่งแล้ว'
+    ];
+} elseif ($project_status === 'reviewed') {
+    $project_cta = [
+        'hero_class' => 'project-hero-reviewed',
+        'icon' => 'bi-patch-check-fill',
+        'title' => 'คุณมีชิ้นงานที่ครูตรวจแล้ว',
+        'text' => 'เข้าไปดูชิ้นงานและข้อเสนอแนะจากคุณครูได้',
+        'button' => 'ดูชิ้นงานที่ครูตรวจแล้ว',
+        'sticky' => 'ครูตรวจชิ้นงานแล้ว'
+    ];
+} elseif ($project_status === 'pending') {
+    $project_cta = [
+        'hero_class' => 'project-hero-submitted',
+        'icon' => 'bi-pencil-square',
+        'title' => 'คุณมีชิ้นงานที่ยังทำต่อได้',
+        'text' => 'กลับไปทำชิ้นงานต่อ แล้วทดสอบเส้นทางให้ผ่านก่อนส่ง',
+        'button' => 'ทำชิ้นงานต่อ',
+        'sticky' => 'ทำชิ้นงานต่อ'
+    ];
+}
+
 // กำหนดสีธีมตามบทเรียน
 $theme_colors = [
     1 => ['bg' => '#e9f7ef', 'text' => 'text-success', 'border' => 'border-success'],
@@ -77,6 +153,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             background-color: <?php echo $theme['bg']; ?>;
             background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
             min-height: 100vh;
+            <?php if ($can_create_project): ?>padding-bottom: 96px;<?php endif; ?>
         }
 
         .stage-card {
@@ -145,6 +222,41 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             50% { transform: scale(1.3) rotate(10deg); color: #b45309; }
             100% { transform: scale(1); }
         }
+
+        .project-completion-hero {
+            border: 0;
+            border-radius: 18px;
+            color: #1f2937;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .14);
+        }
+
+        .project-hero-new { background: linear-gradient(135deg, #facc15 0%, #fb923c 100%); }
+        .project-hero-submitted { background: linear-gradient(135deg, #86efac 0%, #38bdf8 100%); }
+        .project-hero-reviewed { background: linear-gradient(135deg, #bbf7d0 0%, #22c55e 100%); }
+        .project-hero-revision { background: linear-gradient(135deg, #fed7aa 0%, #f87171 100%); }
+
+        .project-sticky-cta {
+            position: fixed;
+            left: 50%;
+            bottom: 16px;
+            transform: translateX(-50%);
+            z-index: 1050;
+            max-width: 720px;
+            width: calc(100% - 24px);
+            border-radius: 999px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+        }
+
+        .project-sticky-cta.is-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 576px) {
+            .project-sticky-cta {
+                border-radius: 18px;
+            }
+        }
     </style>
 </head>
 
@@ -169,23 +281,40 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div style="width: 120px;" class="d-none d-md-block"></div>
         </div>
 
+        <?php if ($can_create_project): ?>
+            <div class="card project-completion-hero <?php echo $project_cta['hero_class']; ?> mb-4">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="bg-white bg-opacity-75 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 64px; height: 64px; min-width: 64px;">
+                                <i class="bi <?php echo htmlspecialchars($project_cta['icon']); ?> fs-2 text-dark"></i>
+                            </div>
+                            <div>
+                                <h2 class="fw-bold mb-2"><?php echo htmlspecialchars($project_cta['title']); ?></h2>
+                                <p class="fs-5 mb-0"><?php echo htmlspecialchars($project_cta['text']); ?></p>
+                            </div>
+                        </div>
+                        <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
+                           class="btn btn-dark btn-lg rounded-pill px-4 py-3 fw-bold shadow">
+                            <i class="bi bi-palette-fill me-2"></i> <?php echo htmlspecialchars($project_cta['button']); ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="row g-4 justify-content-center">
             <?php
             $is_previous_cleared = true; // ด่านแรกปลดล็อกเสมอ
-            $passed_count = 0;
-            $total_stages = 0;
+            $is_admin = (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin', 'teacher'], true));
 
-            while ($stage = $stages_result->fetch_assoc()):
-                $total_stages++;
+            foreach ($stages as $stage):
                 $stars = $stage['score'] ?? 0;
-
-                if ($stars > 0) $passed_count++;
 
                 // Logic การล็อกด่านตามลำดับ
                 $is_locked_sequence = !$is_previous_cleared;
 
                 // ตรวจสอบว่าครูล็อกหน้าจออยู่หรือไม่
-                $is_admin = (isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'super_admin', 'teacher'], true));
                 $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
 
                 // ลิงก์เข้าสู่ด่าน
@@ -236,7 +365,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <?php
                 // ด่านถัดไปจะปลดล็อคก็ต่อเมื่อด่านนี้ได้คะแนน > 0
                 $is_previous_cleared = ($stars > 0);
-            endwhile;
+            endforeach;
             ?>
         </div>
     </div>
@@ -256,63 +385,54 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         }, 3000);
     </script>
 
-    <?php
-    // ถ้าผ่านครบ 3 ด่าน (ครบทุกด่านในบทเรียนนี้) ให้แสดงปุ่มสร้างโปรเจกต์
-    if ($passed_count >= $total_stages && $total_stages > 0):
-        $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $game_id AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
-        $res_work = $conn->query($sql_work);
-        $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
+    <?php if ($can_create_project): ?>
+        <div id="projectStickyCta" class="project-sticky-cta bg-white border d-flex align-items-center justify-content-between gap-2 px-3 py-2">
+            <div class="fw-bold text-dark text-truncate">
+                <i class="bi <?php echo htmlspecialchars($project_cta['icon']); ?> text-primary me-2"></i>
+                <?php echo htmlspecialchars($project_cta['sticky']); ?>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>" class="btn btn-primary rounded-pill fw-bold px-3">
+                    <?php echo htmlspecialchars($project_cta['button']); ?>
+                </a>
+                <button type="button" class="btn btn-light border rounded-circle" aria-label="ปิดแถบสร้างชิ้นงาน" onclick="document.getElementById('projectStickyCta').classList.add('is-hidden')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
 
-        // กำหนดไฟล์ปลายทางสำหรับสร้างชิ้นงานตามบทเรียน
-        $project_pages = [
-            1 => 'create_project_logic.php',    // บทที่ 1: ตรรกะคัดแยก
-            2 => 'create_project_algo.php',     // บทที่ 2: ลำดับรถไถ
-            3 => 'create_project_condition.php',// บทที่ 3: เงื่อนไขรดน้ำ
-            4 => 'create_project_debug.php'     // บทที่ 4: แก้บั๊กฟาร์ม
-        ];
-        $target_page = $project_pages[$game_id] ?? 'create_project_logic.php';
-    ?>
-        <div class="container mt-5 mb-5">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <div class="card border-0 shadow-lg p-5" style="background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); border-radius: 20px;">
-                        <?php if ($project_status === 'revision'): ?>
-                            <h2 class="fw-bold text-danger mb-3">⚠️ โครงงานถูกส่งกลับให้แก้ไข</h2>
-                            <p class="fs-5 text-dark mb-4">คุณครูมีคำแนะนำเพิ่มเติม อ่านฟีดแบ็กแล้วเข้าไปปรับปรุงผลงานด่วน!</p>
-                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
-                                class="btn btn-danger btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim shadow">
-                                <i class="bi bi-pencil-square me-2"></i> เข้าไปแก้ไขผลงานด่วน
-                            </a>
-                        <?php elseif ($project_status === 'submitted' || $project_status === 'reviewed'): ?>
-                            <h2 class="fw-bold text-dark mb-3">✅ คุณได้สร้างผลงานเรียบร้อยแล้ว</h2>
-                            <p class="fs-5 text-dark mb-4">คุณสามารถเข้าไปดูหรือปรับปรุงผลงานให้ดีขึ้นกว่าเดิมได้เสมอนะ!</p>
-                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
-                                class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
-                                <i class="bi bi-pencil-square me-2"></i> แก้ไขผลงานล่าสุด
-                            </a>
-                        <?php else: ?>
-                            <h2 class="fw-bold text-dark mb-3">🎉 ยินดีด้วย! ทีมของคุณพิชิตครบทุกด่านแล้ว</h2>
-                            <p class="fs-5 text-dark mb-4">ได้เวลาโชว์ฝีมือสร้างชิ้นงานแก้ปัญหาอย่างเป็นขั้นตอนของพวกเราแล้ว!</p>
-                            <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>"
-                                class="btn btn-dark btn-lg rounded-pill px-5 py-3 fw-bold fs-4 pulse-anim">
-                                <i class="bi bi-palette-fill me-2"></i> เข้าห้องสร้างชิ้นงาน
-                            </a>
-                        <?php endif; ?>
+        <?php if ($project_status === null): ?>
+            <div class="modal fade" id="completionModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <div class="modal-body text-center p-4 p-lg-5">
+                            <div class="display-4 mb-3">🎉</div>
+                            <h3 class="fw-bold mb-2">ผ่านครบทุกด่านแล้ว!</h3>
+                            <p class="fs-5 text-secondary">ต่อไปมาสร้างโจทย์เส้นทางรถไถของตัวเองกันเถอะ</p>
+                            <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+                                <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>" class="btn btn-primary rounded-pill px-4 fw-bold">
+                                    เข้าห้องสร้างชิ้นงาน
+                                </a>
+                                <button type="button" class="btn btn-light border rounded-pill px-4 fw-bold" data-bs-dismiss="modal">ดูก่อน</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        <?php endif; ?>
     <?php endif; ?>
 
-    <style>
-        .pulse-anim {
-            animation: pulse-btn 2s infinite;
-        }
-        @keyframes pulse-btn {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(0, 0, 0, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if ($can_create_project && $project_status === null): ?>
+        <script>
+            const completionModalKey = 'completion-modal-seen-<?php echo $game_id; ?>-<?php echo intval($context['learning_session_id']); ?>';
+            const shouldForceCompletionModal = new URLSearchParams(window.location.search).get('completed') === '1';
+            if (shouldForceCompletionModal || !sessionStorage.getItem(completionModalKey)) {
+                sessionStorage.setItem(completionModalKey, '1');
+                const modal = new bootstrap.Modal(document.getElementById('completionModal'));
+                modal.show();
+            }
+        </script>
+    <?php endif; ?>
 </body>
 </html>

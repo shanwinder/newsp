@@ -440,6 +440,11 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
             try {
                 const items = JSON.parse(jsonData);
                 if (!Array.isArray(items)) {
+                    if (items.project_type === 'tractor_route') {
+                        renderTractorRoutePreview(stage, items);
+                        container.appendChild(stage);
+                        return;
+                    }
                     renderStructuredPreview(stage, items);
                     container.appendChild(stage);
                     return;
@@ -482,6 +487,68 @@ $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
                 console.error("Error parsing layout data", e);
             }
             container.appendChild(stage);
+        }
+
+        function renderTractorRoutePreview(stage, data) {
+            const missionLabels = {
+                target: 'ไปถึงจุดหมาย',
+                obstacle: 'หลบสิ่งกีดขวาง',
+                harvest: 'เก็บเกี่ยวผลผลิต'
+            };
+            const icons = {
+                start: '🚜',
+                target: '🧺',
+                barn: '🏚️',
+                hay: '🌾',
+                rock: '🪨',
+                crop: '🌽'
+            };
+            const cols = data.grid?.cols || 6;
+            const rows = data.grid?.rows || 5;
+            stage.classList.remove('bg-grid-pattern');
+            stage.style.background = '#eff6ff';
+            stage.style.padding = '24px';
+            stage.style.overflow = 'hidden';
+            stage.innerHTML = `
+                <div style="height:100%; display:grid; grid-template-columns: 1fr 260px; gap:18px; align-items:stretch;">
+                    <div>
+                        <div style="font-weight:800; color:#1d4ed8; font-size:26px; margin-bottom:12px;">ภารกิจเส้นทางรถไถ</div>
+                        <div class="tractor-preview-grid" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); grid-template-rows:repeat(${rows}, 1fr); gap:6px; height:340px;"></div>
+                    </div>
+                    <div style="background:white; border:1px solid #dbe7f3; border-radius:12px; padding:18px; overflow:hidden;">
+                        <div style="font-weight:800; color:#0f172a; font-size:20px;">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
+                        <div style="color:#64748b; margin:10px 0 14px;">คำสั่งเฉลย ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
+                        <div style="font-size:22px; line-height:1.8; word-break:break-word;">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
+                        <div style="margin-top:16px; color:${data.validated ? '#16a34a' : '#dc2626'}; font-weight:800;">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
+                    </div>
+                </div>
+            `;
+            const grid = stage.querySelector('.tractor-preview-grid');
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const cell = document.createElement('div');
+                    cell.style.background = (row + col) % 2 === 0 ? '#ecfdf5' : '#dcfce7';
+                    cell.style.border = '1px solid #94a3b8';
+                    cell.style.borderRadius = '8px';
+                    cell.style.display = 'flex';
+                    cell.style.alignItems = 'center';
+                    cell.style.justifyContent = 'center';
+                    cell.style.fontSize = '30px';
+                    cell.textContent = tractorIconAt(data, col, row, icons);
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function tractorIconAt(data, col, row, icons) {
+            const same = (point) => point && (point.col ?? point.c) === col && (point.row ?? point.r) === row;
+            if (same(data.start)) return icons.start;
+            if (same(data.target)) return icons.target;
+            if (same(data.barn)) return icons.barn;
+            const obstacle = (data.obstacles || []).find(item => same(item));
+            if (obstacle) return icons[obstacle.type] || icons.rock;
+            if ((data.crops || []).some(item => same(item))) return icons.crop;
+            return '';
         }
 
         function renderStructuredPreview(stage, data) {

@@ -1285,6 +1285,7 @@
             })),
             results: null
         };
+        let eventRoot = null;
 
         renderShell();
         bindEvents();
@@ -1906,7 +1907,7 @@
             }
             .water-bars {
                 display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 10px;
                 margin-bottom: 12px;
             }
@@ -1941,6 +1942,7 @@
                 transition: width .28s ease, background .28s ease;
             }
             .meter-fill.boss { background: #dc2626; }
+            .meter-fill.tank { background: #0284c7; }
             .water-layout {
                 display: grid;
                 grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
@@ -2026,18 +2028,20 @@
             .water-plots {
                 position: relative;
                 z-index: 1;
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 12px;
-                padding: 122px 14px 118px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 92px 14px 112px;
             }
             .water-plot {
-                min-height: 138px;
+                min-height: 102px;
                 border: 1px solid rgba(255,255,255,.72);
                 border-radius: 8px;
                 background: rgba(255, 255, 255, .9);
-                padding: 10px;
+                padding: 9px 10px;
                 box-shadow: 0 10px 22px rgba(15, 23, 42, .08);
+                position: relative;
+                overflow: hidden;
                 transition: transform .2s ease, background .2s ease, border-color .2s ease;
             }
             .water-plot.good {
@@ -2057,6 +2061,8 @@
                 gap: 8px;
                 font-weight: 800;
                 color: #17344a;
+                position: relative;
+                z-index: 3;
             }
             .plot-plant {
                 font-size: 34px;
@@ -2066,7 +2072,9 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: 5px;
-                margin: 8px 0;
+                margin: 5px 0;
+                position: relative;
+                z-index: 3;
             }
             .plot-sensors span {
                 border-radius: 999px;
@@ -2082,7 +2090,9 @@
                 border-radius: 999px;
                 background: #e2e8f0;
                 overflow: hidden;
-                margin: 8px 0;
+                margin: 5px 0;
+                position: relative;
+                z-index: 3;
             }
             .water-plot .plot-health > span {
                 display: block;
@@ -2093,10 +2103,100 @@
                 transition: width .24s ease;
             }
             .plot-message {
-                min-height: 38px;
+                min-height: 20px;
                 color: #52677a;
                 font-size: 13px;
                 line-height: 1.42;
+                position: relative;
+                z-index: 3;
+            }
+            .lane-track {
+                position: absolute;
+                inset: 12px 12px auto 92px;
+                height: 46px;
+                border-radius: 999px;
+                background: linear-gradient(90deg, rgba(34,197,94,.18), rgba(250,204,21,.16), rgba(248,113,113,.16));
+                border: 1px dashed rgba(51, 65, 85, .24);
+                overflow: hidden;
+                z-index: 1;
+            }
+            .lane-bed {
+                position: absolute;
+                left: 15px;
+                top: 18px;
+                font-size: 36px;
+                z-index: 2;
+                transform-origin: bottom center;
+            }
+            .water-plot.good .lane-bed {
+                animation: plantRecover .7s ease;
+            }
+            .water-plot.bad .lane-bed {
+                transform: rotate(-8deg);
+            }
+            .lane-sprinkler {
+                position: absolute;
+                left: 86px;
+                top: 23px;
+                font-size: 27px;
+                z-index: 2;
+            }
+            .lane-spray {
+                position: absolute;
+                left: 120px;
+                top: 21px;
+                height: 28px;
+                width: 92px;
+                border-radius: 999px;
+                background: repeating-linear-gradient(90deg, rgba(14,165,233,.78) 0 8px, transparent 8px 15px);
+                opacity: 0;
+                transform-origin: left center;
+                z-index: 2;
+            }
+            .water-plot.action-water .lane-spray {
+                animation: waterSpray .9s ease both;
+            }
+            .lane-enemy {
+                position: absolute;
+                right: 20px;
+                top: 18px;
+                font-size: 32px;
+                z-index: 2;
+                filter: drop-shadow(0 5px 7px rgba(15,23,42,.22));
+            }
+            .lane-enemy.approach {
+                animation: enemyApproach 2.6s linear infinite;
+            }
+            .water-plot.good .lane-enemy {
+                animation: enemyDefeat .75s ease both;
+            }
+            .lane-rain {
+                position: absolute;
+                inset: 0 0 auto 0;
+                height: 72px;
+                opacity: 0;
+                pointer-events: none;
+                z-index: 2;
+                background-image:
+                    radial-gradient(circle, rgba(14,165,233,.85) 1px, transparent 2px),
+                    radial-gradient(circle, rgba(14,165,233,.65) 1px, transparent 2px);
+                background-size: 20px 22px, 28px 26px;
+            }
+            .water-plot.raining .lane-rain {
+                opacity: .86;
+                animation: rainFall .75s linear infinite;
+            }
+            .lane-flood {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 0;
+                background: rgba(14, 165, 233, .28);
+                z-index: 1;
+            }
+            .water-plot.flooded .lane-flood {
+                animation: floodRise .7s ease both;
             }
             .water-panel-title {
                 display: flex;
@@ -2288,6 +2388,31 @@
                 33% { transform: translateX(-5px); }
                 66% { transform: translateX(5px); }
             }
+            @keyframes enemyApproach {
+                0% { transform: translateX(18px); }
+                100% { transform: translateX(-76px); }
+            }
+            @keyframes enemyDefeat {
+                0% { transform: translateX(-52px) scale(1); opacity: 1; }
+                100% { transform: translateX(46px) scale(.7) rotate(12deg); opacity: .2; }
+            }
+            @keyframes waterSpray {
+                0% { opacity: 0; transform: scaleX(.15); }
+                20% { opacity: .96; }
+                100% { opacity: 0; transform: scaleX(1); }
+            }
+            @keyframes rainFall {
+                0% { background-position: 0 -20px, 10px -26px; }
+                100% { background-position: 0 22px, 10px 26px; }
+            }
+            @keyframes floodRise {
+                0% { height: 0; }
+                100% { height: 48%; }
+            }
+            @keyframes plantRecover {
+                0%, 100% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-9px) scale(1.08); }
+            }
             @media (max-width: 940px) {
                 .water-top,
                 .water-layout,
@@ -2344,6 +2469,7 @@
             waveIndex: 0,
             gardenHp: gameConfig.gardenHp || 100,
             bossHp: gameConfig.bossHp || (gameConfig.mode === 'boss' ? 100 : 0),
+            tankWater: gameConfig.tankWater ?? 100,
             waterWaste: 0,
             combo: 0,
             ended: false,
@@ -2386,6 +2512,10 @@
                         <div class="water-meter">
                             <div class="meter-label"><span>HP สวน</span><span id="garden-hp-label">100%</span></div>
                             <div class="meter-track"><span class="meter-fill" id="garden-hp-fill"></span></div>
+                        </div>
+                        <div class="water-meter">
+                            <div class="meter-label"><span>น้ำในถัง</span><span id="tank-water-label">100%</span></div>
+                            <div class="meter-track"><span class="meter-fill tank" id="tank-water-fill"></span></div>
                         </div>
                         <div class="water-meter" id="boss-meter">
                             <div class="meter-label"><span>HP บอส</span><span id="boss-hp-label">100%</span></div>
@@ -2432,6 +2562,7 @@
                     </div>
                 </div>
             `;
+            eventRoot = container.querySelector('.water-hero-shell');
         }
 
         function bindEvents() {
@@ -2444,7 +2575,7 @@
             container.querySelector('#water-undo').addEventListener('click', undo);
             container.querySelector('#water-clear').addEventListener('click', clearRules);
 
-            container.addEventListener('click', (event) => {
+            eventRoot.addEventListener('click', (event) => {
                 const block = event.target.closest('.water-block');
                 if (block) {
                     state.selected = { kind: block.dataset.kind, value: block.dataset.value };
@@ -2472,7 +2603,7 @@
                 applyToSlot(slot, state.selected);
             });
 
-            container.addEventListener('dragstart', (event) => {
+            eventRoot.addEventListener('dragstart', (event) => {
                 const block = event.target.closest('.water-block');
                 if (!block) return;
                 const payload = { kind: block.dataset.kind, value: block.dataset.value };
@@ -2481,17 +2612,17 @@
                 state.selected = payload;
                 renderBlocks();
             });
-            container.addEventListener('dragover', (event) => {
+            eventRoot.addEventListener('dragover', (event) => {
                 const slot = event.target.closest('.water-slot');
                 if (!slot || slot.classList.contains('fixed')) return;
                 event.preventDefault();
                 slot.classList.add('target');
             });
-            container.addEventListener('dragleave', (event) => {
+            eventRoot.addEventListener('dragleave', (event) => {
                 const slot = event.target.closest('.water-slot');
                 if (slot) slot.classList.remove('target');
             });
-            container.addEventListener('drop', (event) => {
+            eventRoot.addEventListener('drop', (event) => {
                 const slot = event.target.closest('.water-slot');
                 if (!slot || slot.classList.contains('fixed')) return;
                 event.preventDefault();
@@ -2553,6 +2684,20 @@
             return waves[state.waveIndex] || waves[0];
         }
 
+        function currentWavePlots() {
+            return (currentWave().plots || currentWave().lanes || []).map((plot, index) => ({
+                name: plot.name || `เลน ${plot.lane || plot.laneId || index + 1}`,
+                lane: plot.lane || plot.laneId || index + 1,
+                soil: plot.soil || 'wet',
+                rain: Boolean(plot.rain),
+                tank: plot.tank || (state.tankWater <= 0 ? 'empty' : 'ready'),
+                hp: plot.hp ?? plot.health ?? plot.plantHp ?? 80,
+                enemy: plot.enemy || plot.enemyType || null,
+                expectedAction: plot.expectedAction,
+                note: plot.note || ''
+            }));
+        }
+
         function renderAll() {
             renderStats();
             renderPlots();
@@ -2569,6 +2714,9 @@
             container.querySelector('#garden-hp-label').textContent = `${Math.max(0, Math.round(state.gardenHp))}%`;
             container.querySelector('#garden-hp-fill').style.width = `${Math.max(0, Math.min(100, state.gardenHp))}%`;
             container.querySelector('#garden-hp-fill').style.background = state.gardenHp > 70 ? '#16a34a' : state.gardenHp > 40 ? '#f59e0b' : '#dc2626';
+            container.querySelector('#tank-water-label').textContent = `${Math.max(0, Math.round(state.tankWater))}%`;
+            container.querySelector('#tank-water-fill').style.width = `${Math.max(0, Math.min(100, state.tankWater))}%`;
+            container.querySelector('#tank-water-fill').style.background = state.tankWater > 60 ? '#0284c7' : state.tankWater > 25 ? '#f59e0b' : '#dc2626';
             const bossMeter = container.querySelector('#boss-meter');
             const bossVisible = gameConfig.mode === 'boss';
             bossMeter.style.display = bossVisible ? 'block' : 'none';
@@ -2583,17 +2731,29 @@
         }
 
         function renderPlots() {
-            const plots = currentWave().plots || [];
+            const plots = currentWavePlots();
             const results = state.results || [];
             container.querySelector('#water-plots').innerHTML = plots.map((plot, index) => {
                 const result = results[index];
                 const health = result ? result.health : (plot.hp ?? plot.health ?? 80);
                 const statusClass = result ? (result.safe ? ' good' : ' bad') : '';
+                const actionClass = result?.action ? ` action-${result.action}` : '';
+                const floodClass = result && (result.result === 'flood' || result.result === 'overwater') ? ' flooded' : '';
+                const rainClass = plot.rain ? ' raining' : '';
+                const plant = plotIcon(plot, result);
+                const enemy = enemyIcon(plot);
                 return `
-                    <article class="water-plot${statusClass}">
+                    <article class="water-plot${statusClass}${actionClass}${floodClass}${rainClass}">
+                        <div class="lane-track"></div>
+                        <div class="lane-rain"></div>
+                        <div class="lane-flood"></div>
+                        <div class="lane-bed">${plant}</div>
+                        <div class="lane-sprinkler">🚿</div>
+                        <div class="lane-spray"></div>
+                        <div class="lane-enemy ${result ? '' : 'approach'}">${enemy}</div>
                         <div class="plot-line">
                             <span>${escapeHtml(plot.name)}</span>
-                            <span class="plot-plant">${plotIcon(plot, result)}</span>
+                            <span class="plot-plant">${plant}</span>
                         </div>
                         <div class="plot-sensors">
                             <span>${plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น'}</span>
@@ -2685,6 +2845,7 @@
             const simulation = simulateWave();
             state.results = simulation.results;
             state.waterWaste += simulation.waterWaste;
+            state.tankWater = Math.max(0, Math.min(100, state.tankWater + simulation.waterChange));
             if (simulation.passed) {
                 state.combo += simulation.results.length;
                 if (gameConfig.mode === 'boss') {
@@ -2727,12 +2888,14 @@
             const logs = [];
             const errors = [];
             let waterWaste = 0;
+            let waterChange = 0;
             let damage = 0;
             const priorityIssue = checkPriority(rules);
-            const results = (currentWave().plots || []).map((plot) => {
+            const results = currentWavePlots().map((plot) => {
                 const decision = evaluateRules(plot, rules);
                 const outcome = applyAction(plot, decision.action);
                 waterWaste += outcome.waterWaste;
+                waterChange += outcome.waterChange || 0;
                 if (!outcome.safe) damage += Math.abs(outcome.hpChange || 12);
                 const expected = plot.expectedAction;
                 const ok = expected ? decision.action === expected && outcome.safe : outcome.safe;
@@ -2752,6 +2915,7 @@
                 results,
                 logs,
                 waterWaste,
+                waterChange,
                 damage: Math.max(12, damage),
                 passed: errors.length === 0,
                 feedback: errors[0] || 'ลองตรวจผลลัพธ์แต่ละแปลง แล้วปรับกฎอีกครั้ง',
@@ -2801,6 +2965,7 @@
             let safe = true;
             let hpChange = 5;
             let waterWaste = 0;
+            let waterChange = 0;
 
             if (action === 'water') {
                 if (plot.tank === 'empty') {
@@ -2814,16 +2979,19 @@
                     safe = false;
                     hpChange = -25;
                     waterWaste = 1;
+                    waterChange = -10;
                 } else if (plot.soil === 'wet') {
                     result = 'overwater';
                     label = 'ดินชื้นแล้ว แต่ระบบยังรดน้ำเพิ่ม';
                     safe = false;
                     hpChange = -15;
                     waterWaste = 1;
+                    waterChange = -10;
                 } else {
                     result = 'healthy';
                     label = 'ดินแห้งได้รับน้ำ พืชฟื้นแล้ว';
                     hpChange = 22;
+                    waterChange = -10;
                 }
             } else if (action === 'stop') {
                 if (plot.soil === 'dry' && !plot.rain) {
@@ -2841,6 +3009,7 @@
                     result = 'refill';
                     label = 'ระบบแจ้งเติมน้ำได้ถูกต้อง';
                     hpChange = 8;
+                    waterChange = 30;
                 } else {
                     result = 'unneeded_refill';
                     label = 'ถังน้ำยังไม่หมด แต่ระบบแจ้งเติมน้ำ';
@@ -2865,7 +3034,7 @@
                 hpChange = -12;
             }
 
-            return { result, label, safe, hpChange, waterWaste };
+            return { result, label, safe, hpChange, waterWaste, waterChange };
         }
 
         function buildError(plot, decision, outcome, expected) {
@@ -2959,6 +3128,16 @@
             if (plot.rain) return '⛈️';
             if (plot.soil === 'dry') return '🌾';
             return '🥬';
+        }
+
+        function enemyIcon(plot) {
+            const enemy = plot.enemy || plot.enemyType || (plot.rain ? 'rainCloud' : plot.soil === 'dry' ? 'sun' : null);
+            if (enemy === 'sun') return '☀️';
+            if (enemy === 'rainCloud') return '⛈️';
+            if (enemy === 'leakingTank') return '🪣';
+            if (enemy === 'worm') return '〰️';
+            if (enemy === 'boss') return '🌩️';
+            return '🌤️';
         }
 
         function escapeHtml(value) {
@@ -3128,6 +3307,7 @@
         condition: initCondition,
         irrigationBuilder: initIrrigationBuilder,
         conditionSimulator: initIrrigationBuilder,
+        smartFarmDefense: initWaterHero,
         waterHero: initWaterHero,
         conditionDefense: initWaterHero,
         debug: initDebug

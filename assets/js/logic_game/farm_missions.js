@@ -1851,6 +1851,1126 @@
         }
     }
 
+    function ensureWaterHeroStyles() {
+        if (document.getElementById('farm-missions-water-hero-style')) return;
+        const style = document.createElement('style');
+        style.id = 'farm-missions-water-hero-style';
+        style.innerHTML = `
+            #game-container { width: min(1180px, 96vw); }
+            .water-hero-shell,
+            .water-hero-shell * { box-sizing: border-box; }
+            .water-hero-shell {
+                width: min(1180px, 96vw);
+                font-family: 'Kanit', sans-serif;
+                color: #123047;
+            }
+            .water-top {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 14px;
+                align-items: center;
+                background: #ffffff;
+                border: 1px solid #cfe8f1;
+                border-radius: 8px;
+                box-shadow: 0 16px 34px rgba(8, 47, 73, .1);
+                padding: 14px 16px;
+                margin-bottom: 12px;
+            }
+            .water-title {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 800;
+                color: #0f3d56;
+            }
+            .water-subtitle {
+                margin: 3px 0 0;
+                color: #476477;
+                font-size: 15px;
+            }
+            .water-stats {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+            .water-stat {
+                min-width: 94px;
+                border: 1px solid #cbe9f5;
+                border-radius: 8px;
+                background: #f0fbff;
+                padding: 7px 10px;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 800;
+                color: #0e5d75;
+            }
+            .water-bars {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            .water-meter {
+                background: #ffffff;
+                border: 1px solid #dbe7f3;
+                border-radius: 8px;
+                padding: 10px 12px;
+                box-shadow: 0 10px 24px rgba(15, 23, 42, .07);
+            }
+            .meter-label {
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+                margin-bottom: 6px;
+                font-size: 13px;
+                font-weight: 800;
+                color: #334155;
+            }
+            .meter-track {
+                height: 12px;
+                border-radius: 999px;
+                background: #e5edf5;
+                overflow: hidden;
+            }
+            .meter-fill {
+                display: block;
+                height: 100%;
+                width: 100%;
+                border-radius: 999px;
+                background: #16a34a;
+                transition: width .28s ease, background .28s ease;
+            }
+            .meter-fill.boss { background: #dc2626; }
+            .water-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
+                gap: 12px;
+                align-items: start;
+            }
+            .water-panel {
+                background: #ffffff;
+                border: 1px solid #dbe7f3;
+                border-radius: 8px;
+                box-shadow: 0 16px 34px rgba(15, 23, 42, .08);
+                padding: 14px;
+            }
+            .water-field {
+                position: relative;
+                min-height: 440px;
+                overflow: hidden;
+                background:
+                    linear-gradient(rgba(255,255,255,.2), rgba(255,255,255,.2)),
+                    url('../assets/img/bg_v_garden.webp') center/cover;
+            }
+            .threat-sky {
+                position: absolute;
+                inset: 0 0 auto 0;
+                height: 112px;
+                background: linear-gradient(180deg, rgba(14,165,233,.28), rgba(255,255,255,0));
+                pointer-events: none;
+            }
+            .threat-sky.storm { background: linear-gradient(180deg, rgba(30,41,59,.42), rgba(255,255,255,0)); }
+            .threat-sky.boss { background: linear-gradient(180deg, rgba(127,29,29,.36), rgba(255,255,255,0)); }
+            .water-boss {
+                position: absolute;
+                top: 22px;
+                right: 20px;
+                display: none;
+                align-items: center;
+                gap: 8px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, .9);
+                border: 1px solid #fecaca;
+                color: #991b1b;
+                padding: 8px 10px;
+                font-weight: 800;
+                box-shadow: 0 8px 20px rgba(127, 29, 29, .14);
+            }
+            .water-boss.show { display: flex; }
+            .water-hero-avatar {
+                position: absolute;
+                left: 24px;
+                bottom: 24px;
+                width: 74px;
+                height: 74px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                border: 4px solid #ffffff;
+                background: #7dd3fc;
+                font-size: 42px;
+                box-shadow: 0 12px 24px rgba(2, 132, 199, .24);
+                animation: waterHeroHop 1.9s ease-in-out infinite;
+            }
+            .water-card-tray {
+                position: absolute;
+                left: 112px;
+                right: 16px;
+                bottom: 18px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .field-chip {
+                border: 1px solid rgba(255,255,255,.75);
+                border-radius: 8px;
+                color: #ffffff;
+                padding: 8px 10px;
+                font-weight: 800;
+                box-shadow: 0 8px 18px rgba(15, 23, 42, .18);
+                backdrop-filter: blur(2px);
+            }
+            .field-chip.condition { background: #0369a1; }
+            .field-chip.action { background: #15803d; }
+            .water-plots {
+                position: relative;
+                z-index: 1;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                padding: 122px 14px 118px;
+            }
+            .water-plot {
+                min-height: 138px;
+                border: 1px solid rgba(255,255,255,.72);
+                border-radius: 8px;
+                background: rgba(255, 255, 255, .9);
+                padding: 10px;
+                box-shadow: 0 10px 22px rgba(15, 23, 42, .08);
+                transition: transform .2s ease, background .2s ease, border-color .2s ease;
+            }
+            .water-plot.good {
+                background: #ecfdf5;
+                border-color: #4ade80;
+                transform: translateY(-2px);
+            }
+            .water-plot.bad {
+                background: #fff1f2;
+                border-color: #fb7185;
+                animation: plotShake .28s ease;
+            }
+            .plot-line {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                font-weight: 800;
+                color: #17344a;
+            }
+            .plot-plant {
+                font-size: 34px;
+                line-height: 1;
+            }
+            .plot-sensors {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin: 8px 0;
+            }
+            .plot-sensors span {
+                border-radius: 999px;
+                background: #f8fafc;
+                border: 1px solid #d8e5ef;
+                padding: 4px 7px;
+                font-size: 12px;
+                font-weight: 700;
+                color: #385467;
+            }
+            .water-plot .plot-health {
+                height: 9px;
+                border-radius: 999px;
+                background: #e2e8f0;
+                overflow: hidden;
+                margin: 8px 0;
+            }
+            .water-plot .plot-health > span {
+                display: block;
+                height: 100%;
+                min-width: 4px;
+                border-radius: 999px;
+                background: #22c55e;
+                transition: width .24s ease;
+            }
+            .plot-message {
+                min-height: 38px;
+                color: #52677a;
+                font-size: 13px;
+                line-height: 1.42;
+            }
+            .water-panel-title {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                margin: 0 0 10px;
+                color: #0f3d56;
+                font-size: 18px;
+                font-weight: 800;
+            }
+            .wave-name {
+                border-radius: 999px;
+                background: #fef3c7;
+                color: #92400e;
+                padding: 5px 9px;
+                font-size: 12px;
+                font-weight: 800;
+            }
+            .water-rules {
+                display: grid;
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+            .water-rule {
+                display: grid;
+                grid-template-columns: 96px minmax(0, 1fr);
+                gap: 8px;
+                align-items: center;
+                border: 1px solid #cfe8f1;
+                background: #f6fcff;
+                border-radius: 8px;
+                padding: 8px;
+            }
+            .water-rule-label {
+                color: #075985;
+                font-weight: 800;
+                font-size: 14px;
+            }
+            .water-rule-slots {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 8px;
+            }
+            .water-slot {
+                min-height: 44px;
+                border: 2px dashed #7dd3fc;
+                border-radius: 8px;
+                background: #ffffff;
+                color: #64748b;
+                padding: 7px;
+                font-weight: 800;
+                text-align: center;
+                cursor: pointer;
+            }
+            .water-slot.filled {
+                border-style: solid;
+                color: #0f172a;
+            }
+            .water-slot.fixed {
+                cursor: default;
+                background: #e0f2fe;
+                color: #075985;
+            }
+            .water-slot.target {
+                border-color: #facc15;
+                background: #fffbeb;
+            }
+            .water-palette {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 12px;
+            }
+            .water-palette-group {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 10px;
+                background: #ffffff;
+            }
+            .water-palette-title {
+                font-size: 13px;
+                font-weight: 800;
+                color: #475569;
+                margin-bottom: 8px;
+            }
+            .water-blocks {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .water-block {
+                border: 0;
+                border-radius: 8px;
+                padding: 8px 10px;
+                color: #ffffff;
+                font-weight: 800;
+                box-shadow: 0 6px 12px rgba(15,23,42,.14);
+                cursor: grab;
+            }
+            .water-block.condition { background: #0369a1; }
+            .water-block.action { background: #15803d; }
+            .water-block.selected {
+                outline: 3px solid #facc15;
+                outline-offset: 2px;
+            }
+            .water-controls {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .water-control {
+                border: 0;
+                border-radius: 8px;
+                min-height: 42px;
+                padding: 9px 13px;
+                color: #ffffff;
+                background: #0284c7;
+                font-weight: 800;
+                cursor: pointer;
+            }
+            .water-control.secondary { background: #64748b; }
+            .water-control.warning { background: #d97706; }
+            .water-control.danger { background: #dc2626; }
+            .water-feedback {
+                margin-top: 12px;
+                border-radius: 8px;
+                border: 1px solid #bae6fd;
+                background: #ecfeff;
+                padding: 12px;
+                color: #334155;
+                line-height: 1.5;
+                font-size: 14px;
+            }
+            .water-feedback.success {
+                border-color: #86efac;
+                background: #f0fdf4;
+            }
+            .water-feedback.error {
+                border-color: #fecaca;
+                background: #fff1f2;
+            }
+            .water-feedback strong {
+                display: block;
+                margin-bottom: 4px;
+                color: #0f3d56;
+            }
+            .water-feedback.error strong { color: #991b1b; }
+            .water-feedback.success strong { color: #166534; }
+            .water-log {
+                margin: 8px 0 0;
+                padding-left: 18px;
+            }
+            .water-finish {
+                position: fixed;
+                inset: 0;
+                z-index: 3000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                background: rgba(8, 47, 73, .78);
+            }
+            .water-finish-card {
+                width: min(560px, 92vw);
+                border-radius: 8px;
+                background: #ffffff;
+                padding: 28px;
+                text-align: center;
+                box-shadow: 0 24px 80px rgba(15, 23, 42, .35);
+            }
+            .water-finish-card h3 {
+                margin: 0 0 8px;
+                font-size: 34px;
+                font-weight: 800;
+                color: #166534;
+            }
+            .water-stars {
+                color: #f59e0b;
+                font-size: 42px;
+                margin: 10px 0;
+            }
+            @keyframes waterHeroHop {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-8px); }
+            }
+            @keyframes plotShake {
+                0%, 100% { transform: translateX(0); }
+                33% { transform: translateX(-5px); }
+                66% { transform: translateX(5px); }
+            }
+            @media (max-width: 940px) {
+                .water-top,
+                .water-layout,
+                .water-bars,
+                .water-palette {
+                    grid-template-columns: 1fr;
+                }
+                .water-stats { justify-content: flex-start; }
+                .water-field { min-height: 500px; }
+            }
+            @media (max-width: 640px) {
+                .water-plots,
+                .water-rule,
+                .water-rule-slots {
+                    grid-template-columns: 1fr;
+                }
+                .water-field { min-height: 650px; }
+                .water-card-tray {
+                    left: 18px;
+                    bottom: 104px;
+                }
+                .water-title { font-size: 20px; }
+                .water-control,
+                .water-block { width: 100%; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function initWaterHero(gameConfig) {
+        ensureWaterHeroStyles();
+        const container = document.getElementById('game-container');
+        if (!container) return;
+
+        const conditionCards = gameConfig.cards?.conditions || gameConfig.conditions || [];
+        const actionCards = gameConfig.cards?.actions || gameConfig.actions || [];
+        const conditionMap = Object.fromEntries(conditionCards.map((item) => [item.value, item]));
+        const actionMap = Object.fromEntries(actionCards.map((item) => [item.value, item]));
+        const rows = (gameConfig.ruleSlots || buildRuleSlots(gameConfig.expectedPriority || gameConfig.solutionPriority || [])).map((row, index) => ({
+            ...row,
+            label: row.label || (index === 0 ? 'ถ้า' : row.type === 'else' ? 'มิฉะนั้น' : 'มิฉะนั้นถ้า')
+        }));
+        const waves = gameConfig.waves?.length
+            ? gameConfig.waves
+            : [{ name: gameConfig.waveName || 'Wave 1', plots: gameConfig.plots || [] }];
+        const expectedPriority = gameConfig.expectedPriority || gameConfig.solutionPriority || [];
+        const state = {
+            startedAt: Date.now(),
+            attempts: 0,
+            mistakes: 0,
+            hints: 0,
+            selected: null,
+            history: [],
+            waveIndex: 0,
+            gardenHp: gameConfig.gardenHp || 100,
+            bossHp: gameConfig.bossHp || (gameConfig.mode === 'boss' ? 100 : 0),
+            waterWaste: 0,
+            combo: 0,
+            ended: false,
+            rules: rows.map((row) => ({
+                condition: row.type === 'else' || row.fixedCondition === 'else' ? 'else' : null,
+                action: null
+            })),
+            results: null
+        };
+
+        renderShell();
+        bindEvents();
+        renderAll();
+        showFeedback('info', 'ภารกิจเริ่มแล้ว', 'เก็บการ์ดเงื่อนไขและคำสั่ง แล้วติดตั้งกฎในตู้ควบคุมก่อนเริ่ม Wave');
+
+        function buildRuleSlots(priority) {
+            const source = priority.length ? priority : ['soil_dry', 'else'];
+            return source.map((condition, index) => ({
+                type: condition === 'else' ? 'else' : index === 0 ? 'if' : 'else_if'
+            }));
+        }
+
+        function renderShell() {
+            container.innerHTML = `
+                <div class="water-hero-shell">
+                    <div class="water-top">
+                        <div>
+                            <h3 class="water-title">${escapeHtml(gameConfig.title)}</h3>
+                            <p class="water-subtitle">${escapeHtml(gameConfig.subtitle)}</p>
+                        </div>
+                        <div class="water-stats">
+                            <span class="water-stat" id="water-wave">Wave 1/${waves.length}</span>
+                            <span class="water-stat" id="water-attempts">ลอง 0</span>
+                            <span class="water-stat" id="water-mistakes">พลาด 0</span>
+                            <span class="water-stat" id="water-combo">Combo 0</span>
+                        </div>
+                    </div>
+
+                    <div class="water-bars">
+                        <div class="water-meter">
+                            <div class="meter-label"><span>HP สวน</span><span id="garden-hp-label">100%</span></div>
+                            <div class="meter-track"><span class="meter-fill" id="garden-hp-fill"></span></div>
+                        </div>
+                        <div class="water-meter" id="boss-meter">
+                            <div class="meter-label"><span>HP บอส</span><span id="boss-hp-label">100%</span></div>
+                            <div class="meter-track"><span class="meter-fill boss" id="boss-hp-fill"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="water-layout">
+                        <section class="water-panel water-field">
+                            <div id="threat-sky" class="threat-sky"></div>
+                            <div id="water-boss" class="water-boss">☁️ บอสเมฆดำ</div>
+                            <div id="water-plots" class="water-plots"></div>
+                            <div class="water-hero-avatar" title="น้องหยดน้ำ">💧</div>
+                            <div id="field-card-tray" class="water-card-tray"></div>
+                        </section>
+
+                        <section class="water-panel">
+                            <h4 class="water-panel-title">
+                                <span>ตู้ควบคุมระบบน้ำ</span>
+                                <span class="wave-name" id="wave-name">Wave</span>
+                            </h4>
+                            <div id="water-rules" class="water-rules"></div>
+                            <div class="water-palette">
+                                <div class="water-palette-group">
+                                    <div class="water-palette-title">การ์ดเงื่อนไข</div>
+                                    <div id="water-condition-blocks" class="water-blocks"></div>
+                                </div>
+                                <div class="water-palette-group">
+                                    <div class="water-palette-title">การ์ดคำสั่ง</div>
+                                    <div id="water-action-blocks" class="water-blocks"></div>
+                                </div>
+                            </div>
+                            <div class="water-controls">
+                                <button type="button" class="water-control" id="start-wave">เริ่ม Wave</button>
+                                <button type="button" class="water-control secondary" id="water-hint">คำใบ้</button>
+                                <button type="button" class="water-control warning" id="water-undo">ย้อนกลับ</button>
+                                <button type="button" class="water-control danger" id="water-clear">ล้างกฎ</button>
+                            </div>
+                            <section id="water-feedback" class="water-feedback">
+                                <strong>คำแนะนำ</strong>
+                                <div>ติดตั้งกฎแล้วเริ่ม Wave เพื่อดูผลลัพธ์</div>
+                            </section>
+                        </section>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindEvents() {
+            container.querySelector('#start-wave').addEventListener('click', runWave);
+            container.querySelector('#water-hint').addEventListener('click', () => {
+                state.hints++;
+                renderStats();
+                showFeedback('info', 'คำใบ้จากครูโรบอท', gameConfig.hint || buildHint());
+            });
+            container.querySelector('#water-undo').addEventListener('click', undo);
+            container.querySelector('#water-clear').addEventListener('click', clearRules);
+
+            container.addEventListener('click', (event) => {
+                const block = event.target.closest('.water-block');
+                if (block) {
+                    state.selected = { kind: block.dataset.kind, value: block.dataset.value };
+                    renderBlocks();
+                    showFeedback('info', 'เลือกการ์ดแล้ว', `แตะช่องในตู้ควบคุมเพื่อวาง "${block.textContent.trim()}"`);
+                    return;
+                }
+
+                const slot = event.target.closest('.water-slot');
+                if (!slot || slot.classList.contains('fixed')) return;
+                if (!state.selected) {
+                    const ruleIndex = Number(slot.dataset.ruleIndex);
+                    const kind = slot.dataset.kind;
+                    if (state.rules[ruleIndex][kind]) {
+                        pushHistory();
+                        state.rules[ruleIndex][kind] = null;
+                        state.results = null;
+                        renderAll();
+                        showFeedback('info', 'นำการ์ดออกแล้ว', 'เลือกการ์ดใบใหม่จากถาดด้านล่างได้เลย');
+                        return;
+                    }
+                    showFeedback('info', 'เลือกการ์ดก่อน', 'แตะการ์ดเงื่อนไขหรือคำสั่ง แล้วค่อยแตะช่องที่ต้องการวาง');
+                    return;
+                }
+                applyToSlot(slot, state.selected);
+            });
+
+            container.addEventListener('dragstart', (event) => {
+                const block = event.target.closest('.water-block');
+                if (!block) return;
+                const payload = { kind: block.dataset.kind, value: block.dataset.value };
+                event.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                event.dataTransfer.effectAllowed = 'copy';
+                state.selected = payload;
+                renderBlocks();
+            });
+            container.addEventListener('dragover', (event) => {
+                const slot = event.target.closest('.water-slot');
+                if (!slot || slot.classList.contains('fixed')) return;
+                event.preventDefault();
+                slot.classList.add('target');
+            });
+            container.addEventListener('dragleave', (event) => {
+                const slot = event.target.closest('.water-slot');
+                if (slot) slot.classList.remove('target');
+            });
+            container.addEventListener('drop', (event) => {
+                const slot = event.target.closest('.water-slot');
+                if (!slot || slot.classList.contains('fixed')) return;
+                event.preventDefault();
+                slot.classList.remove('target');
+                try {
+                    applyToSlot(slot, JSON.parse(event.dataTransfer.getData('text/plain')));
+                } catch (error) {
+                    showFeedback('error', 'วางการ์ดไม่ได้', 'ลองเลือกการ์ดอีกครั้ง');
+                }
+            });
+        }
+
+        function applyToSlot(slot, payload) {
+            const ruleIndex = Number(slot.dataset.ruleIndex);
+            const kind = slot.dataset.kind;
+            if (payload.kind !== kind) {
+                showFeedback('error', 'ช่องไม่ตรงชนิดการ์ด', kind === 'condition'
+                    ? 'ช่องนี้ต้องใช้การ์ดเงื่อนไข เช่น ฝนตก ดินแห้ง หรือถังน้ำหมด'
+                    : 'ช่องนี้ต้องใช้การ์ดคำสั่ง เช่น รดน้ำ หยุดรดน้ำ หรือแจ้งเติมน้ำ');
+                return;
+            }
+            pushHistory();
+            state.rules[ruleIndex][kind] = payload.value;
+            state.selected = null;
+            state.results = null;
+            renderAll();
+        }
+
+        function pushHistory() {
+            state.history.push(JSON.stringify(state.rules));
+            if (state.history.length > 20) state.history.shift();
+        }
+
+        function undo() {
+            const previous = state.history.pop();
+            if (!previous) {
+                showFeedback('info', 'ยังย้อนกลับไม่ได้', 'ยังไม่มีการวางการ์ดก่อนหน้านี้');
+                return;
+            }
+            state.rules = JSON.parse(previous);
+            state.selected = null;
+            state.results = null;
+            renderAll();
+        }
+
+        function clearRules() {
+            pushHistory();
+            state.rules = rows.map((row) => ({
+                condition: row.type === 'else' || row.fixedCondition === 'else' ? 'else' : null,
+                action: null
+            }));
+            state.selected = null;
+            state.results = null;
+            renderAll();
+            showFeedback('info', 'ล้างกฎแล้ว', 'เริ่มติดตั้งการ์ดใหม่ในตู้ควบคุมได้เลย');
+        }
+
+        function currentWave() {
+            return waves[state.waveIndex] || waves[0];
+        }
+
+        function renderAll() {
+            renderStats();
+            renderPlots();
+            renderRules();
+            renderBlocks();
+            renderFieldCards();
+        }
+
+        function renderStats() {
+            container.querySelector('#water-wave').textContent = `Wave ${state.waveIndex + 1}/${waves.length}`;
+            container.querySelector('#water-attempts').textContent = `ลอง ${state.attempts}`;
+            container.querySelector('#water-mistakes').textContent = `พลาด ${state.mistakes}`;
+            container.querySelector('#water-combo').textContent = `Combo ${state.combo}`;
+            container.querySelector('#garden-hp-label').textContent = `${Math.max(0, Math.round(state.gardenHp))}%`;
+            container.querySelector('#garden-hp-fill').style.width = `${Math.max(0, Math.min(100, state.gardenHp))}%`;
+            container.querySelector('#garden-hp-fill').style.background = state.gardenHp > 70 ? '#16a34a' : state.gardenHp > 40 ? '#f59e0b' : '#dc2626';
+            const bossMeter = container.querySelector('#boss-meter');
+            const bossVisible = gameConfig.mode === 'boss';
+            bossMeter.style.display = bossVisible ? 'block' : 'none';
+            container.querySelector('#water-boss').classList.toggle('show', bossVisible);
+            if (bossVisible) {
+                container.querySelector('#boss-hp-label').textContent = `${Math.max(0, Math.round(state.bossHp))}%`;
+                container.querySelector('#boss-hp-fill').style.width = `${Math.max(0, Math.min(100, state.bossHp))}%`;
+            }
+            container.querySelector('#wave-name').textContent = currentWave().name || `Wave ${state.waveIndex + 1}`;
+            const sky = container.querySelector('#threat-sky');
+            sky.className = `threat-sky ${gameConfig.mode === 'storm' || currentWave().mode === 'storm' ? 'storm' : gameConfig.mode === 'boss' ? 'boss' : ''}`;
+        }
+
+        function renderPlots() {
+            const plots = currentWave().plots || [];
+            const results = state.results || [];
+            container.querySelector('#water-plots').innerHTML = plots.map((plot, index) => {
+                const result = results[index];
+                const health = result ? result.health : (plot.hp ?? plot.health ?? 80);
+                const statusClass = result ? (result.safe ? ' good' : ' bad') : '';
+                return `
+                    <article class="water-plot${statusClass}">
+                        <div class="plot-line">
+                            <span>${escapeHtml(plot.name)}</span>
+                            <span class="plot-plant">${plotIcon(plot, result)}</span>
+                        </div>
+                        <div class="plot-sensors">
+                            <span>${plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น'}</span>
+                            <span>${plot.rain ? 'ฝนตก' : 'ไม่มีฝน'}</span>
+                            <span>${plot.tank === 'empty' ? 'ถังน้ำหมด' : 'ถังน้ำพร้อม'}</span>
+                        </div>
+                        <div class="plot-health"><span style="width:${Math.max(4, Math.min(100, health))}%"></span></div>
+                        <div class="plot-message">${escapeHtml(result ? result.message : (plot.note || 'รอระบบรดน้ำตัดสินใจ'))}</div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function renderRules() {
+            container.querySelector('#water-rules').innerHTML = rows.map((row, index) => {
+                const rule = state.rules[index];
+                const fixed = row.type === 'else' || row.fixedCondition === 'else';
+                return `
+                    <div class="water-rule">
+                        <div class="water-rule-label">${escapeHtml(row.label)}</div>
+                        <div class="water-rule-slots">
+                            <button type="button"
+                                class="water-slot ${fixed ? 'fixed filled' : rule.condition ? 'filled' : ''}"
+                                data-rule-index="${index}"
+                                data-kind="condition">
+                                ${escapeHtml(fixed ? 'กรณีอื่น ๆ' : rule.condition ? cardLabel(rule.condition, conditionMap) : 'วางเงื่อนไข')}
+                            </button>
+                            <button type="button"
+                                class="water-slot ${rule.action ? 'filled' : ''}"
+                                data-rule-index="${index}"
+                                data-kind="action">
+                                ${escapeHtml(rule.action ? cardLabel(rule.action, actionMap) : 'วางคำสั่ง')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderBlocks() {
+            container.querySelector('#water-condition-blocks').innerHTML = conditionCards.map((card) => blockHtml(card, 'condition')).join('');
+            container.querySelector('#water-action-blocks').innerHTML = actionCards.map((card) => blockHtml(card, 'action')).join('');
+        }
+
+        function renderFieldCards() {
+            const cards = [...conditionCards.slice(0, 3), ...actionCards.slice(0, 3)];
+            container.querySelector('#field-card-tray').innerHTML = cards.map((card) => {
+                const kind = conditionMap[card.value] ? 'condition' : 'action';
+                return `<span class="field-chip ${kind}">${escapeHtml(card.icon || '')} ${escapeHtml(card.label)}</span>`;
+            }).join('');
+        }
+
+        function blockHtml(card, kind) {
+            const selected = state.selected?.kind === kind && state.selected?.value === card.value;
+            return `
+                <button type="button"
+                    class="water-block ${kind}${selected ? ' selected' : ''}"
+                    draggable="true"
+                    data-kind="${kind}"
+                    data-value="${escapeHtml(card.value)}">
+                    ${escapeHtml(card.icon || '')} ${escapeHtml(card.label)}
+                </button>
+            `;
+        }
+
+        function validateRules() {
+            for (let i = 0; i < state.rules.length; i++) {
+                const row = rows[i];
+                const rule = state.rules[i];
+                if (!(row.type === 'else' || row.fixedCondition === 'else') && !rule.condition) {
+                    return `กฎแถวที่ ${i + 1} ยังไม่มีเงื่อนไข`;
+                }
+                if (!rule.action) {
+                    return `กฎแถวที่ ${i + 1} ยังไม่มีคำสั่ง`;
+                }
+            }
+            return '';
+        }
+
+        function runWave() {
+            if (state.ended) return;
+            const validation = validateRules();
+            if (validation) {
+                showFeedback('error', 'ตู้ควบคุมยังไม่ครบ', `${validation} ระบบจึงยังเริ่ม Wave ไม่ได้`);
+                return;
+            }
+
+            state.attempts++;
+            const simulation = simulateWave();
+            state.results = simulation.results;
+            state.waterWaste += simulation.waterWaste;
+            if (simulation.passed) {
+                state.combo += simulation.results.length;
+                if (gameConfig.mode === 'boss') {
+                    const bossDamage = Math.ceil((gameConfig.bossHp || 100) / waves.length);
+                    state.bossHp = Math.max(0, state.bossHp - bossDamage);
+                }
+                renderAll();
+                if (state.waveIndex < waves.length - 1 && state.gardenHp > 0) {
+                    showFeedback('success', simulation.praise || 'Water Save!', `Wave นี้ผ่านแล้ว ${gameConfig.mode === 'boss' ? 'สวนปล่อยพลังหยดน้ำโจมตีบอส' : 'สวนยังปลอดภัย'} เตรียม Wave ถัดไป`, simulation.logs);
+                    state.waveIndex++;
+                    state.results = null;
+                    window.setTimeout(() => {
+                        if (!state.ended) {
+                            renderAll();
+                            showFeedback('info', 'Wave ใหม่มาแล้ว', 'ตรวจสถานการณ์บนแปลง แล้วปรับกฎได้ก่อนเริ่ม Wave ถัดไป');
+                        }
+                    }, 1400);
+                    return;
+                }
+                if (gameConfig.mode !== 'boss' || state.bossHp <= 0) {
+                    finishGame(simulation);
+                    return;
+                }
+                showFeedback('success', 'โจมตีบอสสำเร็จ', 'กฎถูกต้องแล้ว เริ่ม Wave อีกครั้งเพื่อกำจัดบอสให้หมด HP', simulation.logs);
+            } else {
+                state.mistakes++;
+                state.combo = 0;
+                state.gardenHp = Math.max(0, state.gardenHp - simulation.damage);
+                renderAll();
+                if (state.gardenHp <= 0) {
+                    showFeedback('error', 'สวนพังแล้ว', 'HP สวนหมด ล้างกฎหรือย้อนกลับแล้วลองจัดลำดับเงื่อนไขใหม่');
+                    return;
+                }
+                showFeedback('error', 'Wave ยังไม่ผ่าน', simulation.feedback, simulation.logs);
+            }
+        }
+
+        function simulateWave() {
+            const rules = state.rules.map((rule) => ({ ...rule }));
+            const logs = [];
+            const errors = [];
+            let waterWaste = 0;
+            let damage = 0;
+            const priorityIssue = checkPriority(rules);
+            const results = (currentWave().plots || []).map((plot) => {
+                const decision = evaluateRules(plot, rules);
+                const outcome = applyAction(plot, decision.action);
+                waterWaste += outcome.waterWaste;
+                if (!outcome.safe) damage += Math.abs(outcome.hpChange || 12);
+                const expected = plot.expectedAction;
+                const ok = expected ? decision.action === expected && outcome.safe : outcome.safe;
+                logs.push(`${plot.name}: ${describePlot(plot)} → ${cardLabel(decision.action, actionMap)} → ${outcome.label}`);
+                if (!ok) {
+                    errors.push(buildError(plot, decision, outcome, expected));
+                }
+                return {
+                    ...outcome,
+                    action: decision.action,
+                    health: Math.max(0, Math.min(100, (plot.hp ?? plot.health ?? 80) + outcome.hpChange)),
+                    message: outcome.label
+                };
+            });
+            if (priorityIssue) errors.unshift(priorityIssue);
+            return {
+                results,
+                logs,
+                waterWaste,
+                damage: Math.max(12, damage),
+                passed: errors.length === 0,
+                feedback: errors[0] || 'ลองตรวจผลลัพธ์แต่ละแปลง แล้วปรับกฎอีกครั้ง',
+                praise: gameConfig.mode === 'storm' ? 'Storm Guard!' : gameConfig.mode === 'boss' ? 'Boss Hit!' : 'Water Save!'
+            };
+        }
+
+        function checkPriority(rules) {
+            if (!expectedPriority.length) return '';
+            const actual = rules.map((rule) => rule.condition);
+            for (let i = 0; i < expectedPriority.length; i++) {
+                if (actual[i] !== expectedPriority[i]) {
+                    if (expectedPriority[i] === 'rain') {
+                        return 'ระบบควรตรวจฝนตกก่อนดินแห้ง เพื่อไม่ให้รดน้ำซ้ำตอนฝนกำลังตก';
+                    }
+                    if (expectedPriority[i] === 'tank_empty') {
+                        return 'ถังน้ำหมดควรถูกตรวจเป็นเงื่อนไขแรก ก่อนระบบพยายามรดน้ำ';
+                    }
+                    return `ลำดับเงื่อนไขยังไม่ถูกต้อง ลองวาง "${cardLabel(expectedPriority[i], conditionMap)}" ในแถวที่ ${i + 1}`;
+                }
+            }
+            return '';
+        }
+
+        function evaluateRules(plot, rules) {
+            for (let i = 0; i < rules.length; i++) {
+                const rule = rules[i];
+                if (rule.condition === 'else' || checkCondition(plot, rule.condition)) {
+                    return { action: rule.action || 'no_action', ruleIndex: i };
+                }
+            }
+            return { action: 'no_action', ruleIndex: -1 };
+        }
+
+        function checkCondition(plot, condition) {
+            if (condition === 'soil_dry') return plot.soil === 'dry';
+            if (condition === 'soil_wet') return plot.soil === 'wet';
+            if (condition === 'rain') return plot.rain === true;
+            if (condition === 'tank_empty') return plot.tank === 'empty';
+            if (condition === 'tank_ready') return plot.tank === 'ready';
+            return false;
+        }
+
+        function applyAction(plot, action) {
+            let result = 'safe';
+            let label = 'ปลอดภัย';
+            let safe = true;
+            let hpChange = 5;
+            let waterWaste = 0;
+
+            if (action === 'water') {
+                if (plot.tank === 'empty') {
+                    result = 'no_water';
+                    label = 'ถังน้ำหมด แต่ระบบยังพยายามรดน้ำ';
+                    safe = false;
+                    hpChange = -18;
+                } else if (plot.rain) {
+                    result = 'flood';
+                    label = 'ฝนตกอยู่แล้ว แต่ระบบยังรดน้ำเพิ่มจนเสี่ยงน้ำท่วม';
+                    safe = false;
+                    hpChange = -25;
+                    waterWaste = 1;
+                } else if (plot.soil === 'wet') {
+                    result = 'overwater';
+                    label = 'ดินชื้นแล้ว แต่ระบบยังรดน้ำเพิ่ม';
+                    safe = false;
+                    hpChange = -15;
+                    waterWaste = 1;
+                } else {
+                    result = 'healthy';
+                    label = 'ดินแห้งได้รับน้ำ พืชฟื้นแล้ว';
+                    hpChange = 22;
+                }
+            } else if (action === 'stop') {
+                if (plot.soil === 'dry' && !plot.rain) {
+                    result = 'dry';
+                    label = 'ดินแห้งแต่ระบบหยุดรดน้ำ พืชจึงเหี่ยวลง';
+                    safe = false;
+                    hpChange = -20;
+                } else {
+                    result = 'safe';
+                    label = 'หยุดรดน้ำได้เหมาะสม';
+                    hpChange = 6;
+                }
+            } else if (action === 'refill') {
+                if (plot.tank === 'empty') {
+                    result = 'refill';
+                    label = 'ระบบแจ้งเติมน้ำได้ถูกต้อง';
+                    hpChange = 8;
+                } else {
+                    result = 'unneeded_refill';
+                    label = 'ถังน้ำยังไม่หมด แต่ระบบแจ้งเติมน้ำ';
+                    safe = false;
+                    hpChange = -6;
+                }
+            } else if (action === 'observe') {
+                if (plot.soil === 'wet' && !plot.rain && plot.tank !== 'empty') {
+                    result = 'observe';
+                    label = 'สถานการณ์ปลอดภัย ระบบสังเกตต่อได้';
+                    hpChange = 6;
+                } else {
+                    result = 'miss';
+                    label = 'ระบบสังเกตต่อ ทั้งที่ควรตัดสินใจทำอย่างอื่น';
+                    safe = false;
+                    hpChange = -12;
+                }
+            } else {
+                result = 'no_action';
+                label = 'ระบบไม่รู้ว่าต้องทำอะไร';
+                safe = false;
+                hpChange = -12;
+            }
+
+            return { result, label, safe, hpChange, waterWaste };
+        }
+
+        function buildError(plot, decision, outcome, expected) {
+            if (expected && decision.action !== expected) {
+                return `${plot.name} ควรเป็น "${cardLabel(expected, actionMap)}" แต่ระบบเลือก "${cardLabel(decision.action, actionMap)}" ลองดูว่าเงื่อนไขแถวบนครอบคลุมสถานการณ์นี้ก่อนหรือไม่`;
+            }
+            if (outcome.result === 'flood' || outcome.result === 'overwater') {
+                return `${plot.name} น้ำมากเกินไป เพราะระบบรดน้ำทั้งที่${plot.rain ? 'ฝนกำลังตก' : 'ดินชื้นแล้ว'} ลองตรวจฝนหรือดินชื้นก่อนสั่งรดน้ำ`;
+            }
+            if (outcome.result === 'dry') {
+                return `${plot.name} ดินแห้งแต่ระบบไม่ได้รดน้ำ ลองตั้งกฎว่า ถ้าดินแห้ง แล้ว รดน้ำ`;
+            }
+            if (outcome.result === 'no_water') {
+                return `${plot.name} ถังน้ำหมดแล้ว แต่ระบบยังพยายามรดน้ำ ลองตรวจถังน้ำหมดเป็นเงื่อนไขแรก`;
+            }
+            if (outcome.result === 'unneeded_refill') {
+                return `${plot.name} ถังน้ำยังพร้อม จึงไม่ควรแจ้งเติมน้ำในกรณีนี้`;
+            }
+            return `${plot.name} ยังไม่ปลอดภัย ลองตรวจเงื่อนไขและคำสั่งอีกครั้ง`;
+        }
+
+        function finishGame(simulation) {
+            state.ended = true;
+            const duration = Math.max(1, Math.floor((Date.now() - state.startedAt) / 1000));
+            const stars = calculateStars(duration);
+            const badge = gameConfig.badge || 'ฮีโร่หยดน้ำ';
+            showFeedback('success', 'ภารกิจสำเร็จ!', 'ระบบของคุณใช้ If-Then-Else ป้องกันสวนได้ครบทุกสถานการณ์', simulation.logs);
+            const overlay = document.createElement('div');
+            overlay.className = 'water-finish';
+            overlay.innerHTML = `
+                <div class="water-finish-card">
+                    <h3>ภารกิจสำเร็จ!</h3>
+                    <p>${escapeHtml(gameConfig.winMessage || 'คุณสร้างระบบรดน้ำอัจฉริยะได้สำเร็จ')}</p>
+                    <div class="water-stars">${'⭐'.repeat(stars)}</div>
+                    <p><strong>Badge:</strong> ${escapeHtml(badge)}</p>
+                    <p>ใช้เวลา ${duration} วินาที | เริ่ม Wave ${state.attempts} ครั้ง | พลาด ${state.mistakes} ครั้ง</p>
+                    <p class="text-secondary small">กำลังบันทึกคะแนน...</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            window.setTimeout(() => {
+                if (typeof window.sendResult === 'function') {
+                    window.sendResult(window.STAGE_ID, stars, duration, state.attempts);
+                }
+            }, 1700);
+        }
+
+        function calculateStars(duration) {
+            const timeLimit = gameConfig.timeLimit || 60;
+            if (state.hints === 0 && state.gardenHp >= 85 && state.mistakes <= 1 && state.waterWaste === 0 && duration <= timeLimit) return 3;
+            if (state.gardenHp >= 60 && state.mistakes <= 3 && state.hints <= 1) return 2;
+            return 1;
+        }
+
+        function showFeedback(type, title, message, logs = []) {
+            const panel = container.querySelector('#water-feedback');
+            panel.className = `water-feedback ${type === 'success' ? 'success' : type === 'error' ? 'error' : ''}`;
+            panel.innerHTML = `
+                <strong>${escapeHtml(title)}</strong>
+                <div>${escapeHtml(message)}</div>
+                ${logs.length ? `<ol class="water-log">${logs.map((log) => `<li>${escapeHtml(log)}</li>`).join('')}</ol>` : ''}
+            `;
+        }
+
+        function buildHint() {
+            if (!expectedPriority.length) return 'อ่านข้อมูลเซ็นเซอร์ แล้วเลือกเงื่อนไขที่ควรตรวจเป็นอันดับแรก';
+            return `ลองเรียงกฎเป็น ${expectedPriority.map((item) => cardLabel(item, conditionMap)).join(' → ')}`;
+        }
+
+        function cardLabel(value, map) {
+            if (value === 'else') return 'กรณีอื่น ๆ';
+            if (value === 'no_action') return 'ไม่ทำอะไร';
+            const card = map[value];
+            return card ? `${card.icon ? `${card.icon} ` : ''}${card.label}` : (value || 'ยังไม่เลือก');
+        }
+
+        function describePlot(plot) {
+            return [
+                plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น',
+                plot.rain ? 'ฝนตก' : 'ไม่มีฝน',
+                plot.tank === 'empty' ? 'ถังน้ำหมด' : 'ถังน้ำพร้อม'
+            ].join(', ');
+        }
+
+        function plotIcon(plot, result) {
+            if (result?.result === 'flood' || result?.result === 'overwater') return '🌊';
+            if (result?.result === 'dry' || result?.result === 'no_water') return '🥀';
+            if (result?.result === 'refill') return '🚨';
+            if (result?.result === 'healthy') return '🌱';
+            if (plot.tank === 'empty') return '🪣';
+            if (plot.rain) return '⛈️';
+            if (plot.soil === 'dry') return '🌾';
+            return '🥬';
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    }
+
     function initDebug(gameConfig) {
         class DebugScene extends Phaser.Scene {
             constructor() {
@@ -2008,6 +3128,8 @@
         condition: initCondition,
         irrigationBuilder: initIrrigationBuilder,
         conditionSimulator: initIrrigationBuilder,
+        waterHero: initWaterHero,
+        conditionDefense: initWaterHero,
         debug: initDebug
     };
 })();

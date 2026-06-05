@@ -1,17 +1,17 @@
-// Stage 7: Smart Farm Defense - แดดบุกสวน
+// Stage 7: Agri-Drone Rescue - โดรนรดน้ำฉุกเฉิน
 (function () {
     const config = {
-        title: 'ด่าน 7: แดดบุกสวน',
-        subtitle: 'ใช้ If-Else เพื่อเปิดน้ำเมื่อดินแห้ง และหยุดน้ำเมื่อดินชื้น',
-        mode: 'sun',
-        lanes: 2,
-        timeLimit: 45,
-        gardenHp: 100,
-        tankWater: 100,
-        badge: 'นักป้องกันแดด',
-        hint: 'วางกฎเป็น: ถ้าดินแห้ง -> รดน้ำ / มิฉะนั้น -> หยุดรดน้ำ',
-        winMessage: 'ยอดเยี่ยม! ระบบตรวจพบดินแห้งแล้วเปิดน้ำช่วยพืชทันเวลา ส่วนดินชื้นไม่ถูกรดน้ำเพิ่ม',
+        title: 'ด่าน 7: โดรนรดน้ำฉุกเฉิน',
+        subtitle: 'ใช้ If-Else ให้โดรนรดน้ำเฉพาะแปลงที่ดินแห้ง',
+        briefing: 'แดดแรงทำให้บางแปลงเริ่มเหี่ยว ตั้งกฎให้โดรนช่วยรดน้ำแปลงที่ดินแห้ง และบินสำรวจต่อเมื่อดินยังชื้น',
+        farmHp: 100,
+        droneBattery: 100,
+        droneWater: 100,
+        badge: 'ผู้ช่วยรดน้ำอัจฉริยะ',
+        hint: 'วางกฎเป็น: ถ้าดินแห้ง -> รดน้ำ / มิฉะนั้น -> สำรวจต่อ',
+        winMessage: 'Perfect Water! โดรนรดน้ำเฉพาะแปลงที่ต้องการน้ำและบินผ่านแปลงที่ดินชื้น',
         expectedPriority: ['soil_dry', 'else'],
+        strictPriority: true,
         ruleSlots: [
             { type: 'if', condition: null, action: null },
             { type: 'else', condition: 'else', action: null }
@@ -22,40 +22,55 @@
             ],
             actions: [
                 { value: 'water', label: 'รดน้ำ', icon: '💧' },
-                { value: 'stop', label: 'หยุดรดน้ำ', icon: '✋' }
+                { value: 'skip', label: 'สำรวจต่อ', icon: '🛰️' }
             ]
         },
         waves: [{
-            name: 'Wave 1: แดดแรง',
-            lanes: [
-            {
-                lane: 1,
-                name: 'แปลง A',
-                soil: 'dry',
-                rain: false,
-                tank: 'ready',
-                hp: 60,
-                enemy: 'sun',
-                expectedAction: 'water',
-                note: 'ดินแห้ง พืชเริ่มเหี่ยว แดดจอมเผากำลังโจมตี'
-            },
-            {
-                lane: 2,
-                name: 'แปลง B',
-                soil: 'wet',
-                rain: false,
-                tank: 'ready',
-                hp: 90,
-                enemy: null,
-                expectedAction: 'stop',
-                note: 'ดินชื้นพอดี ต้นกล้ายังสดชื่น'
-            }
+            name: 'ภารกิจ: แดดแรงกลางฟาร์ม',
+            brief: 'สแกน 3 แปลง แล้วช่วยเฉพาะแปลงที่ดินแห้ง',
+            plots: [
+                {
+                    id: 'A',
+                    name: 'แปลง A',
+                    soil: 'dry',
+                    rain: false,
+                    pest: false,
+                    crop: 'growing',
+                    hp: 62,
+                    expectedAction: 'water',
+                    note: 'ดินแห้ง พืชเริ่มเหี่ยว',
+                    position: { x: 8, y: 10 }
+                },
+                {
+                    id: 'B',
+                    name: 'แปลง B',
+                    soil: 'wet',
+                    rain: false,
+                    pest: false,
+                    crop: 'growing',
+                    hp: 90,
+                    expectedAction: 'skip',
+                    note: 'ดินชื้น พืชยังสดชื่น',
+                    position: { x: 39, y: 30 }
+                },
+                {
+                    id: 'C',
+                    name: 'แปลง C',
+                    soil: 'dry',
+                    rain: false,
+                    pest: false,
+                    crop: 'growing',
+                    hp: 66,
+                    expectedAction: 'water',
+                    note: 'ดินแห้ง พืชต้องการน้ำ',
+                    position: { x: 13, y: 58 }
+                }
             ]
         }]
     };
 
     function boot() {
-        window.FarmMissions.smartFarmDefense(config);
+        window.FarmMissions.agriDroneRescue(config);
     }
 
     if (window.FarmMissions) {

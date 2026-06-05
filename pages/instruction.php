@@ -37,14 +37,14 @@ if ($game_id === 1) {
     $is_under_construction = false;
 
 } else if ($game_id === 3) {
-    $game_title = "บทที่ 3: ภารกิจฮีโร่หยดน้ำ (Condition)";
+    $game_title = "บทที่ 3: Agri-Drone Rescue (Condition)";
     $game_theme = "info";
-    $mission_desc = "สวนผักอัจฉริยะกำลังถูกโจมตีจากแดดแรง ฝนถล่ม และถังน้ำรั่ว! คุณคือน้องหยดน้ำ ผู้ต้องสร้างกฎ If-Then-Else ให้เครื่องรดน้ำตัดสินใจได้เอง เก็บการ์ดเงื่อนไข ติดตั้งคำสั่งในตู้ควบคุม แล้วเริ่ม Wave เพื่อป้องกันสวนให้รอด";
+    $mission_desc = "คุณคือผู้ควบคุมโดรนเกษตรอัจฉริยะ ต้องสร้างกฎ If-Then-Else ให้โดรนตัดสินใจเองว่าจะรดน้ำ ไล่แมลง เก็บเกี่ยว กลับฐาน หรือสำรวจต่อ เพื่อช่วยฟาร์มจากดินแห้ง ฝนตก แมลงบุก และผลผลิตสุก";
 
     $steps = [
-        ['icon' => 'bi-speedometer2', 'title' => '1. ดูสถานการณ์สวน', 'desc' => 'สังเกตแต่ละแปลงว่าดินแห้ง ฝนตก หรือถังน้ำหมดก่อน Wave เริ่ม'],
-        ['icon' => 'bi-collection', 'title' => '2. ติดตั้งการ์ดกฎ', 'desc' => 'เลือกการ์ดเงื่อนไขและคำสั่ง วางในตู้ควบคุมแบบ If, Else If และ Else จากบนลงล่าง'],
-        ['icon' => 'bi-lightning-charge', 'title' => '3. เริ่ม Wave', 'desc' => 'ดูผลลัพธ์ทันที ถ้ากฎถูกพืชจะฟื้นและโจมตีบอส ถ้าผิดจะเห็นน้ำท่วม พืชเหี่ยว หรือถังน้ำเตือน']
+        ['icon' => 'bi-radar', 'title' => '1. สแกนสถานการณ์ฟาร์ม', 'desc' => 'ดูแต่ละแปลงว่าดินแห้ง ฝนตก มีแมลง หรือผลผลิตสุกก่อนปล่อยโดรน'],
+        ['icon' => 'bi-collection', 'title' => '2. สร้างสมองโดรน', 'desc' => 'เลือกการ์ดเงื่อนไขและคำสั่ง วางเป็นกฎ If, Else If และ Else จากบนลงล่าง'],
+        ['icon' => 'bi-send-check', 'title' => '3. ปล่อยโดรน!', 'desc' => 'โดรนจะบิน สแกน และทำงานตามกฎของคุณ พร้อมแสดงผลว่าฟาร์มดีขึ้นหรือเสียหายเพราะอะไร']
     ];
     $start_link = "../pages/game_select.php?game_id=3";
     $is_under_construction = false;
@@ -280,8 +280,8 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 3): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
                     <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If-Then-Else</div>
-                    <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้ระบบตัดสินใจเองได้ เหมือนตู้ควบคุมในเกม Water Hero</p>
-                    <p class="text-secondary small mb-3">ระบบจะอ่านกฎจากบนลงล่าง เช่น <strong>ถ้าถังน้ำหมด ให้แจ้งเติมน้ำ</strong> มิฉะนั้นถ้าฝนตกให้หยุดรดน้ำ แล้วค่อยตรวจว่าดินแห้งหรือไม่ ถ้าเรียงผิด ระบบอาจรดน้ำตอนฝนตกหรือสั่งรดน้ำทั้งที่ถังน้ำหมด</p>
+                    <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้โดรนตัดสินใจเองได้ เหมือนการเขียนสมองให้หุ่นยนต์เกษตร</p>
+                    <p class="text-secondary small mb-3">โดรนจะอ่านกฎจากบนลงล่าง เช่น <strong>ถ้ามีแมลง ให้ไล่แมลง</strong> มิฉะนั้นถ้าฝนตกให้กลับฐาน มิฉะนั้นถ้าดินแห้งให้รดน้ำ ถ้าเรียงผิด โดรนอาจรดน้ำกลางฝนหรือบินผ่านแปลงที่มีแมลงได้</p>
                     <div class="row g-2">
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">If</span><br>ถ้าสถานการณ์นี้เป็นจริง ให้ทำคำสั่งที่กำหนด</div></div>
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">Else If</span><br>ถ้าเงื่อนไขก่อนหน้าไม่จริง ค่อยตรวจเงื่อนไขถัดไป</div></div>
@@ -344,11 +344,11 @@ $mode = $_SESSION['mode'] ?? 'solo';
                     </div>
                 </div>
                 <?php elseif ($game_id === 3): ?>
-                <h5 class="fw-bold text-info mb-3"><i class="bi bi-droplet-half"></i> กฎเอาตัวรอดของ Water Hero</h5>
+                <h5 class="fw-bold text-info mb-3"><i class="bi bi-airplane-engines"></i> กฎเอาตัวรอดของ Agri-Drone</h5>
                 <div class="row g-3 mb-5">
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ถังน้ำหมดต้องมาก่อน</b><p class="small text-muted mb-0 mt-2">ถ้าน้ำหมด ระบบต้องแจ้งเติมน้ำก่อน ไม่ควรสั่งรดน้ำทันที</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ฝนตกต้องมาก่อนดินแห้ง</b><p class="small text-muted mb-0 mt-2">ถ้าฝนตกอยู่ แม้ดินแห้งก็ไม่ควรรดน้ำเพิ่ม เพราะอาจเกิดน้ำท่วม</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">Else คือแผนสำรอง</b><p class="small text-muted mb-0 mt-2">เมื่อไม่เข้าเงื่อนไขใด ให้ระบบหยุดรดน้ำหรือสังเกตต่อ เพื่อไม่ให้ทำงานผิดเวลา</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ภัยเร่งด่วนต้องมาก่อน</b><p class="small text-muted mb-0 mt-2">ถ้ามีแมลง ให้โดรนไล่แมลงก่อน เพราะพืชเสีย HP เร็วกว่าปัญหาอื่น</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ฝนตกต้องมาก่อนดินแห้ง</b><p class="small text-muted mb-0 mt-2">ถ้าฝนตกอยู่ แม้ดินแห้งก็ไม่ควรรดน้ำเพิ่ม ให้โดรนกลับฐานเพื่อป้องกันน้ำท่วม</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">Else คือแผนสำรอง</b><p class="small text-muted mb-0 mt-2">เมื่อไม่เข้าเงื่อนไขใด ให้โดรนสำรวจต่อ เพื่อไม่ให้ทำงานผิดเวลา</p></div></div>
                 </div>
                 <?php elseif ($game_id === 4): ?>
                 <h5 class="fw-bold text-danger mb-3"><i class="bi bi-search"></i> วิธีคิดแบบนักแก้บั๊ก</h5>

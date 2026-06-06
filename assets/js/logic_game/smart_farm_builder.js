@@ -8,7 +8,7 @@
             theme: 'vegetables',
             themeLabel: 'ผลผลิตจากพืชผัก',
             minItems: 4,
-            minDecoys: 2,
+            minDecoys: 3,
             minMatchesPerCondition: 1,
             requiresElse: false,
             ruleSlots: [{ type: 'if' }]
@@ -21,7 +21,7 @@
             theme: 'fruits',
             themeLabel: 'ผลผลิตจากผลไม้',
             minItems: 6,
-            minDecoys: 2,
+            minDecoys: 3,
             minMatchesPerCondition: 2,
             requiresElse: true,
             ruleSlots: [{ type: 'if' }, { type: 'else', condition: 'else' }]
@@ -34,7 +34,7 @@
             theme: 'animal_products',
             themeLabel: 'ผลผลิตจากสัตว์',
             minItems: 9,
-            minDecoys: 2,
+            minDecoys: 3,
             minMatchesPerCondition: 2,
             requiresElse: true,
             ruleSlots: [{ type: 'if' }, { type: 'else_if' }, { type: 'else', condition: 'else' }]
@@ -65,32 +65,32 @@
     };
 
     const catalog = [
-        item('carrot_clean', 'vegetables', 'แครอทสะอาด', '🥕', { type: 'carrot', muddy: false }, ['ชนิด: แครอท', 'คราบโคลน: ไม่มี'], 'clean_carrot', 'แครอทสะอาด', { type: 'carrot', muddy: false }, 'pass', false, ['carrot_muddy']),
-        item('carrot_muddy', 'vegetables', 'แครอทเปื้อนโคลน', '🥕', { type: 'carrot', muddy: true }, ['ชนิด: แครอท', 'คราบโคลน: มี'], 'muddy_carrot', 'แครอทเปื้อนโคลน', { type: 'carrot', muddy: true }, 'wash', true, ['carrot_clean']),
-        item('lettuce_normal', 'vegetables', 'ผักกาดปกติ', '🥬', { type: 'lettuce', worm: false }, ['ชนิด: ผักกาด', 'หนอน: ไม่มี'], 'normal_lettuce', 'ผักกาดปกติ', { type: 'lettuce', worm: false }, 'pass', false, ['lettuce_worm']),
-        item('lettuce_worm', 'vegetables', 'ผักกาดมีหนอน', '🥬', { type: 'lettuce', worm: true }, ['ชนิด: ผักกาด', 'หนอน: มี'], 'worm_lettuce', 'ผักกาดมีหนอน', { type: 'lettuce', worm: true }, 'pest_table', true, ['lettuce_normal']),
-        item('potato_normal', 'vegetables', 'มันฝรั่งปกติ', '🥔', { type: 'potato', sprout: false }, ['ชนิด: มันฝรั่ง', 'หน่องอก: ไม่มี'], 'normal_potato', 'มันฝรั่งปกติ', { type: 'potato', sprout: false }, 'pass', false, ['potato_sprout']),
-        item('potato_sprout', 'vegetables', 'มันฝรั่งมีหน่องอก', '🥔', { type: 'potato', sprout: true }, ['ชนิด: มันฝรั่ง', 'หน่องอก: มี'], 'sprout_potato', 'มันฝรั่งมีหน่องอก', { type: 'potato', sprout: true }, 'special_sort', true, ['potato_normal']),
-        item('cucumber_normal', 'vegetables', 'แตงกวาปกติ', '🥒', { type: 'cucumber', bruised: false }, ['ชนิด: แตงกวา', 'รอยช้ำ: ไม่มี'], 'normal_cucumber', 'แตงกวาปกติ', { type: 'cucumber', bruised: false }, 'pass', false, ['cucumber_bruised']),
-        item('cucumber_bruised', 'vegetables', 'แตงกวามีรอยช้ำ', '🥒', { type: 'cucumber', bruised: true }, ['ชนิด: แตงกวา', 'รอยช้ำ: มี'], 'bruised_cucumber', 'แตงกวามีรอยช้ำ', { type: 'cucumber', bruised: true }, 'compost', true, ['cucumber_normal']),
+        item('carrot_clean', 'vegetables', 'แครอทสะอาด', '🥕', { type: 'carrot', muddy: false }, ['ชนิด: แครอท', 'คราบโคลน: ไม่มี'], 'clean_carrot', 'แครอทสะอาด', { type: 'carrot', muddy: false }, 'pass'),
+        item('carrot_muddy', 'vegetables', 'แครอทเปื้อนโคลน', '🥕', { type: 'carrot', muddy: true }, ['ชนิด: แครอท', 'คราบโคลน: มี'], 'muddy_carrot', 'แครอทเปื้อนโคลน', { type: 'carrot', muddy: true }, 'wash'),
+        item('lettuce_normal', 'vegetables', 'ผักกาดปกติ', '🥬', { type: 'lettuce', worm: false }, ['ชนิด: ผักกาด', 'หนอน: ไม่มี'], 'normal_lettuce', 'ผักกาดปกติ', { type: 'lettuce', worm: false }, 'pass'),
+        item('lettuce_worm', 'vegetables', 'ผักกาดมีหนอน', '🥬', { type: 'lettuce', worm: true }, ['ชนิด: ผักกาด', 'หนอน: มี'], 'worm_lettuce', 'ผักกาดมีหนอน', { type: 'lettuce', worm: true }, 'pest_table'),
+        item('potato_normal', 'vegetables', 'มันฝรั่งปกติ', '🥔', { type: 'potato', sprout: false }, ['ชนิด: มันฝรั่ง', 'หน่องอก: ไม่มี'], 'normal_potato', 'มันฝรั่งปกติ', { type: 'potato', sprout: false }, 'pass'),
+        item('potato_sprout', 'vegetables', 'มันฝรั่งมีหน่องอก', '🥔', { type: 'potato', sprout: true }, ['ชนิด: มันฝรั่ง', 'หน่องอก: มี'], 'sprout_potato', 'มันฝรั่งมีหน่องอก', { type: 'potato', sprout: true }, 'special_sort'),
+        item('cucumber_normal', 'vegetables', 'แตงกวาปกติ', '🥒', { type: 'cucumber', bruised: false }, ['ชนิด: แตงกวา', 'รอยช้ำ: ไม่มี'], 'normal_cucumber', 'แตงกวาปกติ', { type: 'cucumber', bruised: false }, 'pass'),
+        item('cucumber_bruised', 'vegetables', 'แตงกวามีรอยช้ำ', '🥒', { type: 'cucumber', bruised: true }, ['ชนิด: แตงกวา', 'รอยช้ำ: มี'], 'bruised_cucumber', 'แตงกวามีรอยช้ำ', { type: 'cucumber', bruised: true }, 'compost'),
 
-        item('orange_big', 'fruits', 'ส้มลูกใหญ่', '🍊', { type: 'orange', size: 'big' }, ['ชนิด: ส้ม', 'ขนาด: ใหญ่'], 'big_orange', 'ส้มลูกใหญ่', { type: 'orange', size: 'big' }, 'sell_front', false, ['orange_small']),
-        item('orange_small', 'fruits', 'ส้มลูกเล็ก', '🍊', { type: 'orange', size: 'small' }, ['ชนิด: ส้ม', 'ขนาด: เล็ก'], 'small_orange', 'ส้มลูกเล็ก', { type: 'orange', size: 'small' }, 'juice_process', true, ['orange_big']),
-        item('banana_ripe', 'fruits', 'กล้วยสุก', '🍌', { type: 'banana', ripe: true }, ['ชนิด: กล้วย', 'ความสุก: สุก'], 'ripe_banana', 'กล้วยสุก', { type: 'banana', ripe: true }, 'sell_front', false, ['banana_green']),
-        item('banana_green', 'fruits', 'กล้วยดิบ', '🍌', { type: 'banana', ripe: false }, ['ชนิด: กล้วย', 'ความสุก: ดิบ'], 'green_banana', 'กล้วยดิบ', { type: 'banana', ripe: false }, 'ripen_room', true, ['banana_ripe']),
-        item('watermelon_good', 'fruits', 'แตงโมเกรดดี', '🍉', { type: 'watermelon', grade: 'good' }, ['ชนิด: แตงโม', 'เกรด: ดี'], 'good_watermelon', 'แตงโมเกรดดี', { type: 'watermelon', grade: 'good' }, 'sell_front', false, ['watermelon_fail']),
-        item('watermelon_fail', 'fruits', 'แตงโมไม่ผ่านเกณฑ์', '🍉', { type: 'watermelon', grade: 'fail' }, ['ชนิด: แตงโม', 'เกรด: ไม่ผ่าน'], 'fail_watermelon', 'แตงโมไม่ผ่านเกณฑ์', { type: 'watermelon', grade: 'fail' }, 'reject_bin', true, ['watermelon_good']),
-        item('mango_ripe', 'fruits', 'มะม่วงสุก', '🥭', { type: 'mango', ripe: true }, ['ชนิด: มะม่วง', 'ความสุก: สุก'], 'ripe_mango', 'มะม่วงสุก', { type: 'mango', ripe: true }, 'sell_front', false, ['mango_green']),
-        item('mango_green', 'fruits', 'มะม่วงดิบ', '🥭', { type: 'mango', ripe: false }, ['ชนิด: มะม่วง', 'ความสุก: ดิบ'], 'green_mango', 'มะม่วงดิบ', { type: 'mango', ripe: false }, 'ripen_room', true, ['mango_ripe']),
+        item('orange_big', 'fruits', 'ส้มลูกใหญ่', '🍊', { type: 'orange', size: 'big' }, ['ชนิด: ส้ม', 'ขนาด: ใหญ่'], 'big_orange', 'ส้มลูกใหญ่', { type: 'orange', size: 'big' }, 'sell_front'),
+        item('orange_small', 'fruits', 'ส้มลูกเล็ก', '🍊', { type: 'orange', size: 'small' }, ['ชนิด: ส้ม', 'ขนาด: เล็ก'], 'small_orange', 'ส้มลูกเล็ก', { type: 'orange', size: 'small' }, 'juice_process'),
+        item('banana_ripe', 'fruits', 'กล้วยสุก', '🍌', { type: 'banana', ripe: true }, ['ชนิด: กล้วย', 'ความสุก: สุก'], 'ripe_banana', 'กล้วยสุก', { type: 'banana', ripe: true }, 'sell_front'),
+        item('banana_green', 'fruits', 'กล้วยดิบ', '🍌', { type: 'banana', ripe: false }, ['ชนิด: กล้วย', 'ความสุก: ดิบ'], 'green_banana', 'กล้วยดิบ', { type: 'banana', ripe: false }, 'ripen_room'),
+        item('watermelon_good', 'fruits', 'แตงโมเกรดดี', '🍉', { type: 'watermelon', grade: 'good' }, ['ชนิด: แตงโม', 'เกรด: ดี'], 'good_watermelon', 'แตงโมเกรดดี', { type: 'watermelon', grade: 'good' }, 'sell_front'),
+        item('watermelon_fail', 'fruits', 'แตงโมไม่ผ่านเกณฑ์', '🍉', { type: 'watermelon', grade: 'fail' }, ['ชนิด: แตงโม', 'เกรด: ไม่ผ่าน'], 'fail_watermelon', 'แตงโมไม่ผ่านเกณฑ์', { type: 'watermelon', grade: 'fail' }, 'reject_bin'),
+        item('mango_ripe', 'fruits', 'มะม่วงสุก', '🥭', { type: 'mango', ripe: true }, ['ชนิด: มะม่วง', 'ความสุก: สุก'], 'ripe_mango', 'มะม่วงสุก', { type: 'mango', ripe: true }, 'sell_front'),
+        item('mango_green', 'fruits', 'มะม่วงดิบ', '🥭', { type: 'mango', ripe: false }, ['ชนิด: มะม่วง', 'ความสุก: ดิบ'], 'green_mango', 'มะม่วงดิบ', { type: 'mango', ripe: false }, 'ripen_room'),
 
-        item('egg_big_good', 'animal_products', 'ไข่ใบใหญ่ไม่ร้าว', '🥚', { type: 'egg', size: 'big', cracked: false }, ['ประเภท: ไข่', 'ขนาด: ใหญ่', 'รอยร้าว: ไม่มี'], 'egg_big_good', 'ไข่ใบใหญ่และไม่ร้าว', { type: 'egg', size: 'big', cracked: false }, 'premium_tray', false, ['egg_big_cracked']),
-        item('egg_small_good', 'animal_products', 'ไข่ใบเล็กไม่ร้าว', '🥚', { type: 'egg', size: 'small', cracked: false }, ['ประเภท: ไข่', 'ขนาด: เล็ก', 'รอยร้าว: ไม่มี'], 'egg_small_good', 'ไข่ใบเล็กและไม่ร้าว', { type: 'egg', size: 'small', cracked: false }, 'standard_tray', false, ['egg_cracked']),
-        item('egg_big_cracked', 'animal_products', 'ไข่ใบใหญ่แต่ร้าว', '🥚', { type: 'egg', size: 'big', cracked: true }, ['ประเภท: ไข่', 'ขนาด: ใหญ่', 'รอยร้าว: มี'], 'egg_big_cracked', 'ไข่ใบใหญ่แต่ร้าว', { type: 'egg', size: 'big', cracked: true }, 'reject_bin', true, ['egg_big_good']),
-        item('egg_cracked', 'animal_products', 'ไข่ร้าว', '🥚', { type: 'egg', cracked: true }, ['ประเภท: ไข่', 'รอยร้าว: มี'], 'egg_cracked', 'ไข่ร้าว', { type: 'egg', cracked: true }, 'reject_bin', true, ['egg_small_good']),
-        item('wool_clean', 'animal_products', 'ขนแกะสะอาด', '🧶', { type: 'wool', clean: true, grass: false }, ['ประเภท: ขนแกะ', 'ความสะอาด: สะอาด'], 'clean_wool', 'ขนแกะสะอาด', { type: 'wool', clean: true }, 'standard_tray', false, ['wool_grass']),
-        item('wool_grass', 'animal_products', 'ขนแกะมีเศษหญ้า', '🧶', { type: 'wool', clean: false, grass: true }, ['ประเภท: ขนแกะ', 'เศษหญ้า: มี'], 'wool_grass', 'ขนแกะมีเศษหญ้า', { type: 'wool', grass: true }, 'clean_station', true, ['wool_clean']),
-        item('milk_good', 'animal_products', 'ขวดนมเย็นคุณภาพดี', '🥛', { type: 'milk', cold: true, spoiled: false }, ['ประเภท: นม', 'อุณหภูมิ: เย็น', 'เสีย: ไม่เสีย'], 'good_milk', 'ขวดนมเย็นคุณภาพดี', { type: 'milk', cold: true, spoiled: false }, 'cool_room', false, ['milk_hot']),
-        item('milk_hot', 'animal_products', 'ขวดนมอุณหภูมิสูง', '🥛', { type: 'milk', cold: false, spoiled: false }, ['ประเภท: นม', 'อุณหภูมิ: สูง'], 'hot_milk', 'ขวดนมอุณหภูมิสูง', { type: 'milk', cold: false }, 'reject_bin', true, ['milk_good'])
+        item('egg_big_good', 'animal_products', 'ไข่ใบใหญ่ไม่ร้าว', '🥚', { type: 'egg', size: 'big', cracked: false }, ['ประเภท: ไข่', 'ขนาด: ใหญ่', 'รอยร้าว: ไม่มี'], 'egg_big_good', 'ไข่ใบใหญ่และไม่ร้าว', { type: 'egg', size: 'big', cracked: false }, 'premium_tray'),
+        item('egg_small_good', 'animal_products', 'ไข่ใบเล็กไม่ร้าว', '🥚', { type: 'egg', size: 'small', cracked: false }, ['ประเภท: ไข่', 'ขนาด: เล็ก', 'รอยร้าว: ไม่มี'], 'egg_small_good', 'ไข่ใบเล็กและไม่ร้าว', { type: 'egg', size: 'small', cracked: false }, 'standard_tray'),
+        item('egg_big_cracked', 'animal_products', 'ไข่ใบใหญ่แต่ร้าว', '🥚', { type: 'egg', size: 'big', cracked: true }, ['ประเภท: ไข่', 'ขนาด: ใหญ่', 'รอยร้าว: มี'], 'egg_big_cracked', 'ไข่ใบใหญ่แต่ร้าว', { type: 'egg', size: 'big', cracked: true }, 'reject_bin'),
+        item('egg_cracked', 'animal_products', 'ไข่ร้าว', '🥚', { type: 'egg', cracked: true }, ['ประเภท: ไข่', 'รอยร้าว: มี'], 'egg_cracked', 'ไข่ร้าว', { type: 'egg', cracked: true }, 'reject_bin'),
+        item('wool_clean', 'animal_products', 'ขนแกะสะอาด', '🧶', { type: 'wool', clean: true, grass: false }, ['ประเภท: ขนแกะ', 'ความสะอาด: สะอาด'], 'clean_wool', 'ขนแกะสะอาด', { type: 'wool', clean: true }, 'standard_tray'),
+        item('wool_grass', 'animal_products', 'ขนแกะมีเศษหญ้า', '🧶', { type: 'wool', clean: false, grass: true }, ['ประเภท: ขนแกะ', 'เศษหญ้า: มี'], 'wool_grass', 'ขนแกะมีเศษหญ้า', { type: 'wool', grass: true }, 'clean_station'),
+        item('milk_good', 'animal_products', 'ขวดนมเย็นคุณภาพดี', '🥛', { type: 'milk', cold: true, spoiled: false }, ['ประเภท: นม', 'อุณหภูมิ: เย็น', 'เสีย: ไม่เสีย'], 'good_milk', 'ขวดนมเย็นคุณภาพดี', { type: 'milk', cold: true, spoiled: false }, 'cool_room'),
+        item('milk_hot', 'animal_products', 'ขวดนมอุณหภูมิสูง', '🥛', { type: 'milk', cold: false, spoiled: false }, ['ประเภท: นม', 'อุณหภูมิ: สูง'], 'hot_milk', 'ขวดนมอุณหภูมิสูง', { type: 'milk', cold: false }, 'reject_bin')
     ];
 
     const state = {
@@ -219,14 +219,23 @@
         const container = document.getElementById('item-catalog');
         const items = catalog.filter((itemData) => itemData.theme === state.activeTheme);
         container.innerHTML = items.map((itemData) => `
-            <button type="button" class="catalog-item" data-id="${itemData.id}">
+            <div class="catalog-item" data-id="${itemData.id}">
                 <span class="item-emoji">${escapeHtml(itemData.fallbackIcon)}</span>
                 <span class="item-name">${escapeHtml(itemData.label)}</span>
                 <span class="item-tags">${escapeHtml(itemData.propsDisplay.slice(0, 2).join(' | '))}</span>
-            </button>
+                <div class="catalog-actions">
+                    <button type="button" class="btn btn-sm btn-success add-item-set">
+                        เพิ่มชุดพร้อมตัวหลอก 3
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary add-single-item" title="เพิ่มเฉพาะวัตถุหลัก">
+                        เฉพาะชิ้นนี้
+                    </button>
+                </div>
+            </div>
         `).join('');
-        container.querySelectorAll('.catalog-item').forEach((button) => {
-            button.addEventListener('click', () => addItem(button.dataset.id));
+        container.querySelectorAll('.catalog-item').forEach((card) => {
+            card.querySelector('.add-item-set').addEventListener('click', () => addItemSet(card.dataset.id));
+            card.querySelector('.add-single-item').addEventListener('click', () => addItem(card.dataset.id));
         });
     }
 
@@ -246,6 +255,7 @@
                 <div>
                     <div class="name">${escapeHtml(itemData.label)}</div>
                     <div class="props">${escapeHtml(itemData.propsDisplay.join(' | '))}</div>
+                    ${itemData.isAutoDecoy ? '<span class="decoy-pill">ตัวหลอกที่ระบบแนะนำ</span>' : ''}
                 </div>
                 <select class="form-select form-select-sm correct-action">
                     ${actions.map((actionItem) => `
@@ -284,6 +294,7 @@
                 onRulesChanged: (rules) => {
                     state.rules = rules;
                     state.tested = false;
+                    renderRuleGuide();
                     renderValidation();
                     updateSubmitState();
                 },
@@ -300,11 +311,53 @@
         });
         state.rules = state.dragDrop.getRules();
         document.getElementById('builder-rule-caption').textContent = `${logic.label}: ${logic.caption}`;
+        if (!conditions.length) {
+            document.getElementById('builder-condition-blocks').innerHTML = '<div class="empty-block-hint">เลือกวัตถุหลักก่อน แล้วเงื่อนไขจะปรากฏตรงนี้</div>';
+        }
+        renderRuleGuide();
+    }
+
+    function renderRuleGuide() {
+        const logic = logicTypes[state.logicType];
+        const conditions = deriveConditions();
+        const actions = getActions();
+        const guide = document.getElementById('builder-rule-guide');
+        const readable = document.getElementById('builder-readable-rules');
+        if (!guide || !readable) return;
+
+        guide.innerHTML = `
+            <div class="rule-guide-card">
+                <strong>วิธีใช้ช่องนี้</strong>
+                <span>1. เลือกวัตถุหลักก่อน ระบบจะสร้างบล็อกเงื่อนไข เช่น "${escapeHtml(conditions[0]?.label || 'ไข่ใบใหญ่และไม่ร้าว')}"</span>
+                <span>2. ลากเงื่อนไขไปช่องซ้าย และลากปลายทางไปช่องขวา</span>
+                <span>3. กด “สร้างกฎให้อัตโนมัติ” ได้ ถ้าต้องการให้ระบบเติมจากปลายทางของวัตถุที่เลือก</span>
+            </div>
+            <div class="rule-guide-card muted">
+                <strong>ตอนนี้มี</strong>
+                <span>${conditions.length} เงื่อนไขจากวัตถุหลัก</span>
+                <span>${state.selectedItems.filter((itemData) => itemData.isDecoy).length} ตัวหลอกสำหรับทดสอบ</span>
+                <span>รูปแบบกฎ: ${escapeHtml(logic.label)}</span>
+            </div>
+        `;
+
+        readable.innerHTML = `
+            <div class="readable-title"><i class="bi bi-card-checklist"></i> อ่านกฎเป็นประโยค</div>
+            ${state.rules.map((rule, index) => {
+                const prefix = rule.type === 'else' ? 'นอกเหนือจากนี้' : (rule.type === 'else_if' ? 'นอกเหนือจากนี้ถ้า' : 'ถ้า');
+                const condition = rule.type === 'else' ? 'วัตถุที่เหลือทั้งหมด' : labelOf(conditions, rule.condition, 'ยังไม่ได้วางเงื่อนไข');
+                const action = labelOf(actions, rule.action, 'ยังไม่ได้วางปลายทาง');
+                return `<div class="readable-rule ${(!rule.action || (rule.type !== 'else' && !rule.condition)) ? 'incomplete' : ''}">
+                    ${index + 1}. ${escapeHtml(prefix)} ${escapeHtml(condition)} → ${escapeHtml(action)}
+                </div>`;
+            }).join('')}
+        `;
     }
 
     function renderDestinations() {
         const container = document.getElementById('builder-destinations');
-        container.innerHTML = getActions().slice(0, 4).map((actionItem) => `
+        const actions = getActions();
+        container.style.setProperty('--destination-count', String(actions.length));
+        container.innerHTML = actions.map((actionItem) => `
             <div class="destination-card" data-action="${actionItem.id}">
                 <strong>${escapeHtml(actionItem.icon)}</strong>
                 <span>${escapeHtml(actionItem.destination)}</span>
@@ -356,7 +409,8 @@
             ...clone(base),
             uid: uid(),
             catalogId: base.id,
-            isDecoy: Boolean(base.defaultDecoy),
+            isDecoy: false,
+            isAutoDecoy: false,
             correctAction: base.defaultAction,
             explain: makeExplain(base, base.defaultAction)
         });
@@ -364,38 +418,64 @@
         refreshAfterItemsChanged();
     }
 
-    function addSuggestedDecoys() {
-        const existingIds = new Set(state.selectedItems.map((entry) => entry.catalogId));
-        const suggestions = [];
-        state.selectedItems.forEach((entry) => {
-            (entry.suggestedDecoyIds || []).forEach((id) => {
-                if (!existingIds.has(id)) {
-                    const found = catalog.find((catalogItem) => catalogItem.id === id && catalogItem.theme === state.activeTheme);
-                    if (found) {
-                        existingIds.add(id);
-                        suggestions.push(found);
-                    }
-                }
-            });
-        });
+    function addItemSet(id) {
+        const base = catalog.find((entry) => entry.id === id);
+        if (!base) return;
 
-        if (!suggestions.length) {
-            alert('ยังไม่มีตัวหลอกแนะนำเพิ่มเติมจากวัตถุที่เลือก ลองเลือกวัตถุหลักเพิ่มก่อน');
+        const targetItem = {
+            ...clone(base),
+            uid: uid(),
+            catalogId: base.id,
+            isDecoy: false,
+            isAutoDecoy: false,
+            correctAction: base.defaultAction
+        };
+        targetItem.explain = makeExplain(targetItem, targetItem.correctAction);
+        state.selectedItems.push(targetItem);
+
+        buildDecoySet(base).forEach((decoy) => state.selectedItems.push(decoy));
+        state.tested = false;
+        refreshAfterItemsChanged();
+        showValidationMessage(`เพิ่ม "${base.label}" พร้อมตัวหลอก 3 แบบแล้ว`, 'success');
+    }
+
+    function addSuggestedDecoys() {
+        const baseIds = Array.from(new Set(
+            state.selectedItems
+                .filter((entry) => !entry.isDecoy)
+                .map((entry) => entry.catalogId)
+        ));
+
+        if (!baseIds.length) {
+            alert('เลือกวัตถุหลักก่อน แล้วระบบจะเพิ่มตัวหลอก 3 แบบให้วัตถุนั้น');
             return;
         }
 
-        suggestions.slice(0, 4).forEach((base) => {
-            state.selectedItems.push({
-                ...clone(base),
-                uid: uid(),
-                catalogId: base.id,
-                isDecoy: true,
-                correctAction: base.defaultAction,
-                explain: makeExplain(base, base.defaultAction)
-            });
+        let added = 0;
+        baseIds.forEach((baseId) => {
+            const base = catalog.find((catalogItem) => catalogItem.id === baseId && catalogItem.theme === state.activeTheme);
+            if (!base) return;
+            const existingForBase = new Set(
+                state.selectedItems
+                    .filter((entry) => entry.sourceCatalogId === base.id && entry.isAutoDecoy)
+                    .map((entry) => entry.decoyVariant)
+            );
+            buildDecoySet(base)
+                .filter((decoy) => !existingForBase.has(decoy.decoyVariant))
+                .forEach((decoy) => {
+                    state.selectedItems.push(decoy);
+                    added++;
+                });
         });
+
+        if (!added) {
+            alert('วัตถุหลักที่เลือกมีตัวหลอกครบ 3 แบบแล้ว');
+            return;
+        }
+
         state.tested = false;
         refreshAfterItemsChanged();
+        showValidationMessage(`เพิ่มตัวหลอกที่เกี่ยวข้อง ${added} ชิ้นแล้ว`, 'success');
     }
 
     function updateItem(uidValue, updates) {
@@ -501,8 +581,9 @@
 
             window.setTimeout(() => {
                 token.classList.add(ok ? 'correct' : 'wrong');
-                const index = Math.max(0, getActions().findIndex((actionItem) => actionItem.id === actualAction));
-                token.style.left = `${18 + (index % 4) * 21}%`;
+                const actions = getActions();
+                const index = Math.max(0, actions.findIndex((actionItem) => actionItem.id === actualAction));
+                token.style.left = `${destinationLeft(index, actions.length)}%`;
                 token.style.top = '20%';
             }, 540);
 
@@ -582,6 +663,9 @@
                 conditionProps: itemData.conditionProps,
                 correctAction: itemData.correctAction,
                 isDecoy: Boolean(itemData.isDecoy),
+                isAutoDecoy: Boolean(itemData.isAutoDecoy),
+                sourceCatalogId: itemData.sourceCatalogId || null,
+                decoyVariant: itemData.decoyVariant || null,
                 explain: itemData.explain || makeExplain(itemData, itemData.correctAction)
             })),
             conditions,
@@ -617,7 +701,7 @@
 
     function deriveConditions() {
         const map = new Map();
-        state.selectedItems.forEach((itemData) => {
+        state.selectedItems.filter((itemData) => !itemData.isDecoy).forEach((itemData) => {
             if (!map.has(itemData.conditionId)) {
                 map.set(itemData.conditionId, {
                     id: itemData.conditionId,
@@ -648,13 +732,14 @@
     }
 
     function actionForCondition(condition) {
-        const match = state.selectedItems.find((itemData) => itemData.conditionId === condition.id);
+        const match = state.selectedItems.find((itemData) => !itemData.isDecoy && itemData.conditionId === condition.id);
         return match?.correctAction || getActions()[0]?.id || null;
     }
 
     function mostCommonActionForElse() {
         const counts = new Map();
-        state.selectedItems.forEach((itemData) => {
+        const elseItems = state.selectedItems.filter((itemData) => itemData.isDecoy);
+        (elseItems.length ? elseItems : state.selectedItems).forEach((itemData) => {
             counts.set(itemData.correctAction, (counts.get(itemData.correctAction) || 0) + 1);
         });
         return Array.from(counts.entries()).sort((a, b) => b[1] - a[1])[0]?.[0] || getActions().at(-1)?.id || null;
@@ -692,7 +777,7 @@
         return { id, label, destination, icon };
     }
 
-    function item(id, theme, label, fallbackIcon, props, propsDisplay, conditionId, conditionLabel, conditionProps, defaultAction, defaultDecoy, suggestedDecoyIds) {
+    function item(id, theme, label, fallbackIcon, props, propsDisplay, conditionId, conditionLabel, conditionProps, defaultAction) {
         return {
             id,
             theme,
@@ -703,16 +788,87 @@
             conditionId,
             conditionLabel,
             conditionProps,
-            defaultAction,
-            defaultDecoy,
-            suggestedDecoyIds
+            defaultAction
         };
+    }
+
+    function buildDecoySet(base) {
+        return [1, 2, 3].map((variant) => {
+            const decoy = {
+                ...clone(base),
+                uid: uid(),
+                id: `${base.id}_decoy_${variant}`,
+                catalogId: `${base.id}_decoy_${variant}`,
+                sourceCatalogId: base.id,
+                decoyVariant: variant,
+                label: decoyLabel(base.label, variant),
+                props: makeDecoyProps(base.conditionProps, variant),
+                propsDisplay: makeDecoyPropsDisplay(base, variant),
+                isDecoy: true,
+                isAutoDecoy: true,
+                correctAction: decoyActionFor(base),
+                conditionId: `${base.conditionId}_decoy_${variant}`,
+                conditionLabel: `${base.conditionLabel} (ตัวหลอก ${variant})`,
+                conditionProps: makeDecoyProps(base.conditionProps, variant)
+            };
+            decoy.explain = `${decoy.label} ดูคล้าย "${base.label}" แต่คุณสมบัติไม่ครบ จึงไม่ควรถูกส่งไปปลายทางเดียวกับเงื่อนไขหลัก`;
+            return decoy;
+        });
+    }
+
+    function decoyLabel(label, variant) {
+        const suffixes = {
+            1: 'ลักษณะคล้ายแต่ไม่ครบเงื่อนไข',
+            2: 'มีตำหนิที่ทำให้สับสน',
+            3: 'ปนมาผิดกลุ่ม'
+        };
+        return `${label} (${suffixes[variant]})`;
+    }
+
+    function makeDecoyProps(conditionProps, variant) {
+        const props = { ...(conditionProps || {}) };
+        const keys = Object.keys(props);
+        const key = keys[(variant - 1) % Math.max(1, keys.length)];
+        if (key) {
+            if (typeof props[key] === 'boolean') props[key] = !props[key];
+            else if (typeof props[key] === 'number') props[key] = props[key] + variant;
+            else props[key] = `${props[key]}_decoy_${variant}`;
+        }
+        props.decoyVariant = variant;
+        return props;
+    }
+
+    function makeDecoyPropsDisplay(base, variant) {
+        const reasons = {
+            1: 'ตัวหลอก: คุณสมบัติหลักต่างจากเงื่อนไข',
+            2: 'ตัวหลอก: ดูคล้ายแต่มีตำหนิ',
+            3: 'ตัวหลอก: ปนมากับวัตถุหลัก'
+        };
+        return [...(base.propsDisplay || []), reasons[variant]];
+    }
+
+    function decoyActionFor(base) {
+        if (base.theme === 'vegetables') return base.defaultAction === 'pass' ? 'compost' : 'pass';
+        if (base.theme === 'fruits') return base.defaultAction === 'sell_front' ? 'ripen_room' : 'sell_front';
+        return base.defaultAction === 'reject_bin' ? 'standard_tray' : 'reject_bin';
+    }
+
+    function destinationLeft(index, count) {
+        const safeCount = Math.max(1, count || 1);
+        if (safeCount === 1) return 50;
+        const safeIndex = Math.min(Math.max(index, 0), safeCount - 1);
+        return 14 + safeIndex * (72 / (safeCount - 1));
     }
 
     function makeExplain(itemData, actionId) {
         const actionLabel = getActions().find((actionItem) => actionItem.id === actionId)?.label || actionId;
         const decoyText = itemData.isDecoy ? ' เป็นตัวหลอกหรือกลุ่มอื่นที่ต้องระวัง' : '';
         return `${itemData.label}${decoyText} จึงควร${actionLabel}`;
+    }
+
+    function labelOf(list, id, fallback) {
+        const found = (list || []).find((itemData) => itemData.id === id);
+        return found ? found.label : (fallback || id || '');
     }
 
     function clone(value) {

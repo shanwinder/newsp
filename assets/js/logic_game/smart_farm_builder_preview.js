@@ -173,7 +173,9 @@
         const runButton = root.querySelector('.run-player');
         const answerButton = root.querySelector('.show-answers');
 
-        destinationRow.innerHTML = (data.actions || []).slice(0, 4).map((action) => `
+        const actions = data.actions || [];
+        destinationRow.style.setProperty('--destination-count', String(actions.length || 1));
+        destinationRow.innerHTML = actions.map((action) => `
             <div class="destination-card"><strong>${escapeHtml(action.icon || '📦')}</strong><span>${escapeHtml(action.label)}</span></div>
         `).join('');
 
@@ -232,7 +234,8 @@
                 token.style.top = '48%';
                 await wait(420);
                 token.classList.add(ok ? 'correct' : 'wrong');
-                token.style.left = `${24 + ((data.actions || []).findIndex((action) => action.id === actual) % 4) * 18}%`;
+                const actionIndex = Math.max(0, actions.findIndex((action) => action.id === actual));
+                token.style.left = `${destinationLeft(actionIndex, actions.length)}%`;
                 token.style.top = '21%';
                 await wait(420);
                 token.remove();
@@ -267,6 +270,13 @@
 
     function wait(ms) {
         return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
+
+    function destinationLeft(index, count) {
+        const safeCount = Math.max(1, count || 1);
+        if (safeCount === 1) return 50;
+        const safeIndex = Math.min(Math.max(index, 0), safeCount - 1);
+        return 14 + safeIndex * (72 / (safeCount - 1));
     }
 
     window.SmartFarmBuilderPreview = {

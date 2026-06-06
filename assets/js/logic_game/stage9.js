@@ -1,105 +1,166 @@
-// Stage 9: Drone Farm Tactics - ภารกิจใหญ่หลายข้อจำกัด
+// Stage 9: Smart Farm Manager - Greenhouse Controller.
 (function () {
     const config = {
-        title: 'ด่าน 9: วิกฤตฟาร์มใหญ่',
-        subtitle: 'ปรับลำดับ If / Else If และทรัพยากรให้เหมาะกับภารกิจแต่ละ Wave',
-        briefing: 'ภารกิจสุดท้ายของบทเงื่อนไขไม่ได้มีคำตอบเดียว ทุก Wave มีเป้าหมายและข้อจำกัดต่างกัน ต้องปรับทั้งสมองโดรนและของที่บรรทุก',
-        farmHp: 100,
-        droneBattery: 100,
-        loadoutCapacity: 6,
-        loadoutSlots: 4,
-        defaultLoadout: ['basket', 'basket', 'water'],
-        harvestTarget: 3,
-        badge: 'วิศวกรโดรนฟาร์ม',
-        hint: 'ดูชื่อ Wave ปัจจุบันก่อน แล้วเรียงกฎตามสิ่งที่สำคัญที่สุดของภารกิจนั้น',
-        winMessage: 'ฟาร์มรอดแล้ว! คุณปรับกฎและทรัพยากรให้เหมาะกับทุกสถานการณ์',
-        expectedPriority: ['battery_low', 'rain', 'pest', 'crop_ripe', 'soil_dry', 'else'],
-        strictPriority: true,
-        ruleSlots: [
-            { type: 'if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else', condition: 'else', action: null }
-        ],
-        cards: {
-            conditions: [
-                { value: 'battery_low', label: 'แบตต่ำ', icon: 'แบต' },
-                { value: 'rain', label: 'ฝนตก', icon: 'ฝน' },
-                { value: 'pest', label: 'มีแมลง', icon: 'แมลง' },
-                { value: 'crop_ripe', label: 'พืชสุก', icon: 'สุก' },
-                { value: 'soil_dry', label: 'ดินแห้ง', icon: 'ดิน' }
-            ],
-            actions: [
-                { value: 'return_base', label: 'กลับฐาน', icon: 'ฐาน' },
-                { value: 'skip', label: 'บินต่อ', icon: 'บิน' },
-                { value: 'repel_pest', label: 'กำจัดศัตรูพืช', icon: 'พ่น' },
-                { value: 'harvest', label: 'เก็บเกี่ยว', icon: 'เก็บ' },
-                { value: 'water', label: 'รดน้ำ', icon: 'น้ำ' }
-            ]
-        },
-        waves: [
+        title: 'Smart Farm Manager: ผู้ดูแลโรงเรือนไฮเทค',
+        subtitle: 'ตั้งกฎควบคุมสภาพแวดล้อมด้วยความชื้น ฝน และอุณหภูมิ',
+        levels: [
             {
-                name: 'Stage 9-1: วันเก็บเกี่ยว',
-                brief: 'เป้าหมายคือเก็บเกี่ยวก่อน ถ้าใช้กฎจากภารกิจแมลงหรือฝนมาก่อนจะเสียจังหวะและไม่ผ่านเต็มดาว',
-                rows: 4,
-                cols: 6,
-                battery: 100,
-                defaultLoadout: ['basket', 'basket', 'water'],
-                expectedPriority: ['crop_ripe', 'soil_dry'],
-                plots: [
-                    { id: 'A', name: 'แปลง A', row: 0, col: 1, soil: 'wet', crop: 'ripe', hp: 88, expectedAction: 'harvest', note: 'ผลผลิตสุก ต้องเก็บเกี่ยวก่อน' },
-                    { id: 'B', name: 'แปลง B', row: 0, col: 4, soil: 'dry', crop: 'ripe', hp: 72, expectedAction: 'harvest', note: 'สุกและดินแห้ง ภารกิจนี้ให้เก็บก่อน' },
-                    { id: 'C', name: 'แปลง C', row: 1, col: 2, soil: 'dry', hp: 60, expectedAction: 'water', note: 'ยังไม่สุก แต่ต้องรดน้ำ' },
-                    { id: 'D', name: 'แปลง D', row: 2, col: 5, soil: 'wet', crop: 'ripe', hp: 90, expectedAction: 'harvest', note: 'ตะกร้าต้องมีพอ' },
-                    { id: 'E', name: 'แปลง E', row: 3, col: 3, soil: 'wet', hp: 91, expectedAction: 'skip', note: 'ไม่มีงานต้องทำ' }
-                ]
+                title: '9-1 ระบบรดน้ำอัตโนมัติ',
+                brief: 'เปิดสปริงเกอร์เมื่อความชื้นในดินต่ำ ส่วนกระถางที่ชื้นดีแล้วไม่ต้องรดน้ำเพิ่ม',
+                intro: 'ใช้ If กับค่าความชื้นต่ำ เพื่อให้สปริงเกอร์ทำงานเฉพาะตอนจำเป็น',
+                lessonType: 'if',
+                lessonTypeLabel: 'If',
+                theme: 'greenhouse',
+                hint: 'ถ้า [ความชื้นในดินต่ำ] -> [เปิดสปริงเกอร์รดน้ำ]',
+                ruleSlots: [{ type: 'if' }],
+                conditions: [
+                    { id: 'soil_low_moisture', label: 'ความชื้นในดินต่ำ' }
+                ],
+                actions: [
+                    { id: 'sprinkler_on', label: 'เปิดสปริงเกอร์รดน้ำ', successText: 'สปริงเกอร์หมุนพ่นน้ำ ต้นไม้ฟื้นตัว' },
+                    { id: 'pass', label: 'ไม่ต้องรดน้ำเพิ่ม', successText: 'ดินชื้นดีแล้ว ระบบประหยัดน้ำ' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'สปริงเกอร์', icon: '💦', actions: ['sprinkler_on'] },
+                    { slot: 'pass', label: 'โซนประหยัดน้ำ', icon: '🌱', actions: ['pass'] }
+                ],
+                itemQueue: [
+                    pot('A', 18), pot('B', 44), pot('C', 25), pot('D', 62), pot('E', 21),
+                    pot('F', 39), pot('G', 16), pot('H', 55), pot('I', 28), pot('J', 47)
+                ],
+                expectedLogic: [
+                    { condition: 'soil_low_moisture', action: 'sprinkler_on' }
+                ],
+                scoring: { passAccuracy: 0.8, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             },
             {
-                name: 'Stage 9-2: ไร่ป่วยก่อนเก็บเกี่ยว',
-                brief: 'บางแปลงมีทั้งแมลงและผลผลิตสุก ถ้าเก็บก่อนกำจัดแมลงจะได้ผลผลิตเสีย',
-                rows: 4,
-                cols: 6,
-                battery: 100,
-                defaultLoadout: ['pesticide', 'pesticide', 'basket', 'water'],
-                expectedPriority: ['pest', 'crop_ripe', 'soil_dry'],
-                plots: [
-                    { id: 'F', name: 'แปลง F', row: 0, col: 1, soil: 'wet', pest: true, crop: 'ripe', hp: 64, expectedAction: 'repel_pest', note: 'มีแมลงและสุก ต้องกำจัดแมลงก่อน' },
-                    { id: 'G', name: 'แปลง G', row: 0, col: 4, soil: 'wet', crop: 'ripe', hp: 86, expectedAction: 'harvest', note: 'ไม่มีแมลง เก็บเกี่ยวได้' },
-                    { id: 'H', name: 'แปลง H', row: 1, col: 3, soil: 'dry', pest: true, hp: 57, expectedAction: 'repel_pest', note: 'แมลงสำคัญกว่ารดน้ำ' },
-                    { id: 'I', name: 'แปลง I', row: 2, col: 5, soil: 'dry', crop: 'ripe', hp: 70, expectedAction: 'harvest', note: 'สุกและไม่มีแมลง เก็บก่อน' },
-                    { id: 'J', name: 'แปลง J', row: 3, col: 2, soil: 'dry', hp: 60, expectedAction: 'water', note: 'ใช้ถังน้ำสุดท้ายกับแปลงนี้' }
-                ]
+                title: '9-2 ระบบเปิด-ปิดหลังคากันฝน',
+                brief: 'ฝนตกให้กางหลังคาผ้าใบ ถ้าไม่ตกให้เปิดรับแสงแดด',
+                intro: 'ใช้ If / Else เพื่อควบคุมหลังคาโรงเรือนเมลอน',
+                lessonType: 'if_else',
+                lessonTypeLabel: 'If / Else',
+                theme: 'greenhouse',
+                hint: 'ถ้า [ฝนตก] -> [กางหลังคาผ้าใบ] | นอกเหนือจากนี้ -> [เปิดรับแสงแดด]',
+                ruleSlots: [{ type: 'if' }, { type: 'else' }],
+                conditions: [
+                    { id: 'rain', label: 'ฝนตก' }
+                ],
+                actions: [
+                    { id: 'roof_close', label: 'กางหลังคาผ้าใบ', successText: 'หลังคากางออก กันฝนให้เมลอน' },
+                    { id: 'roof_open', label: 'เปิดรับแสงแดด', successText: 'หลังคาเปิด แดดส่องให้เมลอนโต' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'หลังคาผ้าใบ', icon: '⛱️', actions: ['roof_close'] },
+                    { slot: 'b', label: 'ช่องรับแสง', icon: '☀️', actions: ['roof_open'] }
+                ],
+                itemQueue: [
+                    weather('A', 'rain'), weather('B', 'sun'), weather('C', 'sun'), weather('D', 'rain'),
+                    weather('E', 'rain'), weather('F', 'sun'), weather('G', 'sun'), weather('H', 'rain'),
+                    weather('I', 'sun'), weather('J', 'rain')
+                ],
+                expectedLogic: [
+                    { condition: 'rain', action: 'roof_close' },
+                    { condition: 'else', action: 'roof_open' }
+                ],
+                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             },
             {
-                name: 'Stage 9-3: ภารกิจสุดท้าย ก่อนพายุเข้า',
-                brief: 'แบตเริ่มต่ำและฝนเริ่มมา ต้องตรวจแบตก่อน ฝนก่อน แล้วค่อยจัดการแมลง เก็บเกี่ยว และรดน้ำ',
-                rows: 4,
-                cols: 7,
-                battery: 45,
-                defaultLoadout: ['pesticide', 'pesticide', 'basket', 'water'],
-                expectedPriority: ['battery_low', 'rain', 'pest', 'crop_ripe', 'soil_dry'],
-                plots: [
-                    { id: 'K', name: 'แปลง K', row: 0, col: 1, soil: 'wet', rain: true, hp: 82, expectedAction: 'skip', note: 'ฝนตก ให้บินต่อและประหยัดน้ำ' },
-                    { id: 'L', name: 'แปลง L', row: 0, col: 4, soil: 'wet', pest: true, hp: 56, expectedAction: 'repel_pest', note: 'กำจัดแมลงก่อนพืชเสียหาย' },
-                    { id: 'M', name: 'แปลง M', row: 1, col: 2, soil: 'dry', crop: 'ripe', hp: 70, expectedAction: 'return_base', note: 'มาถึงตรงนี้แบตต่ำ ต้องกลับฐานก่อนเสี่ยงตก' },
-                    { id: 'N', name: 'แปลง N', row: 2, col: 5, soil: 'wet', crop: 'ripe', hp: 86, expectedAction: 'harvest', note: 'หลังชาร์จแล้วเก็บเกี่ยวได้' },
-                    { id: 'O', name: 'แปลง O', row: 3, col: 3, soil: 'dry', hp: 62, expectedAction: 'water', note: 'ไม่มีฝนแล้ว ใช้น้ำอย่างพอดี' }
-                ]
+                title: '9-3 ควบคุมอุณหภูมิโรงเรือนเห็ด',
+                brief: 'อุณหภูมิสูงเปิดพัดลม ต่ำเปิดหลอดไฟ และช่วงปกติปิดระบบทั้งหมด',
+                intro: 'ใช้ Else If กับตัวเลขช่วงค่า เพื่อรักษาโรงเรือนเห็ดให้พอดี',
+                lessonType: 'if_else_if_else',
+                lessonTypeLabel: 'If / Else If / Else',
+                theme: 'greenhouse',
+                hint: 'ถ้า [อุณหภูมิ > 35°C] -> [เปิดพัดลม] | หรือถ้า [อุณหภูมิ < 15°C] -> [เปิดหลอดไฟ] | นอกเหนือจากนี้ -> [ปิดระบบทั้งหมด]',
+                ruleSlots: [{ type: 'if' }, { type: 'else_if' }, { type: 'else' }],
+                conditions: [
+                    { id: 'temp_over_35', label: 'อุณหภูมิ > 35°C' },
+                    { id: 'temp_under_15', label: 'อุณหภูมิ < 15°C' }
+                ],
+                actions: [
+                    { id: 'fan_on', label: 'เปิดพัดลมระบายอากาศ', successText: 'พัดลมหมุน ลดความร้อนในโรงเรือน' },
+                    { id: 'warm_light_on', label: 'เปิดหลอดไฟให้ความอบอุ่น', successText: 'หลอดไฟสีอุ่นช่วยเพิ่มอุณหภูมิ' },
+                    { id: 'all_off', label: 'ปิดระบบปรับอากาศทั้งหมด', successText: 'อุณหภูมิปกติ ได้โบนัสประหยัดไฟ' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'พัดลม', icon: '🌀', actions: ['fan_on'] },
+                    { slot: 'b', label: 'หลอดไฟอุ่น', icon: '💡', actions: ['warm_light_on'] },
+                    { slot: 'c', label: 'ประหยัดไฟ', icon: '🔌', actions: ['all_off'] }
+                ],
+                itemQueue: [
+                    temp('A', 38), temp('B', 24), temp('C', 12), temp('D', 36), temp('E', 18),
+                    temp('F', 14), temp('G', 29), temp('H', 41), temp('I', 22), temp('J', 10)
+                ],
+                expectedLogic: [
+                    { condition: 'temp_over_35', action: 'fan_on' },
+                    { condition: 'temp_under_15', action: 'warm_light_on' },
+                    { condition: 'else', action: 'all_off' }
+                ],
+                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             }
         ]
     };
 
-    function boot() {
-        window.FarmMissions.agriDroneRescue(config);
+    function pot(id, moisture) {
+        const low = moisture < 30;
+        return {
+            key: `pot_${id}`,
+            label: `กระถาง ${moisture}%`,
+            icon: low ? '🪴' : '🌿',
+            props: { type: 'plant_pot', moisture },
+            sensor: `เซ็นเซอร์ความชื้นอ่านค่า ${moisture}%`,
+            expectedAction: low ? 'sprinkler_on' : 'pass',
+            feedback: low
+                ? `ค่าความชื้น ${moisture}% ต่ำกว่า 30% ควรเปิดสปริงเกอร์`
+                : `ค่าความชื้น ${moisture}% ดีอยู่แล้ว ไม่ต้องรดน้ำเพิ่ม`
+        };
     }
 
-    if (window.FarmMissions) {
+    function weather(id, state) {
+        const raining = state === 'rain';
+        return {
+            key: `weather_${id}`,
+            label: raining ? 'เมฆฝนเข้าโรงเรือน' : 'แดดดีไม่มีฝน',
+            icon: raining ? '🌧️' : '☀️',
+            props: { type: 'greenhouse', weather: raining ? 'rain' : 'sun' },
+            sensor: raining ? 'เซ็นเซอร์ตรวจพบฝนกำลังตก' : 'เซ็นเซอร์ตรวจพบแดดพร้อมใช้งาน',
+            expectedAction: raining ? 'roof_close' : 'roof_open',
+            feedback: raining
+                ? 'ฝนตกควรกางหลังคาผ้าใบกันเมลอนช้ำ'
+                : 'ตอนนี้ไม่มีฝน ควรเปิดหลังคาให้เมลอนได้รับแสงแดด'
+        };
+    }
+
+    function temp(id, temperature) {
+        let expectedAction = 'all_off';
+        let feedback = `อุณหภูมิ ${temperature}°C อยู่ช่วงปกติ ควรปิดระบบเพื่อประหยัดไฟ`;
+        if (temperature > 35) {
+            expectedAction = 'fan_on';
+            feedback = `อุณหภูมิ ${temperature}°C สูงกว่า 35°C ควรเปิดพัดลมระบายอากาศ`;
+        } else if (temperature < 15) {
+            expectedAction = 'warm_light_on';
+            feedback = `อุณหภูมิ ${temperature}°C ต่ำกว่า 15°C ควรเปิดหลอดไฟให้ความอบอุ่น`;
+        }
+        return {
+            key: `temp_${id}`,
+            label: `${temperature}°C`,
+            icon: temperature > 35 ? '🌡️' : temperature < 15 ? '❄️' : '🍄',
+            props: { type: 'mushroom_house', temperature },
+            sensor: `เทอร์โมมิเตอร์แสดง ${temperature}°C`,
+            expectedAction,
+            feedback
+        };
+    }
+
+    function boot() {
+        window.FarmMissions.conveyorLogic(config);
+    }
+
+    if (window.FarmMissions && window.FarmMissions.conveyorLogic) {
         boot();
     } else {
         const script = document.createElement('script');
-        script.src = '../assets/js/logic_game/farm_missions.js';
+        script.src = '../assets/js/logic_game/conveyor_logic_base.js';
         script.onload = boot;
         document.head.appendChild(script);
     }

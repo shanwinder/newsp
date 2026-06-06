@@ -69,7 +69,7 @@ if (!$context) {
                 <select id="game-filter" class="form-select shadow-sm" onchange="changeGame()">
                     <option value="1">บทที่ 1: ตรรกะคัดแยก</option>
                     <option value="2">บทที่ 2: เส้นทางเดินรถไถ</option>
-                    <option value="3">บทที่ 3: เครื่องรดน้ำอัจฉริยะ</option>
+                    <option value="3">บทที่ 3: Smart Farm Manager</option>
                     <option value="4">บทที่ 4: กู้วิกฤตฟาร์ม</option>
                 </select>
             </div>

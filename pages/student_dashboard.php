@@ -196,7 +196,7 @@ $result = $conn->query($sql);
             $icons = [
                 'logic' => '🌾',       // บทที่ 1 คัดแยกผลผลิต
                 'algorithm' => '🚜',   // บทที่ 2 เส้นทางเดินรถไถ
-                'condition' => '💧',   // บทที่ 3 เครื่องรดน้ำอัจฉริยะ
+                'condition' => '🧩',   // บทที่ 3 Smart Farm Manager
                 'debugging' => '🕵️‍♂️'   // บทที่ 4 กู้วิกฤตฟาร์ม
             ];
 

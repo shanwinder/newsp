@@ -28,6 +28,7 @@ $stage = $result->fetch_assoc();
 $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
 $is_sequence_stage = in_array($stage_id, [4, 5, 6], true);
+$is_conveyor_condition_stage = in_array($stage_id, [7, 8, 9], true);
 
 // 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 ภารกิจการเรียนรู้)
 $game_script = "";
@@ -38,7 +39,7 @@ if ($game_id == 1) {
     // บทที่ 2: เส้นทางเดินรถไถ
     $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 3) {
-    // บทที่ 3: เครื่องรดน้ำอัจฉริยะ (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
+    // บทที่ 3: Smart Farm Manager
     $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 4) {
     // บทที่ 4: กู้วิกฤตฟาร์ม (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
@@ -68,6 +69,9 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../assets/css/game_common.css">
+    <?php if ($is_conveyor_condition_stage): ?>
+        <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
+    <?php endif; ?>
 
     <style>
         body {
@@ -213,6 +217,9 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
         <script src="../assets/js/game_audio.js"></script>
         <script src="../assets/js/game_ui_motion.js"></script>
+    <?php endif; ?>
+    <?php if ($is_conveyor_condition_stage): ?>
+        <script src="../assets/js/logic_game/conveyor_logic_base.js"></script>
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 

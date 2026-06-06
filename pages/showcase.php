@@ -31,8 +31,8 @@ $game_meta = [
     ],
     3 => [
         'lesson_no' => 'บทที่ 3',
-        'title' => 'เครื่องรดน้ำอัจฉริยะ',
-        'icon' => 'bi-droplet-half',
+        'title' => 'Smart Farm Manager',
+        'icon' => 'bi-diagram-3',
         'theme' => 'info'
     ],
     4 => [

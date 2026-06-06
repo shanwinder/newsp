@@ -1,98 +1,173 @@
-// Stage 8: Drone Farm Tactics - Else If และลำดับความสำคัญ
+// Stage 8: Smart Farm Manager - Robot Rancher.
 (function () {
     const config = {
-        title: 'ด่าน 8: เรียงเงื่อนไขให้โดรนคิดเป็น',
-        subtitle: 'ใช้ Else If เพื่อจัดลำดับภารกิจเมื่อแปลงเดียวมีหลายสถานะ',
-        briefing: 'แปลงเดียวอาจมีมากกว่าหนึ่งปัญหา ลำดับกฎจึงสำคัญมาก เพราะโดรนอ่านกฎจากบนลงล่างและทำคำสั่งแรกที่เข้าเงื่อนไข',
-        farmHp: 100,
-        droneBattery: 100,
-        loadoutCapacity: 6,
-        loadoutSlots: 4,
-        defaultLoadout: ['water', 'water', 'pesticide', 'fertilizer'],
-        badge: 'นักจัดลำดับภารกิจโดรน',
-        hint: 'อ่านภารกิจของ Wave ปัจจุบัน แล้วเรียงเงื่อนไขเร่งด่วนที่สุดไว้ด้านบน',
-        winMessage: 'คุณใช้ Else If จัดลำดับภารกิจให้โดรนได้ถูกต้อง',
-        expectedPriority: ['rain', 'pest', 'need_fertilizer', 'soil_dry', 'else'],
-        strictPriority: true,
-        ruleSlots: [
-            { type: 'if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else_if', condition: null, action: null },
-            { type: 'else', condition: 'else', action: null }
-        ],
-        cards: {
-            conditions: [
-                { value: 'rain', label: 'ฝนตก', icon: 'ฝน' },
-                { value: 'pest', label: 'มีแมลง', icon: 'แมลง' },
-                { value: 'need_fertilizer', label: 'พืชขาดปุ๋ย', icon: 'ปุ๋ย' },
-                { value: 'soil_dry', label: 'ดินแห้ง', icon: 'ดิน' }
-            ],
-            actions: [
-                { value: 'skip', label: 'บินต่อ', icon: 'บิน' },
-                { value: 'repel_pest', label: 'กำจัดศัตรูพืช', icon: 'พ่น' },
-                { value: 'fertilize', label: 'ใส่ปุ๋ย', icon: 'ปุ๋ย' },
-                { value: 'water', label: 'รดน้ำ', icon: 'น้ำ' }
-            ]
-        },
-        waves: [
+        title: 'Smart Farm Manager: หุ่นยนต์เลี้ยงสัตว์อัจฉริยะ',
+        subtitle: 'ตั้งกฎให้บอทบัวบานดูแลสัตว์จากชนิดและค่าสถานะ',
+        levels: [
             {
-                name: 'Stage 8-1: ปุ๋ยก่อนน้ำหรืออะไรก่อนดี',
-                brief: 'บางช่องมีทั้งขาดปุ๋ยและดินแห้ง ต้องใส่ปุ๋ยก่อนเพื่อให้พืชฟื้นเต็มที่',
-                rows: 3,
-                cols: 6,
-                battery: 100,
-                defaultLoadout: ['water', 'water', 'fertilizer'],
-                expectedPriority: ['need_fertilizer', 'soil_dry'],
-                plots: [
-                    { id: 'A', name: 'แปลง A', row: 0, col: 1, soil: 'dry', needFertilizer: true, hp: 54, expectedAction: 'fertilize', note: 'ขาดปุ๋ยและดินแห้ง ให้แก้ปุ๋ยก่อน' },
-                    { id: 'B', name: 'แปลง B', row: 0, col: 4, soil: 'dry', hp: 62, expectedAction: 'water', note: 'ดินแห้งอย่างเดียว' },
-                    { id: 'C', name: 'แปลง C', row: 1, col: 3, soil: 'wet', hp: 88, expectedAction: 'skip', note: 'ไม่มีงานต้องทำ' },
-                    { id: 'D', name: 'แปลง D', row: 2, col: 2, soil: 'dry', hp: 60, expectedAction: 'water', note: 'ใช้น้ำอีกถังอย่างพอดี' }
-                ]
+                title: '8-1 ตัดขนแกะเมื่อขนยาว',
+                brief: 'แกะขนฟูมากต้องเข้าเครื่องตัดขน ส่วนแกะขนสั้นปล่อยไปกินหญ้า',
+                intro: 'ใช้ If เพื่อสั่งตัดขนเฉพาะแกะที่ขนฟูมากเท่านั้น',
+                lessonType: 'if',
+                lessonTypeLabel: 'If',
+                theme: 'animal',
+                hint: 'ถ้า [แกะขนฟูมาก] -> [กดปุ่มตัดขน]',
+                ruleSlots: [{ type: 'if' }],
+                conditions: [
+                    { id: 'sheep_woolly', label: 'แกะขนฟูมาก' }
+                ],
+                actions: [
+                    { id: 'shear', label: 'กดปุ่มตัดขน', successText: 'เครื่องตัดขนทำงาน แกะยิ้มสบายตัว' },
+                    { id: 'pass', label: 'ปล่อยไปกินหญ้า', successText: 'แกะขนสั้นเดินไปกินหญ้าอย่างสบายใจ' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'เครื่องตัดขน', icon: '✂️', actions: ['shear'] },
+                    { slot: 'pass', label: 'ทุ่งหญ้า', icon: '🌿', actions: ['pass'] }
+                ],
+                itemQueue: [
+                    sheep('A', 'long'), sheep('B', 'short'), sheep('C', 'long'), sheep('D', 'short'),
+                    sheep('E', 'long'), sheep('F', 'long'), sheep('G', 'short'), sheep('H', 'long'),
+                    sheep('I', 'short'), sheep('J', 'long')
+                ],
+                expectedLogic: [
+                    { condition: 'sheep_woolly', action: 'shear' }
+                ],
+                scoring: { passAccuracy: 0.8, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             },
             {
-                name: 'Stage 8-2: แมลงบุก ต้องจัดการก่อน',
-                brief: 'ถ้าแปลงมีแมลง แม้ดินจะแห้งก็ต้องกำจัดแมลงก่อน',
-                rows: 3,
-                cols: 6,
-                battery: 100,
-                defaultLoadout: ['water', 'water', 'pesticide', 'pesticide'],
-                expectedPriority: ['pest', 'soil_dry'],
-                plots: [
-                    { id: 'E', name: 'แปลง E', row: 0, col: 2, soil: 'dry', pest: true, hp: 52, expectedAction: 'repel_pest', note: 'มีแมลงและดินแห้ง แมลงเร่งด่วนกว่า' },
-                    { id: 'F', name: 'แปลง F', row: 1, col: 4, soil: 'wet', pest: true, hp: 58, expectedAction: 'repel_pest', note: 'แมลงกำลังกัดใบ' },
-                    { id: 'G', name: 'แปลง G', row: 2, col: 1, soil: 'dry', hp: 61, expectedAction: 'water', note: 'ไม่มีแมลง จึงรดน้ำได้' },
-                    { id: 'H', name: 'แปลง H', row: 2, col: 5, soil: 'wet', hp: 91, expectedAction: 'skip', note: 'ปลอดภัย' }
-                ]
+                title: '8-2 แจกจ่ายอาหารให้สัตว์ในฟาร์ม',
+                brief: 'วัวได้หญ้าเนเปียร์ ส่วนสัตว์อื่นใช้ Else เพื่อจ่ายรำข้าว',
+                intro: 'Else ช่วยให้บอทบัวบานดูแลสัตว์อื่น ๆ ได้โดยไม่ต้องสร้างกฎหลายบรรทัด',
+                lessonType: 'if_else',
+                lessonTypeLabel: 'If / Else',
+                theme: 'animal',
+                hint: 'ถ้า [เป็นวัว] -> [จ่ายหญ้าเนเปียร์] | นอกเหนือจากนี้ -> [จ่ายรำข้าว]',
+                ruleSlots: [{ type: 'if' }, { type: 'else' }],
+                conditions: [
+                    { id: 'animal_cow', label: 'เป็นวัว' }
+                ],
+                actions: [
+                    { id: 'feed_grass', label: 'จ่ายหญ้าเนเปียร์', successText: 'วัวได้หญ้าแล้วมีหัวใจเด้งขึ้น' },
+                    { id: 'feed_bran', label: 'จ่ายรำข้าว', successText: 'สัตว์ตัวอื่นได้รำข้าวถูกต้อง' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'ถังหญ้าเนเปียร์', icon: '🌾', actions: ['feed_grass'] },
+                    { slot: 'b', label: 'ถังรำข้าว', icon: '🥣', actions: ['feed_bran'] }
+                ],
+                itemQueue: [
+                    animal('A', 'cow'), animal('B', 'chicken'), animal('C', 'duck'), animal('D', 'pig'),
+                    animal('E', 'cow'), animal('F', 'chicken'), animal('G', 'cow'), animal('H', 'duck'),
+                    animal('I', 'pig'), animal('J', 'cow')
+                ],
+                expectedLogic: [
+                    { condition: 'animal_cow', action: 'feed_grass' },
+                    { condition: 'else', action: 'feed_bran' }
+                ],
+                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             },
             {
-                name: 'Stage 8-3: ฝนกำลังมา อย่าทำน้ำท่วม',
-                brief: 'ถ้าฝนตก ให้บินต่อก่อนเสมอ ไม่อย่างนั้นดินแห้ง + ฝนตกจะถูกสั่งรดน้ำจนเสียหาย',
-                rows: 4,
-                cols: 6,
-                battery: 100,
-                defaultLoadout: ['water', 'water', 'fertilizer'],
-                expectedPriority: ['rain', 'soil_dry', 'need_fertilizer'],
-                plots: [
-                    { id: 'I', name: 'แปลง I', row: 0, col: 1, soil: 'dry', rain: true, hp: 64, expectedAction: 'skip', note: 'ฝนตกอยู่ ห้ามรดน้ำซ้ำ' },
-                    { id: 'J', name: 'แปลง J', row: 1, col: 3, soil: 'dry', hp: 59, expectedAction: 'water', note: 'ไม่มีฝนและดินแห้ง' },
-                    { id: 'K', name: 'แปลง K', row: 2, col: 4, soil: 'wet', needFertilizer: true, hp: 63, expectedAction: 'fertilize', note: 'ดินชื้นแต่ขาดปุ๋ย' },
-                    { id: 'L', name: 'แปลง L', row: 3, col: 2, soil: 'wet', hp: 88, expectedAction: 'skip', note: 'ไม่มีงานต้องทำ' }
-                ]
+                title: '8-3 เติมสารอาหารให้แม่หมูตามน้ำหนัก',
+                brief: 'หมูน้ำหนักน้อยกว่า 40 ได้สูตรเร่งโต มากกว่า 80 ได้สูตรคุมน้ำหนัก ที่เหลืออาหารปกติ',
+                intro: 'ด่านนี้ใช้เงื่อนไขตัวเลขและลำดับ If / Else If / Else',
+                lessonType: 'if_else_if_else',
+                lessonTypeLabel: 'If / Else If / Else',
+                theme: 'animal',
+                hint: 'ถ้า [น้ำหนัก < 40 กิโล] -> [สูตรเร่งโต] | หรือถ้า [น้ำหนัก > 80 กิโล] -> [สูตรคุมน้ำหนัก] | นอกเหนือจากนี้ -> [สูตรอาหารปกติ]',
+                ruleSlots: [{ type: 'if' }, { type: 'else_if' }, { type: 'else' }],
+                conditions: [
+                    { id: 'pig_under_40', label: 'น้ำหนัก < 40 กิโล' },
+                    { id: 'pig_over_80', label: 'น้ำหนัก > 80 กิโล' }
+                ],
+                actions: [
+                    { id: 'feed_grow', label: 'ให้สูตรเร่งโต', successText: 'หมูตัวเล็กได้อาหารเร่งโตแล้วยิ้ม' },
+                    { id: 'feed_control', label: 'ให้สูตรคุมน้ำหนัก', successText: 'หมูตัวใหญ่ได้สูตรคุมน้ำหนักถูกต้อง' },
+                    { id: 'feed_normal', label: 'ให้สูตรอาหารปกติ', successText: 'หมูน้ำหนักปกติได้อาหารพอดี' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'สูตรเร่งโต', icon: '⚡', actions: ['feed_grow'] },
+                    { slot: 'b', label: 'สูตรคุมน้ำหนัก', icon: '⚖️', actions: ['feed_control'] },
+                    { slot: 'c', label: 'สูตรปกติ', icon: '🥣', actions: ['feed_normal'] }
+                ],
+                itemQueue: [
+                    pig('A', 35), pig('B', 55), pig('C', 86), pig('D', 42), pig('E', 31),
+                    pig('F', 80), pig('G', 91), pig('H', 64), pig('I', 38), pig('J', 84)
+                ],
+                expectedLogic: [
+                    { condition: 'pig_under_40', action: 'feed_grow' },
+                    { condition: 'pig_over_80', action: 'feed_control' },
+                    { condition: 'else', action: 'feed_normal' }
+                ],
+                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
             }
         ]
     };
 
-    function boot() {
-        window.FarmMissions.agriDroneRescue(config);
+    function sheep(id, wool) {
+        const long = wool === 'long';
+        return {
+            key: `sheep_${id}`,
+            label: long ? 'แกะขนฟูมาก' : 'แกะขนสั้น',
+            icon: '🐑',
+            props: { type: 'sheep', wool },
+            sensor: long ? 'เซ็นเซอร์พบขนยาวฟูเต็มตัว' : 'เซ็นเซอร์พบว่าเพิ่งตัดขนแล้ว',
+            expectedAction: long ? 'shear' : 'pass',
+            feedback: long
+                ? 'แกะขนฟูควรถูกส่งเข้าเครื่องตัดขน'
+                : 'แกะขนสั้นไม่ควรถูกตัดซ้ำ ปล่อยไปกินหญ้าดีกว่า'
+        };
     }
 
-    if (window.FarmMissions) {
+    function animal(id, type) {
+        const labels = {
+            cow: ['วัว', '🐄'],
+            chicken: ['ไก่', '🐔'],
+            duck: ['เป็ด', '🦆'],
+            pig: ['หมู', '🐖']
+        };
+        const [label, icon] = labels[type];
+        return {
+            key: `${type}_${id}`,
+            label,
+            icon,
+            props: { type },
+            sensor: `บอทบัวบานอ่านชนิดสัตว์: ${label}`,
+            expectedAction: type === 'cow' ? 'feed_grass' : 'feed_bran',
+            feedback: type === 'cow'
+                ? 'วัวควรได้หญ้าเนเปียร์ ไม่ใช่รำข้าว'
+                : `${label} ใช้ Else เพื่อรับรำข้าวได้เลย`
+        };
+    }
+
+    function pig(id, weight) {
+        let expectedAction = 'feed_normal';
+        let feedback = 'น้ำหนักอยู่ช่วงปกติ ควรได้สูตรอาหารปกติ';
+        if (weight < 40) {
+            expectedAction = 'feed_grow';
+            feedback = `หมูน้ำหนัก ${weight} กิโล น้อยกว่า 40 ควรได้สูตรเร่งโต`;
+        } else if (weight > 80) {
+            expectedAction = 'feed_control';
+            feedback = `หมูน้ำหนัก ${weight} กิโล มากกว่า 80 ควรได้สูตรคุมน้ำหนัก`;
+        }
+        return {
+            key: `pig_weight_${id}`,
+            label: `แม่หมู ${weight} กก.`,
+            icon: '🐖',
+            props: { type: 'pig', weight },
+            sensor: `แท่นชั่งแสดงน้ำหนัก ${weight} กิโลกรัม`,
+            expectedAction,
+            feedback
+        };
+    }
+
+    function boot() {
+        window.FarmMissions.conveyorLogic(config);
+    }
+
+    if (window.FarmMissions && window.FarmMissions.conveyorLogic) {
         boot();
     } else {
         const script = document.createElement('script');
-        script.src = '../assets/js/logic_game/farm_missions.js';
+        script.src = '../assets/js/logic_game/conveyor_logic_base.js';
         script.onload = boot;
         document.head.appendChild(script);
     }

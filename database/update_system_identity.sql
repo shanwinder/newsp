@@ -16,10 +16,10 @@ WHERE `id` = 2;
 
 UPDATE `games`
 SET
-    `title` = 'เครื่องรดน้ำอัจฉริยะ (Condition)',
-    `description` = 'ฝึกการใช้เงื่อนไข If-Then-Else เพื่อเลือกการทำงานที่เหมาะสมกับสถานการณ์ในเกม',
+    `title` = 'Smart Farm Manager (Condition)',
+    `description` = 'ฝึกการใช้เงื่อนไข If / Else If / Else เพื่อควบคุมสายพานและเครื่องจักรฟาร์มอัจฉริยะ',
     `learning_topic` = 'การใช้เงื่อนไข',
-    `instruction_html` = '<div class="text-center"><h4>ภารกิจฟาร์มแก้ปัญหา</h4><p>ใช้บล็อกเงื่อนไขเพื่อสร้างระบบรดน้ำอัตโนมัติ</p></div>'
+    `instruction_html` = '<div class="text-center"><h4>Smart Farm Manager</h4><p>ลากบล็อกเงื่อนไขเพื่อควบคุมสายพาน ผลผลิต สัตว์ และโรงเรือน</p></div>'
 WHERE `id` = 3;
 
 UPDATE `games`

@@ -33,6 +33,11 @@
             this.history = [];
             this.bound = false;
             this.dragPayload = null;
+            this.pendingPointer = null;
+            this.pointerDrag = null;
+            this.pointerMoveHandler = null;
+            this.pointerUpHandler = null;
+            this.suppressClick = false;
             this.bind();
         }
 
@@ -178,6 +183,12 @@
             this.bound = true;
 
             this.rootElement.addEventListener('click', (event) => {
+                if (this.suppressClick) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+
                 const block = event.target.closest('.logic-block');
                 if (block) {
                     if (this.locked) return;
@@ -210,6 +221,7 @@
                         ruleIndex: slot.dataset.ruleIndex
                     };
                     event.dataTransfer.setData('application/json', JSON.stringify(payload));
+                    event.dataTransfer.setData('text/plain', JSON.stringify(payload));
                     event.dataTransfer.effectAllowed = 'move';
                     this.dragPayload = payload;
                     placed.classList.add('dragging');
@@ -220,10 +232,11 @@
                     if (this.locked) return event.preventDefault();
                     const payload = { source: 'palette', kind: block.dataset.kind, value: block.dataset.value };
                     event.dataTransfer.setData('application/json', JSON.stringify(payload));
+                    event.dataTransfer.setData('text/plain', JSON.stringify(payload));
                     event.dataTransfer.effectAllowed = 'copy';
                     this.dragPayload = payload;
                     this.selected = payload;
-                    this.render();
+                    block.classList.add('dragging', 'selected');
                     return;
                 }
 
@@ -237,14 +250,17 @@
                 const slot = event.target.closest('.drop-slot');
                 const row = event.target.closest('.rule-row');
                 const trash = event.target.closest('.block-trash');
-                if (slot && !slot.classList.contains('fixed') && hasTransferType(event, 'application/json')) {
+                const hasBlockPayload = this.dragPayload
+                    || hasTransferType(event, 'application/json')
+                    || hasTransferType(event, 'text/plain');
+                if (slot && !slot.classList.contains('fixed') && hasBlockPayload) {
                     event.preventDefault();
                     const payload = this.readPayload(event);
                     slot.classList.toggle('drop-target', payload?.kind === slot.dataset.accept);
                     slot.classList.toggle('drop-reject', payload?.kind !== slot.dataset.accept);
                     return;
                 }
-                if (trash && hasTransferType(event, 'application/json')) {
+                if (trash && hasBlockPayload) {
                     event.preventDefault();
                     trash.classList.add('drop-target');
                     return;
@@ -275,7 +291,7 @@
                     return;
                 }
 
-                if (trash && hasTransferType(event, 'application/json')) {
+                if (trash) {
                     event.preventDefault();
                     const payload = this.readPayload(event);
                     if (payload?.source === 'slot') {
@@ -299,15 +315,142 @@
                     item.classList.remove('dragging', 'drop-target', 'drop-reject', 'drag-over');
                 });
             });
+
+            this.rootElement.addEventListener('pointerdown', (event) => {
+                if (this.locked || event.pointerType === 'mouse') return;
+                const placed = event.target.closest('.placed-block');
+                const block = event.target.closest('.logic-block');
+                if (!placed && !block) return;
+
+                const payload = placed
+                    ? {
+                        source: 'slot',
+                        kind: placed.closest('.drop-slot')?.dataset.accept,
+                        value: placed.dataset.value,
+                        ruleIndex: placed.closest('.drop-slot')?.dataset.ruleIndex
+                    }
+                    : {
+                        source: 'palette',
+                        kind: block.dataset.kind,
+                        value: block.dataset.value
+                    };
+                const label = (placed || block).textContent.trim();
+                this.beginPointerCandidate(event, payload, label);
+            });
         }
 
         readPayload(event) {
             try {
                 const raw = event.dataTransfer.getData('application/json');
-                return raw ? JSON.parse(raw) : this.dragPayload;
+                if (raw) return JSON.parse(raw);
+                const plain = event.dataTransfer.getData('text/plain');
+                return plain ? JSON.parse(plain) : this.dragPayload;
             } catch (error) {
                 return this.dragPayload;
             }
+        }
+
+        beginPointerCandidate(event, payload, label) {
+            if (!payload?.kind || !payload?.value) return;
+            this.pendingPointer = {
+                id: event.pointerId,
+                label,
+                payload,
+                startX: event.clientX,
+                startY: event.clientY
+            };
+            this.pointerMoveHandler = (moveEvent) => this.movePointerDrag(moveEvent);
+            this.pointerUpHandler = (upEvent) => this.endPointerDrag(upEvent);
+            window.addEventListener('pointermove', this.pointerMoveHandler, { passive: false });
+            window.addEventListener('pointerup', this.pointerUpHandler, { passive: false });
+            window.addEventListener('pointercancel', this.pointerUpHandler, { passive: false });
+        }
+
+        movePointerDrag(event) {
+            if (this.pendingPointer && event.pointerId !== this.pendingPointer.id) return;
+            if (this.pendingPointer && !this.pointerDrag) {
+                const distance = Math.hypot(
+                    event.clientX - this.pendingPointer.startX,
+                    event.clientY - this.pendingPointer.startY
+                );
+                if (distance < 8) return;
+                this.startPointerDrag(event);
+            }
+            if (!this.pointerDrag) return;
+
+            event.preventDefault();
+            this.pointerDrag.ghost.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+            this.updatePointerDropTarget(event.clientX, event.clientY);
+        }
+
+        startPointerDrag(event) {
+            const ghost = document.createElement('div');
+            ghost.className = `pointer-drag-ghost ${this.pendingPointer.payload.kind}`;
+            ghost.textContent = this.pendingPointer.label;
+            document.body.appendChild(ghost);
+            this.pointerDrag = {
+                ghost,
+                payload: this.pendingPointer.payload
+            };
+            this.dragPayload = this.pendingPointer.payload;
+            this.suppressClick = true;
+            this.movePointerDrag(event);
+        }
+
+        updatePointerDropTarget(x, y) {
+            this.clearPointerDropState();
+            const target = document.elementFromPoint(x, y);
+            const slot = target?.closest('.drop-slot');
+            const trash = target?.closest('.block-trash');
+            if (slot && !slot.classList.contains('fixed')) {
+                const accepts = slot.dataset.accept === this.pointerDrag.payload.kind;
+                slot.classList.toggle('drop-target', accepts);
+                slot.classList.toggle('drop-reject', !accepts);
+                return;
+            }
+            if (trash) trash.classList.add('drop-target');
+        }
+
+        endPointerDrag(event) {
+            if (this.pointerDrag && event.pointerId === this.pendingPointer?.id) {
+                event.preventDefault();
+                const target = document.elementFromPoint(event.clientX, event.clientY);
+                const slot = target?.closest('.drop-slot');
+                const trash = target?.closest('.block-trash');
+                if (slot && !slot.classList.contains('fixed')) {
+                    this.handleDrop(this.pointerDrag.payload, slot);
+                } else if (trash && this.pointerDrag.payload.source === 'slot') {
+                    const payload = this.pointerDrag.payload;
+                    const sourceSlot = this.rulePanel.querySelector(`.drop-slot[data-rule-index="${payload.ruleIndex}"][data-accept="${payload.kind}"]`);
+                    this.removeBlock(sourceSlot);
+                } else if (trash) {
+                    this.onFeedback('ลากบล็อกที่วางแล้วมาที่ถังเพื่อลบออกจากโปรแกรม', 'info');
+                }
+                window.setTimeout(() => { this.suppressClick = false; }, 250);
+            }
+
+            this.clearPointerDrag();
+        }
+
+        clearPointerDropState() {
+            this.rootElement.querySelectorAll('.drop-target, .drop-reject').forEach((item) => {
+                item.classList.remove('drop-target', 'drop-reject');
+            });
+        }
+
+        clearPointerDrag() {
+            if (this.pointerMoveHandler) {
+                window.removeEventListener('pointermove', this.pointerMoveHandler);
+                window.removeEventListener('pointerup', this.pointerUpHandler);
+                window.removeEventListener('pointercancel', this.pointerUpHandler);
+            }
+            this.pointerDrag?.ghost?.remove();
+            this.pendingPointer = null;
+            this.pointerDrag = null;
+            this.pointerMoveHandler = null;
+            this.pointerUpHandler = null;
+            this.dragPayload = null;
+            this.clearPointerDropState();
         }
 
         pushHistory() {

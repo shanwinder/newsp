@@ -12,9 +12,9 @@
 
 .conveyor-top {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 0.82fr);
   gap: 14px;
-  align-items: start;
+  align-items: center;
   margin-bottom: 14px;
   padding: 14px 16px;
   border: 1px solid #d8e5dc;
@@ -38,11 +38,9 @@
 }
 
 .conveyor-statbar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
-  max-width: 560px;
 }
 
 .conveyor-stat {
@@ -65,13 +63,14 @@
 
 .smart-farm-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   grid-template-areas:
-    "mission toolbox"
-    "board toolbox"
-    "program program";
+    "mission mission"
+    "board side"
+    "program program"
+    "toolbox toolbox";
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .conveyor-panel,
@@ -142,17 +141,47 @@
 
 .toolbox-panel {
   grid-area: toolbox;
-  max-height: 680px;
+  max-height: none;
   min-width: 0;
   padding: 12px;
-  overflow-y: auto;
+  overflow: visible;
+}
+
+.side-panel {
+  grid-area: side;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  align-self: stretch;
+  min-width: 0;
+  padding: 12px;
 }
 
 .program-panel {
   grid-area: program;
   min-width: 0;
   padding: 12px;
-  overflow-x: auto;
+  overflow-x: visible;
+}
+
+.board-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #dbe8df;
+  background: #f8fbf8;
+}
+
+.status-label {
+  padding: 6px 9px;
+  border-radius: 8px;
+  background: #0f766e;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .farm-stage {
@@ -332,10 +361,7 @@
 }
 
 .sensor-readout {
-  position: absolute;
-  left: 50%;
-  bottom: 18%;
-  width: min(520px, 86%);
+  min-width: 0;
   min-height: 44px;
   padding: 9px 12px;
   border: 1px solid #a5f3fc;
@@ -345,7 +371,6 @@
   text-align: center;
   font-size: 14px;
   font-weight: 700;
-  transform: translateX(-50%);
 }
 
 .queue-strip {
@@ -421,7 +446,6 @@
 .palette-group,
 .control-panel,
 .feedback-card,
-.rule-preview,
 .block-trash {
   padding: 10px;
   border: 1px solid #e2e8f0;
@@ -429,10 +453,18 @@
   background: #f8fafc;
 }
 
-.palette-group + .palette-group,
-.control-panel,
-.feedback-card {
-  margin-top: 10px;
+.toolbox-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.toolbox-head {
+  grid-column: 1 / -1;
+}
+
+.palette-group + .palette-group {
+  margin-top: 0;
 }
 
 .block-list {
@@ -452,7 +484,7 @@
   font-size: 13px;
   font-weight: 800;
   cursor: grab;
-  touch-action: manipulation;
+  touch-action: none;
 }
 
 .logic-block.condition { background: #1d7ed0; }
@@ -463,15 +495,21 @@
   outline-offset: 2px;
 }
 
+.logic-block.dragging,
+.placed-block.dragging {
+  opacity: 0.72;
+}
+
 .rule-list {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 8px;
-  min-width: 680px;
+  min-width: 0;
 }
 
 .rule-row {
   display: grid;
-  grid-template-columns: 132px minmax(190px, 1fr) 32px minmax(190px, 1fr);
+  grid-template-columns: 1fr;
   gap: 8px;
   align-items: stretch;
   padding: 8px;
@@ -499,6 +537,7 @@
   text-align: center;
   font-size: 13px;
   font-weight: 800;
+  min-height: 32px;
 }
 
 .rule-arrow {
@@ -562,11 +601,38 @@
   background: #eff6ff;
   color: #1e3a8a;
   cursor: grab;
+  touch-action: none;
 }
 
 .action-slot .placed-block {
   background: #ecfdf5;
   color: #166534;
+}
+
+.pointer-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 5000;
+  max-width: min(260px, 72vw);
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.24);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+  transform: translate3d(-999px, -999px, 0);
+}
+
+.pointer-drag-ghost.condition {
+  background: #1d7ed0;
+}
+
+.pointer-drag-ghost.action {
+  background: #169b52;
 }
 
 .slot-placeholder {
@@ -589,18 +655,9 @@
   background: #fee2e2;
 }
 
-.rule-preview {
-  display: grid;
-  gap: 4px;
-  margin-top: 10px;
-  color: #334155;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
 .control-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 8px;
   margin-top: 8px;
 }
@@ -627,8 +684,13 @@
 }
 
 .feedback-card {
+  margin: 0;
   background: #ecfeff;
   border-color: #a5f3fc;
+}
+
+.side-panel .feedback-card {
+  min-height: 0;
 }
 
 .feedback-card.success {
@@ -776,6 +838,7 @@
   .smart-farm-shell {
     grid-template-areas:
       "mission"
+      "side"
       "board"
       "program"
       "toolbox";
@@ -783,12 +846,15 @@
 
   .toolbox-panel {
     max-height: none;
-    overflow-y: visible;
+    overflow: visible;
   }
 
   .conveyor-statbar {
-    justify-content: flex-start;
-    max-width: none;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .control-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .farm-stage {
@@ -805,13 +871,18 @@
     font-size: 20px;
   }
 
+  .conveyor-statbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .conveyor-stat {
-    flex: 1 1 74px;
-    min-width: 74px;
+    min-width: 0;
   }
 
   .mission-list,
+  .board-status,
   .control-grid,
+  .toolbox-panel,
   .result-metrics {
     grid-template-columns: 1fr;
   }
@@ -826,11 +897,11 @@
   }
 
   .rule-list {
-    min-width: 560px;
+    min-width: 0;
   }
 
   .rule-row {
-    grid-template-columns: 104px minmax(150px, 1fr) 26px minmax(150px, 1fr);
+    grid-template-columns: 1fr;
   }
 
   .farm-stage {
@@ -852,7 +923,6 @@
   }
 
   .sensor-readout {
-    bottom: 20%;
     font-size: 12px;
   }
 }

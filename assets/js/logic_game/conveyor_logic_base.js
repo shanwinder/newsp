@@ -135,13 +135,13 @@
                             <h3 class="conveyor-title">${escapeHtml(gameConfig.title)}</h3>
                             <p class="conveyor-subtitle">${escapeHtml(gameConfig.subtitle)}</p>
                         </div>
-                        <div class="conveyor-statbar">
+                        <section class="conveyor-statbar">
                             <div class="conveyor-stat">รายการ<strong id="conveyor-count">0/0</strong></div>
                             <div class="conveyor-stat">ถูกต้อง<strong id="conveyor-correct">0</strong></div>
                             <div class="conveyor-stat">ผิดพลาด<strong id="conveyor-wrong">0</strong></div>
                             <div class="conveyor-stat">เสียหาย<strong id="conveyor-damaged">0</strong></div>
                             <div class="conveyor-stat">ดาว<strong id="conveyor-stars">-</strong></div>
-                        </div>
+                        </section>
                     </header>
 
                     <div class="smart-farm-shell">
@@ -156,6 +156,10 @@
                         </section>
 
                         <section class="conveyor-panel board-panel">
+                            <div class="board-status">
+                                <div class="status-label">สถานะสายพาน</div>
+                                <div class="sensor-readout" id="sensor-readout">ลากบล็อกเพื่อสร้างกฎ แล้วเริ่มสายพาน</div>
+                            </div>
                             <div class="farm-stage" id="farm-stage">
                                 <div class="farm-skyline"></div>
                                 <div class="machine output-a" id="machine-a"></div>
@@ -164,24 +168,11 @@
                                 <div class="machine output-pass" id="machine-pass"></div>
                                 <div class="scan-gate" id="scan-gate"><span class="scan-label">SCAN</span></div>
                                 <div class="conveyor-belt" id="conveyor-belt"></div>
-                                <div class="sensor-readout" id="sensor-readout">ลากบล็อกเพื่อสร้างกฎ แล้วเริ่มสายพาน</div>
                                 <div class="queue-strip" id="queue-strip"></div>
                             </div>
                         </section>
 
-                        <aside class="conveyor-panel toolbox-panel">
-                            <div class="toolbox-head">
-                                <h4>Rule Toolbox</h4>
-                                <span class="lesson-pill" id="lesson-pill">If</span>
-                            </div>
-                            <section class="palette-group">
-                                <h4>บล็อกเงื่อนไข</h4>
-                                <div class="block-list" id="condition-blocks"></div>
-                            </section>
-                            <section class="palette-group">
-                                <h4>บล็อกคำสั่ง</h4>
-                                <div class="block-list" id="action-blocks"></div>
-                            </section>
+                        <aside class="conveyor-panel side-panel">
                             <section class="control-panel">
                                 <h4>แผงควบคุม</h4>
                                 <div class="control-grid">
@@ -207,7 +198,21 @@
                                 <div class="block-trash" id="block-trash">ลากบล็อกที่วางแล้วมาที่นี่เพื่อลบ</div>
                             </div>
                             <div class="rule-list" id="rule-list"></div>
-                            <div class="rule-preview" id="rule-preview"></div>
+                        </section>
+
+                        <section class="conveyor-panel toolbox-panel">
+                            <div class="toolbox-head">
+                                <h4>Rule Toolbox</h4>
+                                <span class="lesson-pill" id="lesson-pill">If</span>
+                            </div>
+                            <section class="palette-group">
+                                <h4>บล็อกเงื่อนไข</h4>
+                                <div class="block-list" id="condition-blocks"></div>
+                            </section>
+                            <section class="palette-group">
+                                <h4>บล็อกคำสั่ง</h4>
+                                <div class="block-list" id="action-blocks"></div>
+                            </section>
                         </section>
                     </div>
                 </div>
@@ -219,7 +224,7 @@
                 conditionContainer: container.querySelector('#condition-blocks'),
                 actionContainer: container.querySelector('#action-blocks'),
                 trashElement: container.querySelector('#block-trash'),
-                previewElement: container.querySelector('#rule-preview'),
+                previewElement: null,
                 onRulesChanged: (rules) => { state.rules = rules; },
                 onFeedback: showFeedback
             });

@@ -105,6 +105,15 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             min-width: 0;
         }
 
+        .game-wrapper.conveyor-wrapper {
+            max-width: min(1220px, calc(100vw - 24px));
+            padding: 14px;
+            align-items: stretch;
+            border: 1px solid <?php echo $theme['border']; ?>;
+            outline: 0;
+            overflow: visible;
+        }
+
         #game-container canvas {
             max-width: 100%;
             height: auto !important;

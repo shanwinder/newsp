@@ -113,7 +113,7 @@
             running: false,
             paused: false,
             rules: [],
-            levelStars: []
+            levelStars: [],
             selectedInspectItemId: null
         };
 
@@ -273,8 +273,14 @@
                 : 'วางกฎให้ครบก่อนเริ่มสายพาน';
             dragDrop.loadLevel({
                 ruleSlots: current.ruleSlots,
-                conditions: current.conditions,
-                actions: current.actions,
+                conditions: [
+                    ...(current.conditions || []),
+                    ...(current.toolboxDecoys?.conditions || [])
+                ],
+                actions: [
+                    ...(current.actions || []),
+                    ...(current.toolboxDecoys?.actions || [])
+                ],
                 allowReorder: current.allowReorder
             });
             renderMachines();
@@ -439,7 +445,9 @@
             scanner.classList.remove('scanning');
 
             const action = evaluateRules(item, state.rules, current.conditions);
-            const actionMeta = findById(current.actions, action) || {};
+            const actionMeta = findById(current.actions, action)
+                || findById(current.toolboxDecoys?.actions, action)
+                || {};
             const correct = action === item.expectedAction;
             const machine = machineForAction(current, action);
             const machineEl = machine ? container.querySelector(`#machine-${machine.slot}`) : container.querySelector('#machine-pass');
@@ -501,6 +509,11 @@
         }
 
         function machineForAction(current, action) {
+            const actionMeta = findById(current.actions, action)
+                || findById(current.toolboxDecoys?.actions, action);
+            if (actionMeta?.routeSlot) {
+                return (current.machines || []).find((machine) => machine.slot === actionMeta.routeSlot);
+            }
             return (current.machines || []).find((machine) => (machine.actions || []).includes(action))
                 || (current.machines || []).find((machine) => machine.slot === 'pass');
         }
@@ -514,7 +527,11 @@
         function wrongFeedback(current, item, actualAction) {
             if (item.isDecoy && item.decoyReason) return item.decoyReason;
             if (item.feedback) return item.feedback;
-            const actual = labelOf(current.actions, actualAction, 'ปล่อยผ่าน');
+            const allActions = [
+                ...(current.actions || []),
+                ...(current.toolboxDecoys?.actions || [])
+            ];
+            const actual = labelOf(allActions, actualAction, 'ปล่อยผ่าน');
             const expected = labelOf(current.actions, item.expectedAction, 'ปล่อยผ่าน');
             return `เลือก "${actual}" แต่ควรเป็น "${expected}" ลองดูเงื่อนไขของรายการนี้อีกครั้ง`;
         }

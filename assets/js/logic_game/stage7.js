@@ -22,6 +22,16 @@
                     { id: 'wash', label: 'ส่งเข้าเครื่องล้าง', successText: 'เครื่องล้างพ่นน้ำ แครอทสะอาดเด้งลงตะกร้า' },
                     { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'แครอทที่ไม่เปื้อนโคลนลงตะกร้าปกติ' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'dark_carrot', label: 'แครอทสีเข้ม', match: { type: 'carrot', color: 'dark_orange' } },
+                        { id: 'carrot_dust_tip', label: 'แครอทมีดินติดปลาย', match: { type: 'carrot', mark: 'dust_tip' } }
+                    ],
+                    actions: [
+                        { id: 'wash_for_color', label: 'ส่งเข้าเครื่องล้างเพราะสีเข้ม', routeSlot: 'a', successText: 'เครื่องล้างทำงานตามกฎสีเข้ม' },
+                        { id: 'hold_for_shadow', label: 'พักไว้ตรวจเงาอีกครั้ง', routeSlot: 'pass', successText: 'พักรายการไว้ตรวจซ้ำ' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'เครื่องล้าง', icon: '🚿', actions: ['wash'] },
                     { slot: 'pass', label: 'ตะกร้าปกติ', icon: '🧺', actions: ['pass'] }
@@ -51,6 +61,16 @@
                     { id: 'pest_table', label: 'ส่งไปโต๊ะตรวจศัตรูพืช', successText: 'แว่นขยายตรวจพบหนอนและแยกผักออกทันที' },
                     { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'ผักกาดที่ไม่มีหนอนลงตะกร้าปกติ' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'lettuce_has_dirt', label: 'ผักกาดมีจุดดิน', match: { type: 'lettuce', dirt: true } },
+                        { id: 'lettuce_has_holes', label: 'ผักกาดมีรูเล็ก ๆ', match: { type: 'lettuce', holes: true } }
+                    ],
+                    actions: [
+                        { id: 'inspect_all_rough_leaves', label: 'ส่งผักที่ดูไม่สมบูรณ์ไปตรวจ', routeSlot: 'a', successText: 'โต๊ะตรวจรับผักที่ดูผิดปกติ' },
+                        { id: 'wash_leaf_dirt', label: 'ส่งไปล้างจุดดิน', routeSlot: 'pass', successText: 'ผักถูกส่งไปล้างจุดดิน' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'โต๊ะตรวจศัตรูพืช', icon: '🔎', actions: ['pest_table'] },
                     { slot: 'pass', label: 'ตะกร้าผักดี', icon: '🧺', actions: ['pass'] }
@@ -80,6 +100,16 @@
                     { id: 'special_sort', label: 'ส่งไปคัดแยกพิเศษ', successText: 'ประตูพิเศษเปิดและแยกมันฝรั่งงอกออกจากตะกร้าปกติ' },
                     { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'มันฝรั่งปกติลงตะกร้าขายได้' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'dirty_potato', label: 'มันฝรั่งเปื้อนดิน', match: { type: 'potato', dirty: true } },
+                        { id: 'potato_dark_spot', label: 'มันฝรั่งมีจุดสีเข้ม', match: { type: 'potato', darkSpot: true } }
+                    ],
+                    actions: [
+                        { id: 'sort_odd_shape', label: 'คัดแยกเพราะรูปร่างแปลก', routeSlot: 'a', successText: 'ประตูพิเศษเปิดเพราะรูปร่างแปลก' },
+                        { id: 'wash_potato_dirt', label: 'ส่งไปล้างดิน', routeSlot: 'pass', successText: 'มันฝรั่งถูกส่งไปล้างดิน' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'คัดแยกพิเศษ', icon: '⚠️', actions: ['special_sort'] },
                     { slot: 'pass', label: 'ตะกร้ามันฝรั่ง', icon: '🧺', actions: ['pass'] }

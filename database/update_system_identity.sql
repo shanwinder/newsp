@@ -17,9 +17,9 @@ WHERE `id` = 2;
 UPDATE `games`
 SET
     `title` = 'บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ',
-    `description` = 'ฝึกใช้เงื่อนไขควบคุมระบบฟาร์มอัตโนมัติ',
+    `description` = 'ฝึกใช้เงื่อนไข If / Else / Else If เพื่อคัดแยกผลผลิตจากพืชผัก ผลไม้ และผลผลิตจากสัตว์ ด้วยระบบสายพานฟาร์มอัจฉริยะ',
     `learning_topic` = 'การใช้เงื่อนไข',
-    `instruction_html` = '<div class="text-center"><h4>Smart Farm Manager</h4><p>ลากบล็อกเงื่อนไขและคำสั่งเพื่อควบคุมสายพาน ผลผลิต สัตว์ และโรงเรือน</p></div>'
+    `instruction_html` = '<div class="text-center"><h4>Smart Farm Manager</h4><p>ลากบล็อกเงื่อนไขและคำสั่งเพื่อคัดแยกผลผลิตจากพืชผัก ผลไม้ และผลผลิตจากสัตว์</p></div>'
 WHERE `id` = 3;
 
 UPDATE `games`

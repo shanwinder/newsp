@@ -22,6 +22,16 @@
                     { id: 'premium_box', label: 'กล่องพรีเมียม', successText: 'ส้มลูกใหญ่เด้งเข้ากล่องพรีเมียม' },
                     { id: 'juice_box', label: 'กล่องแปรรูปน้ำส้ม', successText: 'ส้มที่เหลือไหลไปกล่องแปรรูปน้ำส้ม' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'bright_orange', label: 'ส้มสีสวยสด', match: { type: 'orange', color: 'bright' } },
+                        { id: 'medium_orange', label: 'ส้มขนาดกลาง', match: { type: 'orange', size: 'medium' } }
+                    ],
+                    actions: [
+                        { id: 'premium_for_color', label: 'กล่องพรีเมียมเพราะสีสวย', routeSlot: 'a', successText: 'ส้มถูกส่งเข้ากล่องพรีเมียมตามสี' },
+                        { id: 'juice_for_pale', label: 'แปรรูปเพราะสีอ่อน', routeSlot: 'b', successText: 'ส้มถูกส่งไปแปรรูปตามสี' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'กล่องพรีเมียม', icon: '🎁', actions: ['premium_box'] },
                     { slot: 'b', label: 'กล่องแปรรูป', icon: '🧃', actions: ['juice_box'] }
@@ -54,6 +64,16 @@
                     { id: 'storefront', label: 'ส่งไปขายหน้าร้าน', successText: 'กล้วยสุกเข้าตะกร้าหน้าร้านพร้อมป้ายราคา' },
                     { id: 'ripening_room', label: 'ส่งไปห้องบ่มต่อ', successText: 'กล้วยที่ยังไม่สุกเข้าห้องบ่มอุ่น ๆ' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'banana_has_yellow', label: 'กล้วยมีสีเหลืองบางส่วน', test: (props) => props.type === 'banana' && String(props.color || '').includes('yellow') },
+                        { id: 'banana_has_spots', label: 'กล้วยมีจุดดำเล็กน้อย', match: { type: 'banana', spots: 'small' } }
+                    ],
+                    actions: [
+                        { id: 'storefront_any_yellow', label: 'ขายทันทีถ้าเห็นสีเหลือง', routeSlot: 'a', successText: 'กล้วยถูกส่งหน้าร้านเพราะเห็นสีเหลือง' },
+                        { id: 'ripen_spotted_banana', label: 'บ่มต่อเพราะมีจุดดำ', routeSlot: 'b', successText: 'กล้วยถูกส่งบ่มต่อเพราะมีจุดดำ' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'หน้าร้าน', icon: '🏪', actions: ['storefront'] },
                     { slot: 'b', label: 'ห้องบ่ม', icon: '♨️', actions: ['ripening_room'] }
@@ -86,6 +106,16 @@
                     { id: 'grade_a_sticker', label: 'ติดสติ๊กเกอร์เกรด A', successText: 'แตงโมเกรดดีได้รับสติ๊กเกอร์ดาว' },
                     { id: 'process_juice', label: 'ส่งไปแปรรูป', successText: 'แตงโมที่ไม่ผ่านเกณฑ์เข้าช่องแปรรูปน้ำแตงโม' }
                 ],
+                toolboxDecoys: {
+                    conditions: [
+                        { id: 'watermelon_weight_only', label: 'แตงโมน้ำหนักพอดี', match: { type: 'watermelon', weightOk: true } },
+                        { id: 'watermelon_clear_sound_only', label: 'แตงโมเสียงกังวาน', match: { type: 'watermelon', sound: 'clear' } }
+                    ],
+                    actions: [
+                        { id: 'sticker_for_color', label: 'ติดเกรด A เพราะสีสวย', routeSlot: 'a', successText: 'แตงโมถูกติดสติ๊กเกอร์ตามสี' },
+                        { id: 'process_dull_sound', label: 'แปรรูปเพราะเสียงไม่กังวาน', routeSlot: 'b', successText: 'แตงโมถูกส่งแปรรูปตามเสียง' }
+                    ]
+                },
                 machines: [
                     { slot: 'a', label: 'สติ๊กเกอร์เกรด A', icon: '⭐', actions: ['grade_a_sticker'] },
                     { slot: 'b', label: 'เครื่องแปรรูป', icon: '🧃', actions: ['process_juice'] }

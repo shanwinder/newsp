@@ -21,6 +21,7 @@ if (!$context) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
 
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; height: 100vh; overflow: hidden; }
@@ -131,6 +132,8 @@ if (!$context) {
         </div>
     </div>
 
+    <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
+    <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>
     <script>
         const ASSET_PATH = '../assets/img/';
         let currentWorkId = null;
@@ -303,6 +306,10 @@ if (!$context) {
                 if (!Array.isArray(items)) {
                     if (items.project_type === 'tractor_route') {
                         renderTractorRouteWork(stage, items);
+                        setTimeout(adjustScale, 50);
+                        return;
+                    }
+                    if (items.project_type === 'smart_farm_mini_game' && window.SmartFarmBuilderPreview?.renderSummary(stage, items, { teacher: true })) {
                         setTimeout(adjustScale, 50);
                         return;
                     }

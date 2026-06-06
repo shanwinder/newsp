@@ -54,6 +54,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
 
     <style>
         body {
@@ -297,6 +298,8 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
+    <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>
     <script>
         const ASSET_PATH = '../assets/img/';
         const GAME_ID = <?php echo $game_id; ?>;
@@ -347,8 +350,15 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             };
         }
 
+        function getSmartFarmSummary(data) {
+            return window.SmartFarmBuilderPreview?.getSummary(data) || null;
+        }
+
         function renderProjectSummary(summary) {
             if (!summary) return '';
+            if (summary.kind === 'smart_farm') {
+                return window.SmartFarmBuilderPreview.renderBadges(summary);
+            }
             return `
                 <div class="project-summary small mt-2">
                     <span class="badge text-bg-primary rounded-pill">${summary.mission}</span>
@@ -409,16 +419,34 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         `;
                         const parsedWorkData = parseWorkData(work.work_data);
                         const tractorSummary = getTractorRouteSummary(parsedWorkData);
-                        const projectSummaryHTML = renderProjectSummary(tractorSummary);
-                        const playButtonHTML = tractorSummary?.validated ? `
-                            <a href="play_student_work.php?work_id=${work.id}" class="btn btn-primary btn-sm rounded-pill fw-bold mt-2 align-self-start">
-                                <i class="bi bi-play-fill"></i> ลองเล่นโจทย์นี้
-                            </a>
-                        ` : (tractorSummary ? `
-                            <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
-                                ยังไม่พร้อมให้เล่น
-                            </span>
-                        ` : '');
+                        const smartSummaryRaw = getSmartFarmSummary(parsedWorkData);
+                        const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
+                        const activeSummary = smartSummary || tractorSummary;
+                        const projectSummaryHTML = renderProjectSummary(activeSummary);
+                        let playButtonHTML = '';
+                        if (smartSummary) {
+                            playButtonHTML = smartSummary.tested ? `
+                                <a href="play_smart_farm_work.php?work_id=${work.id}" class="btn btn-success btn-sm rounded-pill fw-bold mt-2 align-self-start">
+                                    <i class="bi bi-play-fill"></i> เล่นด่านของเพื่อน
+                                </a>
+                            ` : `
+                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
+                                    ยังไม่พร้อมให้เล่น
+                                </span>
+                            `;
+                        } else if (tractorSummary?.validated) {
+                            playButtonHTML = `
+                                <a href="play_student_work.php?work_id=${work.id}" class="btn btn-primary btn-sm rounded-pill fw-bold mt-2 align-self-start">
+                                    <i class="bi bi-play-fill"></i> ลองเล่นโจทย์นี้
+                                </a>
+                            `;
+                        } else if (tractorSummary) {
+                            playButtonHTML = `
+                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
+                                    ยังไม่พร้อมให้เล่น
+                                </span>
+                            `;
+                        }
 
                         let teamInfoHTML = '';
                         if (work.mode === 'group') {
@@ -507,8 +535,19 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             }
             document.getElementById('modal-members-area').innerHTML = membersHtml;
 
-            const summary = getTractorRouteSummary(parseWorkData(work.work_data));
-            const modalSummaryHTML = summary ? `
+            const parsedModalData = parseWorkData(work.work_data);
+            const summary = getTractorRouteSummary(parsedModalData);
+            const smartSummaryRaw = getSmartFarmSummary(parsedModalData);
+            const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
+            const modalSummaryHTML = smartSummary ? `
+                <div class="alert alert-success py-2 small mb-3 border-0 shadow-sm rounded-3">
+                    <strong>${escapeHtml(smartSummary.title)}</strong><br>
+                    ${escapeHtml(smartSummary.logic)} |
+                    วัตถุ ${smartSummary.itemCount} |
+                    ตัวหลอก ${smartSummary.decoyCount} |
+                    ${smartSummary.tested ? `ทดสอบแล้ว ${Math.round(smartSummary.accuracy * 100)}%` : 'ยังไม่พร้อมให้เล่น'}
+                </div>
+            ` : (summary ? `
                 <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
                     <strong>${GAME_META.lesson_no}: ${GAME_META.title}</strong><br>
                     ประเภทภารกิจ: ${summary.mission} |
@@ -517,19 +556,24 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                     ผลผลิต ${summary.cropCount} |
                     ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
                 </div>
-            ` : '';
+            ` : '');
             document.getElementById('modal-project-summary').innerHTML = modalSummaryHTML;
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
             document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
             const modalActionArea = document.getElementById('modal-action-area');
             if (modalActionArea) {
-                modalActionArea.innerHTML = summary?.validated ? `
+                modalActionArea.innerHTML = smartSummary?.tested ? `
+                    <a href="play_smart_farm_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
+                        <i class="bi bi-controller"></i> เล่นด่านของเพื่อน
+                    </a>
+                    <div class="small text-muted mt-2">เล่นด่านสายพานตรรกะที่เพื่อนออกแบบ</div>
+                ` : (summary?.validated ? `
                     <a href="play_student_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
                         <i class="bi bi-controller"></i> ลองเล่นโจทย์นี้
                     </a>
                     <div class="small text-muted mt-2">ลองแก้โจทย์ของเพื่อนด้วยวิธีของคุณเอง</div>
-                ` : '';
+                ` : '');
             }
             
             // 🟢 แสดงคอมเมนต์คุณครูในหน้าจอใหญ่ด้วย
@@ -585,6 +629,10 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                 if (!Array.isArray(items)) {
                     if (items.project_type === 'tractor_route') {
                         renderTractorRoutePreview(stage, items);
+                        container.appendChild(stage);
+                        return;
+                    }
+                    if (items.project_type === 'smart_farm_mini_game' && window.SmartFarmBuilderPreview?.renderSummary(stage, items)) {
                         container.appendChild(stage);
                         return;
                     }

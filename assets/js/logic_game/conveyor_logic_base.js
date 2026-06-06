@@ -65,7 +65,32 @@
         return createPredicate(condition)(item.props || {}, item);
     }
 
-    function evaluateRules(item, rules, conditions = []) {
+    function defaultPassAction(config = {}) {
+        return config.defaultBehavior?.type || config.defaultBehavior?.id || 'pass_through';
+    }
+
+    function isIfOnly(config = {}) {
+        return config.logicType === 'if' || config.mode === 'single_action_if' || config.lessonType === 'if';
+    }
+
+    function normalizeAction(action, config = {}) {
+        if (isIfOnly(config) && action === 'pass') return defaultPassAction(config);
+        return action;
+    }
+
+    function expectedActionFor(item, config = {}) {
+        return normalizeAction(item.correctResult || item.expectedAction || defaultPassAction(config), config);
+    }
+
+    function evaluateRules(item, rules, conditions = [], config = {}) {
+        if (isIfOnly(config)) {
+            const rule = (rules || []).find((entry) => entry && entry.type === 'if');
+            if (!rule || !rule.condition || !rule.action) return defaultPassAction(config);
+            return checkCondition(item, rule.condition, conditions)
+                ? normalizeAction(rule.action, config)
+                : defaultPassAction(config);
+        }
+
         for (const rule of rules || []) {
             if (!rule || !rule.action) continue;
             if (rule.type === 'else' || rule.condition === 'else') return rule.action;
@@ -268,9 +293,11 @@
             container.querySelector('#mission-logic').textContent = current.lessonTypeLabel || current.lessonType;
             container.querySelector('#mission-total').textContent = `${current.itemQueue.length} ชิ้น`;
             container.querySelector('#lesson-pill').textContent = current.lessonTypeLabel || current.lessonType;
-            container.querySelector('#program-subtitle').textContent = current.allowReorder
-                ? 'ลากแถว If / Else If เพื่อสลับลำดับได้'
-                : 'วางกฎให้ครบก่อนเริ่มสายพาน';
+            container.querySelector('#program-subtitle').textContent = isIfOnly(current)
+                ? 'วางกฎ If เพียง 1 แถว วัตถุอื่นปล่อยผ่านอัตโนมัติ'
+                : (current.allowReorder
+                    ? 'ลากแถว If / Else If เพื่อสลับลำดับได้'
+                    : 'วางกฎให้ครบก่อนเริ่มสายพาน');
             dragDrop.loadLevel({
                 ruleSlots: current.ruleSlots,
                 conditions: [
@@ -280,7 +307,7 @@
                 actions: [
                     ...(current.actions || []),
                     ...(current.toolboxDecoys?.actions || [])
-                ],
+                ].filter((action) => !action.internal),
                 allowReorder: current.allowReorder
             });
             renderMachines();
@@ -305,6 +332,19 @@
                 element.style.display = '';
                 element.innerHTML = `<span class="machine-icon">${escapeHtml(machine.icon || '□')}</span>${escapeHtml(machine.label)}`;
             });
+            let passNote = container.querySelector('#pass-through-note');
+            if (isIfOnly(current)) {
+                if (!passNote) {
+                    passNote = document.createElement('div');
+                    passNote.id = 'pass-through-note';
+                    passNote.className = 'pass-through-note';
+                    container.querySelector('#farm-stage').appendChild(passNote);
+                }
+                passNote.textContent = current.defaultBehavior?.label || 'ไม่เข้าเงื่อนไข: ปล่อยผ่านอัตโนมัติ';
+                passNote.style.display = '';
+            } else if (passNote) {
+                passNote.style.display = 'none';
+            }
         }
 
         function renderQueue() {
@@ -444,13 +484,14 @@
             await delay(SCAN_DELAY_MS);
             scanner.classList.remove('scanning');
 
-            const action = evaluateRules(item, state.rules, current.conditions);
+            const action = normalizeAction(evaluateRules(item, state.rules, current.conditions, current), current);
             const actionMeta = findById(current.actions, action)
                 || findById(current.toolboxDecoys?.actions, action)
+                || current.defaultBehavior
                 || {};
-            const correct = action === item.expectedAction;
+            const correct = action === expectedActionFor(item, current);
             const machine = machineForAction(current, action);
-            const machineEl = machine ? container.querySelector(`#machine-${machine.slot}`) : container.querySelector('#machine-pass');
+            const machineEl = machine ? container.querySelector(`#machine-${machine.slot}`) : null;
             if (machineEl) machineEl.classList.add(correct ? 'active' : 'error');
 
             readout.textContent = correct
@@ -509,6 +550,7 @@
         }
 
         function machineForAction(current, action) {
+            if (normalizeAction(action, current) === defaultPassAction(current)) return null;
             const actionMeta = findById(current.actions, action)
                 || findById(current.toolboxDecoys?.actions, action);
             if (actionMeta?.routeSlot) {
@@ -532,7 +574,10 @@
                 ...(current.toolboxDecoys?.actions || [])
             ];
             const actual = labelOf(allActions, actualAction, 'ปล่อยผ่าน');
-            const expected = labelOf(current.actions, item.expectedAction, 'ปล่อยผ่าน');
+            const expectedId = expectedActionFor(item, current);
+            const expected = expectedId === defaultPassAction(current)
+                ? (current.defaultBehavior?.label || 'ปล่อยผ่านอัตโนมัติ')
+                : labelOf(current.actions, expectedId, 'ปล่อยผ่าน');
             return `เลือก "${actual}" แต่ควรเป็น "${expected}" ลองดูเงื่อนไขของรายการนี้อีกครั้ง`;
         }
 

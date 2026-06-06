@@ -10,6 +10,8 @@
         const conditions = config.conditions || [];
         const actions = config.actions || [];
         const activeRules = rules || config.rules || [];
+        const isIfOnly = logic.id === 'if' || logic.mode === 'single_action_if';
+        const defaultPassAction = config.defaultBehavior?.type || config.defaultBehavior?.id || 'pass_through';
 
         if (!config.title || config.title.trim().length === 0) errors.push('ยังไม่ได้ตั้งชื่อด่าน');
         if ((config.title || '').length > 60) errors.push('ชื่อด่านยาวเกิน 60 ตัวอักษร');
@@ -28,7 +30,33 @@
         }
 
         if (!conditions.length) errors.push('ยังไม่มีเงื่อนไขจากวัตถุที่เลือก');
-        if (!actions.length) errors.push('ยังไม่มีคำสั่งหรือปลายทาง');
+        if (!actions.length) errors.push('ยังไม่มีคำสั่งหรือปลายทางพิเศษ');
+
+        if (isIfOnly) {
+            if (activeRules.length !== 1 || activeRules.some((rule) => rule.type === 'else')) {
+                errors.push('เกม If ต้องมีแถว If เพียง 1 แถว และไม่ต้องมี Else');
+            }
+            if (!config.defaultBehavior || defaultPassAction !== 'pass_through') {
+                errors.push('เกม If ต้องตั้งค่า defaultBehavior เป็น pass_through');
+            }
+            if (actions.some((action) => action.id === 'pass' || action.id === 'pass_through')) {
+                errors.push('เกม If ไม่ควรมีปลายทางปกติเป็นบล็อกคำสั่ง ระบบจะปล่อยผ่านอัตโนมัติ');
+            }
+            if (conditions.length !== 1) {
+                errors.push('เกม If ต้องมีเงื่อนไขพิเศษ 1 เงื่อนไขเท่านั้น');
+            }
+            if (actions.length !== 1) {
+                errors.push('เกม If ต้องมีคำสั่งพิเศษ 1 คำสั่งเท่านั้น');
+            }
+            const matchingItems = items.filter((item) => item.correctAction && item.correctAction !== defaultPassAction);
+            const nonMatchingItems = items.filter((item) => item.correctAction === defaultPassAction || item.correctResult === defaultPassAction);
+            if (matchingItems.length < 1) {
+                errors.push('ยังไม่มีวัตถุที่เข้าเงื่อนไขพิเศษ กรุณาเพิ่มอย่างน้อย 1 ชิ้น');
+            }
+            if (nonMatchingItems.length < (logic.minNonMatchingItems || 2)) {
+                errors.push(`เกม If ต้องมีวัตถุไม่เข้าเงื่อนไขอย่างน้อย ${logic.minNonMatchingItems || 2} ชิ้นเพื่อให้เห็นการปล่อยผ่านอัตโนมัติ`);
+            }
+        }
 
         const actionIds = new Set(actions.map((action) => action.id));
         activeRules.forEach((rule, index) => {
@@ -59,6 +87,10 @@
 
         if ((logic.requiresElse || false) && !activeRules.some((rule) => rule.type === 'else')) {
             errors.push('เกมชนิดนี้ต้องมีแถว Else');
+        }
+
+        if (isIfOnly && activeRules.some((rule) => rule.type === 'else')) {
+            errors.push('เกม If ไม่ต้องมี Else ระบบจะปล่อยวัตถุที่ไม่เข้าเงื่อนไขผ่านอัตโนมัติ');
         }
 
         const rulesHaveActions = activeRules.every((rule) => rule.action && (rule.type === 'else' || rule.condition));

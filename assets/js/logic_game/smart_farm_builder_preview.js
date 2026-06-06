@@ -24,7 +24,30 @@
             : Object.entries(conditionProps || {}).every(([key, value]) => itemProps?.[key] === value);
     }
 
-    function evaluate(item, rules, conditions) {
+    function defaultPassAction(config = {}) {
+        const behavior = config.default_behavior || config.defaultBehavior || {};
+        return behavior.type || behavior.id || 'pass_through';
+    }
+
+    function isIfOnly(config = {}) {
+        return config.logic_type === 'if' || config.logicType === 'if' || config.mode === 'single_action_if';
+    }
+
+    function normalizeAction(action, config = {}) {
+        if (isIfOnly(config) && action === 'pass') return defaultPassAction(config);
+        return action;
+    }
+
+    function evaluate(item, rules, conditions, config = {}) {
+        if (isIfOnly(config)) {
+            const rule = (rules || []).find((entry) => entry && entry.type === 'if');
+            if (!rule || !rule.condition || !rule.action) return defaultPassAction(config);
+            const condition = byId(conditions, rule.condition);
+            return condition && matchProps(item.props, condition.props)
+                ? normalizeAction(rule.action, config)
+                : defaultPassAction(config);
+        }
+
         for (const rule of rules || []) {
             if (!rule || !rule.action) continue;
             if (rule.type === 'else' || rule.condition === 'else') return rule.action;
@@ -67,7 +90,9 @@
             const condition = rule.type === 'else' ? 'กลุ่มที่เหลือทั้งหมด' : labelOf(data.conditions, rule.condition, '-');
             const action = labelOf(data.actions, rule.action, '-');
             return `<div class="smart-rule-line"><strong>${escapeHtml(prefix)}</strong> ${escapeHtml(condition)} → ${escapeHtml(action)}</div>`;
-        }).join('');
+        }).join('') + (isIfOnly(data)
+            ? `<div class="smart-rule-line"><strong>System</strong> ไม่เข้าเงื่อนไข → ${escapeHtml((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')}</div>`
+            : '');
 
         const keepScalable = stage.classList.contains('scalable-canvas');
         stage.className = keepScalable ? 'scalable-canvas' : '';
@@ -108,7 +133,10 @@
         const rows = [
             ['ผลทดสอบ', data.testResult?.tested ? `${Math.round((data.testResult.accuracy || 0) * 100)}% / ${data.testResult.stars || 0} ดาว` : 'ยังไม่มี'],
             ['เงื่อนไข', (data.conditions || []).map((item) => item.label).join(', ') || '-'],
-            ['ปลายทาง', (data.actions || []).map((item) => item.label).join(', ') || '-'],
+            ['ปลายทาง', [
+                ...(data.actions || []).map((item) => item.label),
+                ...(isIfOnly(data) ? [((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')] : [])
+            ].join(', ') || '-'],
             ['ตัวหลอก', (data.items || []).filter((item) => item.isDecoy).map((item) => item.label).join(', ') || '-']
         ];
         return `
@@ -174,10 +202,12 @@
         const answerButton = root.querySelector('.show-answers');
 
         const actions = data.actions || [];
-        destinationRow.style.setProperty('--destination-count', String(actions.length || 1));
+        destinationRow.style.setProperty('--destination-count', String((actions.length || 1) + (isIfOnly(data) ? 1 : 0)));
         destinationRow.innerHTML = actions.map((action) => `
             <div class="destination-card"><strong>${escapeHtml(action.icon || '📦')}</strong><span>${escapeHtml(action.label)}</span></div>
-        `).join('');
+        `).join('') + (isIfOnly(data) ? `
+            <div class="pass-through-card"><strong><i class="bi bi-arrow-right-circle-fill"></i></strong><span>${escapeHtml((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')}</span></div>
+        ` : '');
 
         function renderPreview(showAnswers = false) {
             previewBar.innerHTML = (data.items || []).map((item, index) => `
@@ -204,7 +234,7 @@
                         ${(data.items || []).map((item) => `
                             <tr>
                                 <th>${escapeHtml(item.fallbackIcon || '')} ${escapeHtml(item.label)}</th>
-                                <td>${escapeHtml(labelOf(data.actions, item.correctAction, item.correctAction))}<br><span class="text-secondary">${escapeHtml(item.explain || '')}</span></td>
+                                <td>${escapeHtml(resultLabel(item, data))}<br><span class="text-secondary">${escapeHtml(item.explain || '')}</span></td>
                             </tr>
                         `).join('')}
                     </table>
@@ -220,8 +250,9 @@
             let correct = 0;
 
             for (const item of data.items || []) {
-                const actual = evaluate(item, data.rules, data.conditions);
-                const ok = actual === item.correctAction;
+                const actual = evaluate(item, data.rules, data.conditions, data);
+                const expected = normalizeAction(item.correctResult || item.correctAction, data);
+                const ok = actual === expected;
                 if (ok) correct++;
                 const token = document.createElement('div');
                 token.className = 'moving-token';
@@ -234,9 +265,14 @@
                 token.style.top = '48%';
                 await wait(420);
                 token.classList.add(ok ? 'correct' : 'wrong');
-                const actionIndex = Math.max(0, actions.findIndex((action) => action.id === actual));
-                token.style.left = `${destinationLeft(actionIndex, actions.length)}%`;
-                token.style.top = '21%';
+                if (actual === defaultPassAction(data)) {
+                    token.style.left = '91%';
+                    token.style.top = '72%';
+                } else {
+                    const actionIndex = Math.max(0, actions.findIndex((action) => action.id === actual));
+                    token.style.left = `${destinationLeft(actionIndex, actions.length)}%`;
+                    token.style.top = '21%';
+                }
                 await wait(420);
                 token.remove();
             }
@@ -265,7 +301,19 @@
         if (!showAnswers) {
             return `${item.label}\nคุณสมบัติ: ${props}\n${item.isDecoy ? 'วัตถุนี้อาจเป็นตัวหลอก ลองสังเกตคุณสมบัติให้ดี' : 'ลองดูว่าเข้าเงื่อนไขใด'}`;
         }
-        return `${item.label}\nคุณสมบัติ: ${props}\nปลายทางที่ถูกต้อง: ${labelOf(data.actions, item.correctAction, item.correctAction)}\n${item.explain || ''}`;
+        const expected = normalizeAction(item.correctResult || item.correctAction, data);
+        const label = expected === defaultPassAction(data)
+            ? ((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')
+            : labelOf(data.actions, expected, expected);
+        return `${item.label}\nคุณสมบัติ: ${props}\nปลายทางที่ถูกต้อง: ${label}\n${item.explain || ''}`;
+    }
+
+    function resultLabel(item, data) {
+        const expected = normalizeAction(item.correctResult || item.correctAction, data);
+        if (expected === defaultPassAction(data)) {
+            return (data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ';
+        }
+        return labelOf(data.actions, expected, expected);
     }
 
     function wait(ms) {

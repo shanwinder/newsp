@@ -164,7 +164,12 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
             }[char]));
         }
         function showItemDetail(item, showAnswers, data) {
-            const action = (data.actions || []).find((entry) => entry.id === item.correctAction);
+            const defaultBehavior = data.default_behavior || data.defaultBehavior || { type: 'pass_through', label: 'ปล่อยผ่านอัตโนมัติ' };
+            const expected = item.correctResult || item.correctAction;
+            const action = (data.actions || []).find((entry) => entry.id === expected);
+            const actionLabel = expected === (defaultBehavior.type || defaultBehavior.id || 'pass_through')
+                ? defaultBehavior.label
+                : (action ? action.label : expected);
             document.getElementById('item-detail-title').textContent = item.label;
             document.getElementById('item-detail-body').innerHTML = `
                 <div class="text-center display-4 mb-2">${escapeHtml(item.fallbackIcon || '🌱')}</div>
@@ -174,7 +179,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                 <p class="mb-2"><strong>ก่อนเล่น:</strong> ${item.isDecoy ? 'วัตถุนี้อาจเป็นตัวหลอก ลองสังเกตให้ดี' : 'ลองดูว่าเข้าเงื่อนไขใด'}</p>
                 ${showAnswers ? `
                     <hr>
-                    <p class="mb-2"><strong>ปลายทางที่ถูกต้อง:</strong> ${escapeHtml(action ? action.label : item.correctAction)}</p>
+                    <p class="mb-2"><strong>ผลลัพธ์ที่ถูกต้อง:</strong> ${escapeHtml(actionLabel)}</p>
                     <p class="mb-0 text-secondary">${escapeHtml(item.explain || '')}</p>
                 ` : '<p class="mb-0 text-secondary">เฉลยปลายทางจะแสดงหลังเล่นจบ</p>'}
             `;

@@ -39,11 +39,11 @@ if ($game_id === 1) {
 } else if ($game_id === 3) {
     $game_title = "บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ";
     $game_theme = "info";
-    $mission_desc = "คุณคือผู้จัดการฟาร์มอัจฉริยะ ต้องใช้ If / Else / Else If เพื่อคัดแยกผลผลิตจากพืชผัก ผลไม้ และผลผลิตจากสัตว์บนสายพานฟาร์มอัตโนมัติ";
+    $mission_desc = "คุณคือผู้จัดการฟาร์มอัจฉริยะ ต้องใช้ If, If / Else และ If / Else If / Else ให้ถูกสถานการณ์ เพื่อคัดแยกผลผลิตบนสายพานฟาร์มอัตโนมัติ";
 
     $steps = [
         ['icon' => 'bi-search', 'title' => '1. ตรวจรายการวัตถุ', 'desc' => 'คลิกวัตถุในแถบรายการเพื่อดูคุณสมบัติ คำใบ้ และตัวหลอกก่อนเริ่มสายพาน'],
-        ['icon' => 'bi-collection', 'title' => '2. สร้างกฎฟาร์ม', 'desc' => 'ลากบล็อกเงื่อนไขและคำสั่ง วางเป็นกฎ If, Else If และ Else จากบนลงล่างตามโจทย์'],
+        ['icon' => 'bi-collection', 'title' => '2. สร้างกฎฟาร์ม', 'desc' => 'เกม If ใช้คำสั่งพิเศษเพียงทางเดียว ส่วนเกม If / Else และ If / Else If / Else จะเพิ่มปลายทางตามโจทย์'],
         ['icon' => 'bi-play-circle', 'title' => '3. เริ่มสายพาน!', 'desc' => 'ระบบจะสแกนผลผลิตทีละชิ้น ประเมินกฎของคุณ และสรุปผลด้วยดาวเป็นคะแนนหลัก']
     ];
     $start_link = "../pages/game_select.php?game_id=3";
@@ -279,13 +279,13 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 </div>
                 <?php elseif ($game_id === 3): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
-                    <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If-Then-Else</div>
+                    <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If และ Else</div>
                     <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้ระบบฟาร์มตัดสินใจเองได้ เหมือนการเขียนสมองให้เครื่องจักรอัตโนมัติ</p>
-                    <p class="text-secondary small mb-3">ระบบจะอ่านกฎจากบนลงล่าง เช่น <strong>ถ้าผลผลิตเปื้อน ให้ส่งไปล้าง</strong> หรือถ้าความชื้นต่ำให้เปิดสปริงเกอร์ ถ้าเรียงผิด เครื่องจักรอาจส่งวัตถุไปปลายทางผิดได้</p>
+                    <p class="text-secondary small mb-3">เกมที่ 1 ใช้ If เพื่อจับกรณีพิเศษเท่านั้น: ถ้าเข้าเงื่อนไขให้ส่งไปเครื่องพิเศษ ถ้าไม่เข้าเงื่อนไขระบบจะปล่อยผ่านอัตโนมัติ เกมถัดไปจึงค่อยเพิ่ม Else และ Else If</p>
                     <div class="row g-2">
-                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">If</span><br>ถ้าสถานการณ์นี้เป็นจริง ให้ทำคำสั่งที่กำหนด</div></div>
-                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">Else If</span><br>ถ้าเงื่อนไขก่อนหน้าไม่จริง ค่อยตรวจเงื่อนไขถัดไป</div></div>
-                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-secondary mb-1">Else</span><br>กรณีที่ไม่เข้าเงื่อนไขใด ให้ระบบมีคำสั่งสำรอง</div></div>
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">If</span><br>ถ้าเจอวัตถุที่เข้าเงื่อนไข ให้ทำคำสั่งพิเศษ วัตถุอื่นปล่อยผ่าน</div></div>
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">If / Else</span><br>แยกวัตถุเป็น 2 ทาง: เข้าเงื่อนไข และกลุ่มที่เหลือทั้งหมด</div></div>
+                        <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-secondary mb-1">If / Else If / Else</span><br>ตรวจหลายเงื่อนไขตามลำดับ แล้วใช้ Else เป็นทางสุดท้าย</div></div>
                     </div>
                 </div>
                 <?php elseif ($game_id === 4): ?>
@@ -348,7 +348,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <div class="row g-3 mb-5">
                     <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ลำดับกฎสำคัญ</b><p class="small text-muted mb-0 mt-2">ระบบอ่านกฎจากบนลงล่าง และทำคำสั่งแรกที่เข้าเงื่อนไขทันที</p></div></div>
                     <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #0dcaf0 !important;"><b class="text-info fs-6">ดูค่าจากเซ็นเซอร์</b><p class="small text-muted mb-0 mt-2">บางด่านต้องใช้ตัวเลข เช่น น้ำหนัก ความชื้น และอุณหภูมิ เพื่อเลือกคำสั่งให้ถูก</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">Else คือทางสุดท้าย</b><p class="small text-muted mb-0 mt-2">เมื่อไม่เข้าเงื่อนไขใด ให้ใช้ Else ส่งไปปลายทางที่ปลอดภัยหรือปิดระบบ</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">If ไม่จำเป็นต้องมี Else</b><p class="small text-muted mb-0 mt-2">ในเกม If วัตถุที่ไม่เข้าเงื่อนไขจะปล่อยผ่านเอง ส่วน Else ใช้ในเกมที่ต้องแยกอีกทางชัดเจน</p></div></div>
                 </div>
                 <?php elseif ($game_id === 4): ?>
                 <h5 class="fw-bold text-danger mb-3"><i class="bi bi-search"></i> วิธีคิดแบบนักแก้บั๊ก</h5>

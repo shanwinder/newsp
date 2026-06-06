@@ -8,9 +8,12 @@
             theme: 'vegetables',
             themeLabel: 'ผลผลิตจากพืชผัก',
             minItems: 4,
-            minDecoys: 3,
+            minNonMatchingItems: 2,
+            minDecoys: 1,
             minMatchesPerCondition: 1,
             requiresElse: false,
+            mode: 'single_action_if',
+            defaultBehavior: { type: 'pass_through', label: 'ปล่อยผ่านอัตโนมัติ' },
             ruleSlots: [{ type: 'if' }]
         },
         if_else: {
@@ -134,9 +137,13 @@
         state.selectedItems = (data.items || []).map((saved) => ({
             ...saved,
             uid: saved.uid || uid(),
-            catalogId: saved.catalogId || saved.id
+            catalogId: saved.catalogId || saved.id,
+            correctAction: state.logicType === 'if' && saved.correctAction === 'pass' ? 'pass_through' : saved.correctAction
         }));
-        state.rules = (data.rules || []).map((rule) => ({ ...rule }));
+        state.rules = (data.rules || []).map((rule) => ({
+            ...rule,
+            action: state.logicType === 'if' && rule.action === 'pass' ? 'pass_through' : rule.action
+        }));
         state.tested = Boolean(data.testResult?.tested);
         state.testResult = data.testResult || null;
         document.getElementById('level-title').value = data.title || '';
@@ -242,6 +249,7 @@
     function renderSelectedItems() {
         const container = document.getElementById('selected-items');
         const actions = getActions();
+        const isIfOnly = state.logicType === 'if';
         document.getElementById('selected-count').textContent = `${state.selectedItems.length} ชิ้น`;
 
         if (!state.selectedItems.length) {
@@ -257,11 +265,17 @@
                     <div class="props">${escapeHtml(itemData.propsDisplay.join(' | '))}</div>
                     ${itemData.isAutoDecoy ? '<span class="decoy-pill">ตัวหลอกที่ระบบแนะนำ</span>' : ''}
                 </div>
-                <select class="form-select form-select-sm correct-action">
-                    ${actions.map((actionItem) => `
-                        <option value="${actionItem.id}" ${actionItem.id === itemData.correctAction ? 'selected' : ''}>${escapeHtml(actionItem.label)}</option>
-                    `).join('')}
-                </select>
+                ${isIfOnly ? `
+                    <div class="auto-result-pill ${itemData.correctAction === defaultPassAction() ? 'pass' : 'special'}">
+                        ${escapeHtml(itemData.correctAction === defaultPassAction() ? 'ปล่อยผ่านอัตโนมัติ' : labelOf(actions, itemData.correctAction, 'คำสั่งพิเศษ'))}
+                    </div>
+                ` : `
+                    <select class="form-select form-select-sm correct-action">
+                        ${actions.map((actionItem) => `
+                            <option value="${actionItem.id}" ${actionItem.id === itemData.correctAction ? 'selected' : ''}>${escapeHtml(actionItem.label)}</option>
+                        `).join('')}
+                    </select>
+                `}
                 <label class="decoy-toggle">
                     <input type="checkbox" class="form-check-input decoy-check" ${itemData.isDecoy ? 'checked' : ''}>
                     ตัวหลอก
@@ -272,7 +286,7 @@
 
         container.querySelectorAll('.selected-item-row').forEach((row) => {
             const uidValue = row.dataset.uid;
-            row.querySelector('.correct-action').addEventListener('change', (event) => updateItem(uidValue, { correctAction: event.target.value }));
+            row.querySelector('.correct-action')?.addEventListener('change', (event) => updateItem(uidValue, { correctAction: event.target.value }));
             row.querySelector('.decoy-check').addEventListener('change', (event) => updateItem(uidValue, { isDecoy: event.target.checked }));
             row.querySelector('.remove-item').addEventListener('click', () => removeItem(uidValue));
         });
@@ -328,15 +342,21 @@
         guide.innerHTML = `
             <div class="rule-guide-card">
                 <strong>วิธีใช้ช่องนี้</strong>
-                <span>1. เลือกวัตถุหลักก่อน ระบบจะสร้างบล็อกเงื่อนไข เช่น "${escapeHtml(conditions[0]?.label || 'ไข่ใบใหญ่และไม่ร้าว')}"</span>
-                <span>2. ลากเงื่อนไขไปช่องซ้าย และลากปลายทางไปช่องขวา</span>
-                <span>3. กด “สร้างกฎให้อัตโนมัติ” ได้ ถ้าต้องการให้ระบบเติมจากปลายทางของวัตถุที่เลือก</span>
+                ${logic.id === 'if' ? `
+                    <span>1. เลือกวัตถุที่เป็นกรณีพิเศษ 1 แบบ เช่น "${escapeHtml(conditions[0]?.label || 'แครอทเปื้อนโคลน')}"</span>
+                    <span>2. ลากเงื่อนไขและคำสั่งพิเศษลงในแถว If แถวเดียว</span>
+                    <span>3. วัตถุที่ไม่เข้าเงื่อนไขจะปล่อยผ่านอัตโนมัติ ไม่ต้องสร้าง Else</span>
+                ` : `
+                    <span>1. เลือกวัตถุหลักก่อน ระบบจะสร้างบล็อกเงื่อนไข เช่น "${escapeHtml(conditions[0]?.label || 'ไข่ใบใหญ่และไม่ร้าว')}"</span>
+                    <span>2. ลากเงื่อนไขไปช่องซ้าย และลากปลายทางไปช่องขวา</span>
+                    <span>3. กด “สร้างกฎให้อัตโนมัติ” ได้ ถ้าต้องการให้ระบบเติมจากปลายทางของวัตถุที่เลือก</span>
+                `}
             </div>
             <div class="rule-guide-card muted">
                 <strong>ตอนนี้มี</strong>
                 <span>${conditions.length} เงื่อนไขจากวัตถุหลัก</span>
                 <span>${state.selectedItems.filter((itemData) => itemData.isDecoy).length} ตัวหลอกสำหรับทดสอบ</span>
-                <span>รูปแบบกฎ: ${escapeHtml(logic.label)}</span>
+                <span>รูปแบบกฎ: ${escapeHtml(logic.id === 'if' ? 'Single-Action If' : logic.label)}</span>
             </div>
         `;
 
@@ -350,19 +370,25 @@
                     ${index + 1}. ${escapeHtml(prefix)} ${escapeHtml(condition)} → ${escapeHtml(action)}
                 </div>`;
             }).join('')}
+            ${logic.id === 'if' ? `<div class="readable-rule system-rule">ระบบ: วัตถุที่ไม่เข้าเงื่อนไข → ${escapeHtml(defaultBehavior().label)}</div>` : ''}
         `;
     }
 
     function renderDestinations() {
         const container = document.getElementById('builder-destinations');
         const actions = getActions();
-        container.style.setProperty('--destination-count', String(actions.length));
+        container.style.setProperty('--destination-count', String(actions.length + (state.logicType === 'if' ? 1 : 0)));
         container.innerHTML = actions.map((actionItem) => `
             <div class="destination-card" data-action="${actionItem.id}">
                 <strong>${escapeHtml(actionItem.icon)}</strong>
                 <span>${escapeHtml(actionItem.destination)}</span>
             </div>
-        `).join('');
+        `).join('') + (state.logicType === 'if' ? `
+            <div class="pass-through-card">
+                <strong><i class="bi bi-arrow-right-circle-fill"></i></strong>
+                <span>${escapeHtml(defaultBehavior().label)}</span>
+            </div>
+        ` : '');
     }
 
     function renderPreviewBar(showAnswers) {
@@ -411,8 +437,8 @@
             catalogId: base.id,
             isDecoy: false,
             isAutoDecoy: false,
-            correctAction: base.defaultAction,
-            explain: makeExplain(base, base.defaultAction)
+            correctAction: initialCorrectAction(base),
+            explain: makeExplain(base, initialCorrectAction(base))
         });
         state.tested = false;
         refreshAfterItemsChanged();
@@ -428,7 +454,7 @@
             catalogId: base.id,
             isDecoy: false,
             isAutoDecoy: false,
-            correctAction: base.defaultAction
+            correctAction: initialCorrectAction(base)
         };
         targetItem.explain = makeExplain(targetItem, targetItem.correctAction);
         state.selectedItems.push(targetItem);
@@ -540,7 +566,7 @@
         let correct = 0;
         const conditions = deriveConditions();
         for (const itemData of state.selectedItems) {
-            const actualAction = window.SmartFarmBuilderPreview.evaluate(itemData, state.rules, conditions);
+            const actualAction = window.SmartFarmBuilderPreview.evaluate(itemData, state.rules, conditions, buildEvaluationConfig());
             const ok = actualAction === itemData.correctAction;
             if (ok) correct++;
             await animateItem(itemData, actualAction, ok);
@@ -580,11 +606,16 @@
             }, 80);
 
             window.setTimeout(() => {
-                token.classList.add(ok ? 'correct' : 'wrong');
-                const actions = getActions();
+            token.classList.add(ok ? 'correct' : 'wrong');
+            const actions = getActions();
+            if (actualAction === defaultPassAction()) {
+                token.style.left = '91%';
+                token.style.top = '72%';
+            } else {
                 const index = Math.max(0, actions.findIndex((actionItem) => actionItem.id === actualAction));
                 token.style.left = `${destinationLeft(index, actions.length)}%`;
                 token.style.top = '20%';
+            }
             }, 540);
 
             window.setTimeout(() => {
@@ -642,8 +673,9 @@
         return {
             project_type: 'smart_farm_mini_game',
             game_id: 3,
-            builder_version: '1.0',
+            builder_version: state.logicType === 'if' ? '1.1' : '1.0',
             logic_type: state.logicType,
+            mode: logic.mode || null,
             theme: logic.theme,
             themeLabel: logic.themeLabel,
             title: document.getElementById('level-title').value.trim(),
@@ -662,6 +694,8 @@
                 conditionLabel: itemData.conditionLabel,
                 conditionProps: itemData.conditionProps,
                 correctAction: itemData.correctAction,
+                matchesCondition: itemData.correctAction !== defaultPassAction(),
+                correctResult: itemData.correctAction,
                 isDecoy: Boolean(itemData.isDecoy),
                 isAutoDecoy: Boolean(itemData.isAutoDecoy),
                 sourceCatalogId: itemData.sourceCatalogId || null,
@@ -671,6 +705,9 @@
             conditions,
             actions,
             rules: state.rules,
+            condition: state.logicType === 'if' ? (conditions[0] || null) : null,
+            special_action: state.logicType === 'if' ? (actions.find((action) => action.id === state.rules[0]?.action) || null) : null,
+            default_behavior: state.logicType === 'if' ? defaultBehavior() : null,
             previewBar: {
                 clickable: true,
                 showDecoyHintBeforePlay: true,
@@ -689,7 +726,8 @@
             items: state.selectedItems,
             conditions: deriveConditions(),
             actions: getActions(),
-            rules: state.rules
+            rules: state.rules,
+            defaultBehavior: state.logicType === 'if' ? defaultBehavior() : null
         }, state.rules);
     }
 
@@ -701,7 +739,10 @@
 
     function deriveConditions() {
         const map = new Map();
-        state.selectedItems.filter((itemData) => !itemData.isDecoy).forEach((itemData) => {
+        state.selectedItems
+            .filter((itemData) => !itemData.isDecoy)
+            .filter((itemData) => state.logicType !== 'if' || itemData.correctAction !== defaultPassAction())
+            .forEach((itemData) => {
             if (!map.has(itemData.conditionId)) {
                 map.set(itemData.conditionId, {
                     id: itemData.conditionId,
@@ -716,7 +757,16 @@
     }
 
     function getActions() {
-        return actionsByTheme[logicTypes[state.logicType].theme] || actionsByTheme.vegetables;
+        const actions = actionsByTheme[logicTypes[state.logicType].theme] || actionsByTheme.vegetables;
+        if (state.logicType !== 'if') return actions;
+        const specialIds = new Set(
+            state.selectedItems
+                .filter((itemData) => itemData.correctAction && itemData.correctAction !== defaultPassAction())
+                .map((itemData) => itemData.correctAction)
+        );
+        const visible = actions.filter((actionItem) => actionItem.id !== 'pass' && actionItem.id !== defaultPassAction());
+        const selectedSpecials = visible.filter((actionItem) => specialIds.has(actionItem.id));
+        return selectedSpecials.length ? selectedSpecials : visible;
     }
 
     function makeRuleSlots(defaultSlots, existingRules) {
@@ -736,6 +786,29 @@
         return match?.correctAction || getActions()[0]?.id || null;
     }
 
+    function buildEvaluationConfig() {
+        return {
+            logic_type: state.logicType,
+            mode: logicTypes[state.logicType].mode || null,
+            default_behavior: state.logicType === 'if' ? defaultBehavior() : null
+        };
+    }
+
+    function defaultBehavior() {
+        return logicTypes[state.logicType].defaultBehavior || { type: 'pass_through', label: 'ปล่อยผ่านอัตโนมัติ' };
+    }
+
+    function defaultPassAction() {
+        const behavior = defaultBehavior();
+        return behavior.type || behavior.id || 'pass_through';
+    }
+
+    function initialCorrectAction(itemData) {
+        return state.logicType === 'if' && itemData.defaultAction === 'pass'
+            ? defaultPassAction()
+            : itemData.defaultAction;
+    }
+
     function mostCommonActionForElse() {
         const counts = new Map();
         const elseItems = state.selectedItems.filter((itemData) => itemData.isDecoy);
@@ -748,7 +821,9 @@
     function showItemDetail(itemData, showAnswers) {
         const modal = new bootstrap.Modal(document.getElementById('itemDetailModal'));
         document.getElementById('item-detail-title').textContent = itemData.label;
-        const actionLabel = getActions().find((actionItem) => actionItem.id === itemData.correctAction)?.label || itemData.correctAction;
+        const actionLabel = itemData.correctAction === defaultPassAction()
+            ? defaultBehavior().label
+            : (getActions().find((actionItem) => actionItem.id === itemData.correctAction)?.label || itemData.correctAction);
         document.getElementById('item-detail-body').innerHTML = `
             <div class="text-center display-4 mb-2">${escapeHtml(itemData.fallbackIcon)}</div>
             <div class="detail-props">
@@ -757,8 +832,8 @@
             <p class="mb-2"><strong>สถานะก่อนเล่น:</strong> ${itemData.isDecoy ? 'วัตถุนี้อาจเป็นตัวหลอก ลองสังเกตคุณสมบัติให้ดี' : 'วัตถุหลักของด่าน ลองจับคู่กับเงื่อนไข'}</p>
             ${showAnswers ? `
                 <hr>
-                <p class="mb-2"><strong>เงื่อนไขที่เกี่ยวข้อง:</strong> ${escapeHtml(itemData.conditionLabel)}</p>
-                <p class="mb-2"><strong>ปลายทางที่ถูกต้อง:</strong> ${escapeHtml(actionLabel)}</p>
+                <p class="mb-2"><strong>${itemData.correctAction === defaultPassAction() ? 'สถานะเงื่อนไข' : 'เงื่อนไขที่เกี่ยวข้อง'}:</strong> ${escapeHtml(itemData.correctAction === defaultPassAction() ? 'ไม่เข้าเงื่อนไขพิเศษ' : itemData.conditionLabel)}</p>
+                <p class="mb-2"><strong>ผลลัพธ์ที่ถูกต้อง:</strong> ${escapeHtml(actionLabel)}</p>
                 <p class="mb-0 text-secondary">${escapeHtml(itemData.explain || '')}</p>
             ` : '<p class="mb-0 text-secondary">เฉลยปลายทางจะแสดงหลังทดลองเล่น</p>'}
         `;
@@ -848,6 +923,7 @@
     }
 
     function decoyActionFor(base) {
+        if (state.logicType === 'if') return defaultPassAction();
         if (base.theme === 'vegetables') return base.defaultAction === 'pass' ? 'compost' : 'pass';
         if (base.theme === 'fruits') return base.defaultAction === 'sell_front' ? 'ripen_room' : 'sell_front';
         return base.defaultAction === 'reject_bin' ? 'standard_tray' : 'reject_bin';
@@ -861,9 +937,14 @@
     }
 
     function makeExplain(itemData, actionId) {
-        const actionLabel = getActions().find((actionItem) => actionItem.id === actionId)?.label || actionId;
+        const actionLabel = actionId === defaultPassAction()
+            ? defaultBehavior().label
+            : (getActions().find((actionItem) => actionItem.id === actionId)?.label || actionId);
         const decoyText = itemData.isDecoy ? ' เป็นตัวหลอกหรือกลุ่มอื่นที่ต้องระวัง' : '';
-        return `${itemData.label}${decoyText} จึงควร${actionLabel}`;
+        if (actionId === defaultPassAction()) {
+            return `${itemData.label}${decoyText} ไม่เข้าเงื่อนไขพิเศษ จึงควร${actionLabel}`;
+        }
+        return `${itemData.label}${decoyText} เข้าเงื่อนไขพิเศษ จึงควร${actionLabel}`;
     }
 
     function labelOf(list, id, fallback) {

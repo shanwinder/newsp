@@ -3155,11 +3155,12 @@
         const style = document.createElement('style');
         style.id = 'farm-missions-agri-drone-style';
         style.innerHTML = `
-            #game-container { width: min(1180px, 96vw); }
+            #game-container { width: min(1180px, calc(100vw - 32px)); max-width: 100%; }
             .agri-shell,
             .agri-shell * { box-sizing: border-box; }
             .agri-shell {
-                width: min(1180px, 96vw);
+                width: 100%;
+                max-width: 100%;
                 font-family: 'Kanit', sans-serif;
                 color: #14302d;
             }
@@ -3241,7 +3242,7 @@
             }
             .agri-layout {
                 display: grid;
-                grid-template-columns: minmax(0, 1.16fr) minmax(360px, .84fr);
+                grid-template-columns: minmax(0, 1fr) 340px;
                 gap: 12px;
                 align-items: start;
             }
@@ -3363,6 +3364,27 @@
                 position: absolute;
                 inset: 98px 18px 24px;
             }
+            .agri-grid-cell {
+                position: absolute;
+                border-radius: 8px;
+                border: 1px solid rgba(15, 118, 110, .2);
+                background: rgba(255, 255, 255, .22);
+                box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+            }
+            .agri-grid-cell.base-cell {
+                background: rgba(226, 232, 240, .7);
+                border-color: rgba(71, 85, 105, .45);
+            }
+            .agri-grid-cell.base-cell::after {
+                content: "ฐาน";
+                position: absolute;
+                inset: 0;
+                display: grid;
+                place-items: center;
+                color: #334155;
+                font-weight: 800;
+                font-size: 13px;
+            }
             .agri-plot {
                 position: absolute;
                 width: 164px;
@@ -3453,7 +3475,9 @@
                 filter: grayscale(.4);
             }
             .agri-pest,
-            .agri-crop {
+            .agri-crop,
+            .agri-fertilizer,
+            .agri-weed {
                 position: absolute;
                 z-index: 7;
                 font-size: 28px;
@@ -3467,6 +3491,14 @@
                 left: 16px;
                 top: 58px;
                 animation: cropGlow 1.4s ease-in-out infinite alternate;
+            }
+            .agri-fertilizer {
+                right: 52px;
+                top: 92px;
+            }
+            .agri-weed {
+                left: 52px;
+                top: 92px;
             }
             .agri-sensors {
                 position: relative;
@@ -3572,7 +3604,7 @@
             }
             .agri-palette {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
                 gap: 10px;
             }
             .agri-card-group {
@@ -3605,10 +3637,70 @@
             }
             .agri-card.condition { background: #0f766e; }
             .agri-card.action { background: #2563eb; }
+            .agri-card.resource,
+            .agri-resource-card { background: #d97706; }
             .agri-card.selected {
                 outline: 3px solid #facc15;
                 outline-offset: 2px;
                 transform: translateY(-1px);
+            }
+            .agri-loadout {
+                display: grid;
+                gap: 10px;
+            }
+            .agri-loadout-head {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                color: #334155;
+                font-size: 13px;
+                font-weight: 800;
+            }
+            .agri-loadout-slots {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 8px;
+            }
+            .agri-loadout-slot {
+                min-height: 44px;
+                border: 2px dashed #f59e0b;
+                border-radius: 8px;
+                background: #fffbeb;
+                color: #92400e;
+                font-size: 12px;
+                font-weight: 800;
+                text-align: center;
+                cursor: pointer;
+                padding: 6px;
+            }
+            .agri-loadout-slot.filled {
+                border-style: solid;
+                background: #fff7ed;
+                color: #431407;
+            }
+            .agri-loadout-slot.target {
+                border-color: #0f766e;
+                background: #ecfdf5;
+            }
+            .agri-resource-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .agri-resource-status {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .agri-resource-pill {
+                border-radius: 999px;
+                border: 1px solid #fed7aa;
+                background: #fff7ed;
+                color: #9a3412;
+                padding: 4px 7px;
+                font-size: 12px;
+                font-weight: 800;
             }
             .agri-controls {
                 display: flex;
@@ -3618,12 +3710,19 @@
             }
             .agri-control {
                 border: 0;
-                border-radius: 999px;
+                border-radius: 8px;
                 background: #16a34a;
                 color: #ffffff;
                 cursor: pointer;
                 font-weight: 800;
                 padding: 10px 15px;
+            }
+            #agri-run {
+                width: 100%;
+                min-height: 54px;
+                background: #15803d;
+                font-size: 18px;
+                box-shadow: 0 10px 18px rgba(21, 128, 61, .2);
             }
             .agri-control.secondary { background: #64748b; }
             .agri-control.warning { background: #d97706; }
@@ -3723,6 +3822,7 @@
             @media (max-width: 620px) {
                 .agri-meters,
                 .agri-palette,
+                .agri-loadout-slots,
                 .agri-rule,
                 .agri-rule-slots { grid-template-columns: 1fr; }
                 .agri-map { min-height: 760px; }
@@ -3746,6 +3846,13 @@
         const actionCards = gameConfig.cards?.actions || [];
         const conditionMap = Object.fromEntries(conditionCards.map((item) => [item.value, item]));
         const actionMap = Object.fromEntries(actionCards.map((item) => [item.value, item]));
+        const resourceCatalog = gameConfig.resources || [
+            { value: 'water', label: 'น้ำ', icon: '💧', weight: 2 },
+            { value: 'fertilizer', label: 'ปุ๋ย', icon: '🌿', weight: 2 },
+            { value: 'pesticide', label: 'น้ำยา', icon: '✨', weight: 1 },
+            { value: 'basket', label: 'ตะกร้า', icon: '🧺', weight: 2, capacity: 3 }
+        ];
+        const resourceMap = Object.fromEntries(resourceCatalog.map((item) => [item.value, item]));
         const rows = (gameConfig.ruleSlots || buildRuleSlots(gameConfig.expectedPriority || [])).map((row, index) => ({
             ...row,
             label: row.label || (index === 0 ? 'ถ้า' : row.type === 'else' ? 'มิฉะนั้น' : 'มิฉะนั้นถ้า')
@@ -3763,6 +3870,8 @@
             farmHp: gameConfig.farmHp || gameConfig.gardenHp || 100,
             droneBattery: gameConfig.droneBattery ?? 100,
             droneWater: gameConfig.droneWater ?? 100,
+            droneResources: {},
+            loadout: [],
             harvestedCount: 0,
             pestCleared: 0,
             wrongActions: 0,
@@ -3776,6 +3885,8 @@
             })),
             results: {}
         };
+        state.loadout = normalizeLoadout(currentWave().defaultLoadout || gameConfig.defaultLoadout || ['water', 'water']);
+        state.droneResources = loadoutCounts(state.loadout);
         let eventRoot = null;
 
         renderShell();
@@ -3848,19 +3959,34 @@
                             <div id="agri-rules" class="agri-rules"></div>
                             <div class="agri-palette">
                                 <section class="agri-card-group">
-                                    <div class="agri-card-title">การ์ดเงื่อนไข</div>
+                                    <div class="agri-card-title">1. คลังบล็อกเงื่อนไข</div>
                                     <div id="agri-condition-cards" class="agri-card-list"></div>
                                 </section>
                                 <section class="agri-card-group">
-                                    <div class="agri-card-title">การ์ดคำสั่ง</div>
+                                    <div class="agri-card-title">2. คลังบล็อกคำสั่ง</div>
                                     <div id="agri-action-cards" class="agri-card-list"></div>
                                 </section>
-                            </div>
-                            <div class="agri-controls">
-                                <button type="button" class="agri-control" id="agri-run">ปล่อยโดรน!</button>
-                                <button type="button" class="agri-control secondary" id="agri-hint">คำใบ้</button>
-                                <button type="button" class="agri-control warning" id="agri-undo">ย้อนกลับ</button>
-                                <button type="button" class="agri-control danger" id="agri-clear">ล้างกฎ</button>
+                                <section class="agri-card-group">
+                                    <div class="agri-card-title">3. ช่องบรรทุกโดรน</div>
+                                    <div class="agri-loadout">
+                                        <div class="agri-loadout-head">
+                                            <span id="agri-loadout-weight">น้ำหนัก 0/6</span>
+                                            <span id="agri-loadout-effect">แบต -5/ช่อง</span>
+                                        </div>
+                                        <div id="agri-loadout-slots" class="agri-loadout-slots"></div>
+                                        <div id="agri-resource-cards" class="agri-resource-list"></div>
+                                        <div id="agri-resource-status" class="agri-resource-status"></div>
+                                    </div>
+                                </section>
+                                <section class="agri-card-group">
+                                    <div class="agri-card-title">4. แผงควบคุมเกม</div>
+                                    <div class="agri-controls">
+                                        <button type="button" class="agri-control" id="agri-run">ปล่อยโดรน!</button>
+                                        <button type="button" class="agri-control secondary" id="agri-hint">คำใบ้</button>
+                                        <button type="button" class="agri-control warning" id="agri-undo">ย้อนกลับ</button>
+                                        <button type="button" class="agri-control danger" id="agri-clear">ล้างกฎ</button>
+                                    </div>
+                                </section>
                             </div>
                             <section id="agri-feedback" class="agri-feedback">
                                 <strong>คำแนะนำ</strong>
@@ -3880,11 +4006,27 @@
             container.querySelector('#agri-clear').addEventListener('click', clearRules);
 
             eventRoot.addEventListener('click', (event) => {
+                const resourceCard = event.target.closest('.agri-resource-card');
+                if (resourceCard && !state.running) {
+                    state.selected = { kind: 'resource', value: resourceCard.dataset.value };
+                    renderCards();
+                    renderResources();
+                    showFeedback('info', 'เลือกทรัพยากรแล้ว', `แตะช่องบรรทุกเพื่อใส่ "${resourceCard.textContent.trim()}"`);
+                    return;
+                }
+
                 const card = event.target.closest('.agri-card');
                 if (card && !state.running) {
                     state.selected = { kind: card.dataset.kind, value: card.dataset.value };
                     renderCards();
+                    renderResources();
                     showFeedback('info', 'เลือกการ์ดแล้ว', `แตะช่องในสมองโดรนเพื่อวาง "${card.textContent.trim()}"`);
+                    return;
+                }
+
+                const resourceSlot = event.target.closest('.agri-loadout-slot');
+                if (resourceSlot && !state.running) {
+                    handleLoadoutSlot(resourceSlot);
                     return;
                 }
 
@@ -3909,24 +4051,54 @@
 
             eventRoot.addEventListener('dragstart', (event) => {
                 const card = event.target.closest('.agri-card');
-                if (!card || state.running) return;
+                const resourceCard = event.target.closest('.agri-resource-card');
+                if ((!card && !resourceCard) || state.running) return;
+                if (resourceCard) {
+                    const payload = { kind: 'resource', value: resourceCard.dataset.value };
+                    event.dataTransfer.setData('text/plain', JSON.stringify(payload));
+                    event.dataTransfer.effectAllowed = 'copy';
+                    state.selected = payload;
+                    renderCards();
+                    renderResources();
+                    return;
+                }
                 const payload = { kind: card.dataset.kind, value: card.dataset.value };
                 event.dataTransfer.setData('text/plain', JSON.stringify(payload));
                 event.dataTransfer.effectAllowed = 'copy';
                 state.selected = payload;
                 renderCards();
+                renderResources();
             });
             eventRoot.addEventListener('dragover', (event) => {
+                const loadoutSlot = event.target.closest('.agri-loadout-slot');
+                if (loadoutSlot && !state.running) {
+                    event.preventDefault();
+                    loadoutSlot.classList.add('target');
+                    return;
+                }
                 const slot = event.target.closest('.agri-slot');
                 if (!slot || slot.classList.contains('fixed') || state.running) return;
                 event.preventDefault();
                 slot.classList.add('target');
             });
             eventRoot.addEventListener('dragleave', (event) => {
+                const loadoutSlot = event.target.closest('.agri-loadout-slot');
+                if (loadoutSlot) loadoutSlot.classList.remove('target');
                 const slot = event.target.closest('.agri-slot');
                 if (slot) slot.classList.remove('target');
             });
             eventRoot.addEventListener('drop', (event) => {
+                const loadoutSlot = event.target.closest('.agri-loadout-slot');
+                if (loadoutSlot && !state.running) {
+                    event.preventDefault();
+                    loadoutSlot.classList.remove('target');
+                    try {
+                        applyResourceToSlot(loadoutSlot, JSON.parse(event.dataTransfer.getData('text/plain')));
+                    } catch (error) {
+                        showFeedback('error', 'วางทรัพยากรไม่ได้', 'ลองเลือกทรัพยากรอีกครั้ง');
+                    }
+                    return;
+                }
                 const slot = event.target.closest('.agri-slot');
                 if (!slot || slot.classList.contains('fixed') || state.running) return;
                 event.preventDefault();
@@ -3955,8 +4127,51 @@
             renderAll();
         }
 
+        function handleLoadoutSlot(slot) {
+            const slotIndex = Number(slot.dataset.slotIndex);
+            if (state.selected?.kind === 'resource') {
+                applyResourceToSlot(slot, state.selected);
+                return;
+            }
+            if (state.loadout[slotIndex]) {
+                pushHistory();
+                state.loadout[slotIndex] = null;
+                state.droneResources = loadoutCounts(state.loadout);
+                state.selected = null;
+                renderAll();
+                showFeedback('info', 'นำทรัพยากรออกแล้ว', 'ปรับน้ำหนักบรรทุกก่อนปล่อยโดรนได้เลย');
+                return;
+            }
+            showFeedback('info', 'เลือกทรัพยากรก่อน', 'ลากหรือแตะทรัพยากร แล้ววางลงช่องบรรทุกโดรน');
+        }
+
+        function applyResourceToSlot(slot, payload) {
+            if (payload.kind !== 'resource' || !resourceMap[payload.value]) {
+                showFeedback('error', 'ช่องนี้รับทรัพยากรเท่านั้น', 'เลือกน้ำ ปุ๋ย น้ำยา หรือตะกร้าจากคลังทรัพยากร');
+                return;
+            }
+            const slotIndex = Number(slot.dataset.slotIndex);
+            const nextLoadout = state.loadout.slice();
+            nextLoadout[slotIndex] = payload.value;
+            const weight = loadoutWeight(nextLoadout);
+            const capacity = loadoutCapacity();
+            if (weight > capacity) {
+                showFeedback('error', 'โดรนบรรทุกหนักเกินไป', `น้ำหนักรวม ${weight}/${capacity} หน่วย ลองนำของบางอย่างออกก่อน`);
+                return;
+            }
+            pushHistory();
+            state.loadout = nextLoadout;
+            state.droneResources = loadoutCounts(state.loadout);
+            state.selected = null;
+            renderAll();
+            showFeedback('info', 'บรรทุกทรัพยากรแล้ว', `น้ำหนักรวม ${weight}/${capacity} หน่วย`);
+        }
+
         function pushHistory() {
-            state.history.push(JSON.stringify(state.rules));
+            state.history.push(JSON.stringify({
+                rules: state.rules,
+                loadout: state.loadout
+            }));
             if (state.history.length > 20) state.history.shift();
         }
 
@@ -3967,7 +4182,14 @@
                 showFeedback('info', 'ยังย้อนกลับไม่ได้', 'ยังไม่มีการวางการ์ดก่อนหน้านี้');
                 return;
             }
-            state.rules = JSON.parse(previous);
+            const parsed = JSON.parse(previous);
+            if (Array.isArray(parsed)) {
+                state.rules = parsed;
+            } else {
+                state.rules = parsed.rules;
+                state.loadout = parsed.loadout;
+                state.droneResources = loadoutCounts(state.loadout);
+            }
             state.selected = null;
             state.results = {};
             renderAll();
@@ -4006,15 +4228,31 @@
                 soil: plot.soil || 'wet',
                 rain: Boolean(plot.rain),
                 pest: Boolean(plot.pest),
+                needFertilizer: Boolean(plot.needFertilizer),
+                weed: Boolean(plot.weed),
                 crop: plot.crop || 'growing',
                 hp: plot.hp ?? plot.health ?? 80,
                 expectedAction: plot.expectedAction || null,
                 note: plot.note || '',
-                position: plot.position || defaultPlotPosition(index, plots.length)
+                cell: plot.cell || (Number.isInteger(plot.row) && Number.isInteger(plot.col) ? { row: plot.row, col: plot.col } : null),
+                position: plot.position || defaultPlotPosition(index, plots.length, plot)
             }));
         }
 
-        function defaultPlotPosition(index, total) {
+        function defaultPlotPosition(index, total, plot = {}) {
+            const wave = currentWave();
+            const cell = plot.cell || (Number.isInteger(plot.row) && Number.isInteger(plot.col) ? { row: plot.row, col: plot.col } : null);
+            if (cell && wave.rows && wave.cols) {
+                const gap = 1.2;
+                const cellW = 100 / wave.cols;
+                const cellH = 100 / wave.rows;
+                return {
+                    x: cell.col * cellW + gap / 2,
+                    y: cell.row * cellH + gap / 2,
+                    w: cellW - gap,
+                    h: cellH - gap
+                };
+            }
             const positions = total <= 3
                 ? [{ x: 16, y: 10 }, { x: 43, y: 28 }, { x: 17, y: 55 }]
                 : [{ x: 10, y: 10 }, { x: 38, y: 10 }, { x: 10, y: 52 }, { x: 38, y: 52 }, { x: 66, y: 31 }];
@@ -4027,6 +4265,7 @@
             renderPlots();
             renderRules();
             renderCards();
+            renderResources();
         }
 
         function renderStats() {
@@ -4036,7 +4275,8 @@
             setText('#agri-combo', `Combo ${state.combo}`);
             updateMeter('hp', state.farmHp);
             updateMeter('battery', state.droneBattery);
-            updateMeter('water', state.droneWater);
+            const maxWater = Math.max(1, currentWave().maxWater || 3);
+            updateResourceMeter('water', state.droneResources.water || 0, maxWater, 'ถัง');
             const targetHarvest = gameConfig.harvestTarget || currentPlots().filter((plot) => plot.crop === 'ripe').length || 1;
             setText('#agri-harvest-label', `${state.harvestedCount}/${targetHarvest}`);
             const harvestPercent = Math.min(100, (state.harvestedCount / targetHarvest) * 100);
@@ -4057,6 +4297,15 @@
             if (name === 'water') fill.style.background = safe > 55 ? '#0284c7' : safe > 25 ? '#f59e0b' : '#dc2626';
         }
 
+        function updateResourceMeter(name, value, max, unit) {
+            setText(`#agri-${name}-label`, `${value} ${unit}`);
+            const fill = container.querySelector(`#agri-${name}-fill`);
+            if (!fill) return;
+            const percent = clamp((value / max) * 100, 0, 100);
+            fill.style.width = `${percent}%`;
+            fill.style.background = percent > 55 ? '#0284c7' : percent > 25 ? '#f59e0b' : '#dc2626';
+        }
+
         function renderBrief() {
             const wave = currentWave();
             setText('#agri-brief-title', wave.name || 'ภารกิจโดรน');
@@ -4066,14 +4315,17 @@
 
         function renderPlots() {
             const plots = currentPlots();
-            container.querySelector('#agri-plots').innerHTML = plots.map((plot) => {
+            container.querySelector('#agri-plots').innerHTML = `${renderGridCells()}${plots.map((plot) => {
                 const result = state.results[plot.id];
                 const resultClass = result ? ` result-${result.safe ? 'good' : 'bad'} result-${result.result}` : '';
                 const effect = result?.effect ? `<div class="agri-effect">${escapeHtml(result.effect)}</div>` : '';
+                const sizeStyle = plot.position.w
+                    ? `width:calc(${plot.position.w}% - 4px); min-height:calc(${plot.position.h}% - 4px);`
+                    : '';
                 return `
                     <article class="agri-plot soil-${plot.soil}${plot.rain ? ' raining' : ''}${resultClass}"
                         id="agri-plot-${escapeHtml(plot.id)}"
-                        style="left:${plot.position.x}%; top:${plot.position.y}%;">
+                        style="left:${plot.position.x}%; top:${plot.position.y}%; ${sizeStyle}">
                         <div class="agri-rain"></div>
                         <div class="agri-flood"></div>
                         ${effect}
@@ -4084,16 +4336,39 @@
                         <div class="agri-plant">${plantIcon(plot, result)}</div>
                         ${plot.pest && result?.result !== 'pest_cleared' ? '<div class="agri-pest">🐛</div>' : ''}
                         ${plot.crop === 'ripe' && result?.result !== 'harvested' ? '<div class="agri-crop">🍅</div>' : ''}
+                        ${plot.needFertilizer && result?.result !== 'fertilized' ? '<div class="agri-fertilizer">🌿</div>' : ''}
+                        ${plot.weed && result?.result !== 'weed_cleared' ? '<div class="agri-weed">🌱</div>' : ''}
                         <div class="agri-sensors">
                             <span>${plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น'}</span>
                             <span>${plot.rain ? 'ฝนตก' : 'ไม่มีฝน'}</span>
                             ${plot.pest ? '<span>มีแมลง</span>' : ''}
+                            ${plot.needFertilizer ? '<span>ขาดปุ๋ย</span>' : ''}
+                            ${plot.weed ? '<span>วัชพืช</span>' : ''}
                             ${plot.crop === 'ripe' ? '<span>ผลผลิตสุก</span>' : ''}
                         </div>
                         <div class="agri-plot-message">${escapeHtml(result ? result.message : (plot.note || 'รอคำสั่งจากสมองโดรน'))}</div>
                     </article>
                 `;
-            }).join('');
+            }).join('')}`;
+        }
+
+        function renderGridCells() {
+            const wave = currentWave();
+            if (!wave.rows || !wave.cols) return '';
+            const gap = 1.2;
+            const cellW = 100 / wave.cols;
+            const cellH = 100 / wave.rows;
+            const cells = [];
+            for (let row = 0; row < wave.rows; row++) {
+                for (let col = 0; col < wave.cols; col++) {
+                    cells.push(`
+                        <div class="agri-grid-cell ${col === 0 ? 'base-cell' : ''}"
+                            style="left:${col * cellW + gap / 2}%; top:${row * cellH + gap / 2}%; width:calc(${cellW - gap}% - 4px); height:calc(${cellH - gap}% - 4px);">
+                        </div>
+                    `);
+                }
+            }
+            return cells.join('');
         }
 
         function renderRules() {
@@ -4127,6 +4402,53 @@
             container.querySelector('#agri-action-cards').innerHTML = actionCards.map((card) => cardHtml(card, 'action')).join('');
         }
 
+        function renderResources() {
+            const slotCount = currentWave().loadoutSlots || gameConfig.loadoutSlots || 4;
+            const weight = loadoutWeight(state.loadout);
+            const capacity = loadoutCapacity();
+            const drain = batteryDrainForWeight(weight);
+            setText('#agri-loadout-weight', `น้ำหนัก ${weight}/${capacity}`);
+            setText('#agri-loadout-effect', `แบต -${drain}/ช่อง`);
+
+            const slotWrap = container.querySelector('#agri-loadout-slots');
+            if (slotWrap) {
+                slotWrap.innerHTML = Array.from({ length: slotCount }, (_, index) => {
+                    const value = state.loadout[index] || null;
+                    const resource = value ? resourceMap[value] : null;
+                    return `
+                        <button type="button"
+                            class="agri-loadout-slot ${resource ? 'filled' : ''}"
+                            data-slot-index="${index}">
+                            ${resource ? escapeHtml(`${resource.icon} ${resource.label}`) : 'ช่องว่าง'}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            const resourceWrap = container.querySelector('#agri-resource-cards');
+            if (resourceWrap) {
+                resourceWrap.innerHTML = resourceCatalog.map((resource) => {
+                    const selected = state.selected?.kind === 'resource' && state.selected.value === resource.value;
+                    return `
+                        <button type="button"
+                            class="agri-card agri-resource-card resource ${selected ? 'selected' : ''}"
+                            draggable="true"
+                            data-value="${escapeHtml(resource.value)}">
+                            ${escapeHtml(`${resource.icon} ${resource.label}`)}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            const counts = loadoutCounts(state.loadout);
+            const statusWrap = container.querySelector('#agri-resource-status');
+            if (statusWrap) {
+                statusWrap.innerHTML = resourceCatalog.map((resource) => `
+                    <span class="agri-resource-pill">${escapeHtml(resource.icon)} ${escapeHtml(resource.label)} ${counts[resource.value] || 0}</span>
+                `).join('');
+            }
+        }
+
         function cardHtml(card, kind) {
             const selected = state.selected && state.selected.kind === kind && state.selected.value === card.value;
             return `
@@ -4155,6 +4477,11 @@
             state.attempts++;
             state.results = {};
             state.combo = 0;
+            state.farmHp = currentWave().farmHp || gameConfig.farmHp || 100;
+            state.droneBattery = currentWave().battery ?? gameConfig.droneBattery ?? 100;
+            state.droneResources = loadoutCounts(state.loadout);
+            state.harvestedCount = 0;
+            state.pestCleared = 0;
             renderAll();
             moveDroneTo(basePosition, false);
             await wait(220);
@@ -4189,7 +4516,6 @@
 
                 state.farmHp = clamp(state.farmHp + outcome.hpChange, 0, 100);
                 state.droneBattery = clamp(state.droneBattery + outcome.batteryChange, 0, 100);
-                state.droneWater = clamp(state.droneWater + outcome.waterChange, 0, 100);
                 state.harvestedCount += outcome.harvestChange || 0;
                 state.pestCleared += outcome.pestChange || 0;
                 state.results[plot.id] = result;
@@ -4210,6 +4536,9 @@
                 showFeedback('success', 'Wave สำเร็จ', 'โดรนทำภารกิจตามกฎได้ดี ไป Wave ถัดไป', logs);
                 state.waveIndex++;
                 state.results = {};
+                state.loadout = normalizeLoadout(currentWave().defaultLoadout || gameConfig.defaultLoadout || state.loadout);
+                state.droneResources = loadoutCounts(state.loadout);
+                state.droneBattery = currentWave().battery ?? gameConfig.droneBattery ?? 100;
                 renderAll();
                 moveDroneTo(basePosition, false);
                 return;
@@ -4259,7 +4588,7 @@
         }
 
         function setControlsDisabled(disabled) {
-            container.querySelectorAll('.agri-control, .agri-card, .agri-slot').forEach((item) => {
+            container.querySelectorAll('.agri-control, .agri-card, .agri-slot, .agri-loadout-slot').forEach((item) => {
                 if (item.classList.contains('fixed')) return;
                 item.disabled = disabled;
             });
@@ -4282,7 +4611,11 @@
         function evaluateRules(plot, rules) {
             const drone = {
                 battery: state.droneBattery,
-                water: state.droneWater
+                water: state.droneResources.water || 0,
+                fertilizer: state.droneResources.fertilizer || 0,
+                pesticide: state.droneResources.pesticide || 0,
+                basketCapacity: state.droneResources.basket || 0,
+                harvest: state.harvestedCount
             };
             for (let i = 0; i < rules.length; i++) {
                 const rule = rules[i];
@@ -4298,8 +4631,11 @@
             if (condition === 'rain') return plot.rain === true;
             if (condition === 'pest') return plot.pest === true;
             if (condition === 'crop_ripe') return plot.crop === 'ripe';
+            if (condition === 'need_fertilizer') return plot.needFertilizer === true;
+            if (condition === 'weed') return plot.weed === true;
             if (condition === 'battery_low') return drone.battery <= 25;
-            if (condition === 'water_low') return drone.water <= 20;
+            if (condition === 'water_low' || condition === 'water_empty') return drone.water <= 0;
+            if (condition === 'basket_full') return drone.basketCapacity > 0 && drone.harvest >= drone.basketCapacity;
             return false;
         }
 
@@ -4307,31 +4643,32 @@
             let result = 'safe';
             let label = 'โดรนสำรวจต่ออย่างปลอดภัย';
             let hpChange = 4;
-            let batteryChange = -3;
-            let waterChange = 0;
+            let batteryChange = -batteryDrainForWeight(loadoutWeight(state.loadout));
             let harvestChange = 0;
             let pestChange = 0;
             let effect = '✅';
 
             if (action === 'water') {
-                batteryChange = -5;
-                waterChange = -10;
-                if (state.droneWater <= 0) {
+                batteryChange -= 2;
+                if ((state.droneResources.water || 0) <= 0) {
                     result = 'no_water';
                     label = 'น้ำในถังหมด พืชยังไม่ได้รับน้ำ';
                     hpChange = -16;
                     effect = '⚠️';
                 } else if (plot.rain) {
+                    state.droneResources.water -= 1;
                     result = 'flood';
                     label = 'ฝนตกอยู่แล้ว แต่โดรนรดน้ำซ้ำจนเสี่ยงน้ำท่วม';
                     hpChange = -22;
                     effect = '🌊';
                 } else if (plot.soil === 'dry') {
+                    state.droneResources.water -= 1;
                     result = 'recover';
                     label = 'พืชฟื้นจากการรดน้ำพอดี';
                     hpChange = 18;
                     effect = '💧';
                 } else {
+                    state.droneResources.water -= 1;
                     result = 'overwater';
                     label = 'ดินชื้นอยู่แล้ว โดรนรดน้ำเกินจำเป็น';
                     hpChange = -12;
@@ -4342,29 +4679,69 @@
                 if (plot.rain || state.droneBattery <= 25) {
                     label = plot.rain ? 'โดรนกลับฐานหลบฝนได้ทัน' : 'โดรนกลับฐานเพื่อชาร์จแบต';
                     hpChange = 4;
-                    batteryChange = 22;
+                    batteryChange = 18;
                 } else {
                     label = 'โดรนกลับฐานทั้งที่ยังควรทำภารกิจในแปลงนี้';
                     hpChange = plot.soil === 'dry' || plot.pest || plot.crop === 'ripe' ? -10 : 0;
                 }
                 effect = '🏠';
-            } else if (action === 'repel_pest') {
-                batteryChange = -8;
-                if (plot.pest) {
+            } else if (action === 'repel_pest' || action === 'spray') {
+                batteryChange -= 3;
+                if ((state.droneResources.pesticide || 0) <= 0) {
+                    result = 'no_pesticide';
+                    label = 'ไม่มีน้ำยากำจัดศัตรูพืชพอ';
+                    hpChange = -16;
+                    effect = '⚠️';
+                } else if (plot.pest) {
+                    state.droneResources.pesticide -= 1;
                     result = 'pest_cleared';
                     label = 'โดรนพ่นละอองสมุนไพรไล่แมลงสำเร็จ';
                     hpChange = 16;
                     pestChange = 1;
                     effect = '✨';
                 } else {
+                    state.droneResources.pesticide -= 1;
                     result = 'wrong_pest_action';
                     label = 'ไม่มีแมลง แต่โดรนเสียเวลาไล่แมลง';
                     hpChange = -6;
                     effect = '⚠️';
                 }
+            } else if (action === 'fertilize') {
+                batteryChange -= 2;
+                if ((state.droneResources.fertilizer || 0) <= 0) {
+                    result = 'no_fertilizer';
+                    label = 'ไม่มีปุ๋ยพอสำหรับแปลงนี้';
+                    hpChange = -14;
+                    effect = '⚠️';
+                } else if (plot.needFertilizer) {
+                    state.droneResources.fertilizer -= 1;
+                    result = 'fertilized';
+                    label = 'ใส่ปุ๋ยสำเร็จ พืชโตแข็งแรงขึ้น';
+                    hpChange = plot.soil === 'dry' ? 12 : 18;
+                    effect = '🌿';
+                } else {
+                    state.droneResources.fertilizer -= 1;
+                    result = 'wrong_fertilizer_action';
+                    label = 'พืชไม่ได้ขาดปุ๋ย จึงใช้ปุ๋ยเกินจำเป็น';
+                    hpChange = -6;
+                    effect = '⚠️';
+                }
             } else if (action === 'harvest') {
-                batteryChange = -8;
-                if (plot.crop === 'ripe') {
+                batteryChange -= 3;
+                if ((state.droneResources.basket || 0) <= 0) {
+                    result = 'basket_full';
+                    label = 'ไม่มีตะกร้าหรือความจุตะกร้าเต็ม';
+                    hpChange = -14;
+                    effect = '⚠️';
+                } else if (plot.pest) {
+                    state.droneResources.basket -= 1;
+                    result = 'tainted_harvest';
+                    label = 'เก็บเกี่ยวทั้งที่ยังมีแมลง ทำให้ผลผลิตเสีย';
+                    hpChange = -18;
+                    harvestChange = 1;
+                    effect = '🥀';
+                } else if (plot.crop === 'ripe') {
+                    state.droneResources.basket -= 1;
                     result = 'harvested';
                     label = 'เก็บผลผลิตสุกเข้าตะกร้าแล้ว';
                     hpChange = 6;
@@ -4376,12 +4753,25 @@
                     hpChange = -10;
                     effect = '⚠️';
                 }
+            } else if (action === 'clear_weed') {
+                batteryChange -= 3;
+                if (plot.weed) {
+                    result = 'weed_cleared';
+                    label = 'กำจัดวัชพืชออกจากแปลงแล้ว';
+                    hpChange = 12;
+                    effect = '🧤';
+                } else {
+                    result = 'wrong_weed_action';
+                    label = 'ไม่มีวัชพืชในช่องนี้';
+                    hpChange = -5;
+                    effect = '⚠️';
+                }
             } else if (action === 'refill_water') {
                 result = 'refill_water';
                 label = 'โดรนเติมน้ำที่ฐานแล้วพร้อมทำงานต่อ';
                 hpChange = 2;
+                state.droneResources.water += 1;
                 batteryChange = -2;
-                waterChange = 35;
                 effect = '🪣';
             } else if (action === 'recharge') {
                 result = 'recharge';
@@ -4390,7 +4780,7 @@
                 batteryChange = 35;
                 effect = '🔋';
             } else if (action === 'skip') {
-                if ((plot.soil === 'dry' && !plot.rain) || plot.pest || plot.crop === 'ripe') {
+                if ((plot.soil === 'dry' && !plot.rain) || plot.pest || plot.crop === 'ripe' || plot.needFertilizer || plot.weed) {
                     result = 'miss';
                     label = 'โดรนบินผ่าน ทั้งที่แปลงนี้ต้องได้รับการช่วยเหลือ';
                     hpChange = -12;
@@ -4409,21 +4799,22 @@
                 effect = '⚠️';
             }
 
-            return { result, label, hpChange, batteryChange, waterChange, harvestChange, pestChange, effect, safe: hpChange >= 0 };
+            return { result, label, hpChange, batteryChange, harvestChange, pestChange, effect, safe: hpChange >= 0 };
         }
 
         function checkPriority(rules) {
-            if (!gameConfig.strictPriority || !expectedPriority.length) return '';
+            const wavePriority = currentWave().expectedPriority || expectedPriority;
+            if (!gameConfig.strictPriority || !wavePriority.length) return '';
             const actual = rules.map((rule) => rule.condition);
-            for (let i = 0; i < expectedPriority.length; i++) {
-                if (actual[i] !== expectedPriority[i]) {
-                    if (expectedPriority[i] === 'rain') {
+            for (let i = 0; i < wavePriority.length; i++) {
+                if (actual[i] !== wavePriority[i]) {
+                    if (wavePriority[i] === 'rain') {
                         return 'ลำดับเงื่อนไขยังไม่ถูกต้อง ควรตรวจ “ฝนตก” ก่อน “ดินแห้ง” เพราะระบบอ่านกฎจากบนลงล่าง';
                     }
-                    if (expectedPriority[i] === 'pest') {
+                    if (wavePriority[i] === 'pest') {
                         return 'แมลงทำลายพืชเร็ว ควรตรวจ “มีแมลง” เป็นเงื่อนไขแรกในภารกิจใหญ่';
                     }
-                    return `ลำดับเงื่อนไขยังไม่ถูกต้อง ลองวาง "${cardLabel(expectedPriority[i], conditionMap)}" ในแถวที่ ${i + 1}`;
+                    return `ลำดับเงื่อนไขยังไม่ถูกต้อง ลองวาง "${cardLabel(wavePriority[i], conditionMap)}" ในแถวที่ ${i + 1}`;
                 }
             }
             return '';
@@ -4448,7 +4839,25 @@
                 return `${plot.name} ไม่มีแมลง จึงไม่ควรใช้คำสั่งไล่แมลงในแปลงนี้`;
             }
             if (outcome.result === 'no_water') {
-                return `${plot.name} น้ำในโดรนหมด ลองเพิ่มกฎน้ำใกล้หมดหรือใช้คำสั่งเติมน้ำ`;
+                return `${plot.name} น้ำในโดรนหมด ลองเพิ่มน้ำในช่องบรรทุกหรือปรับกฎไม่ให้รดน้ำเกินจำเป็น`;
+            }
+            if (outcome.result === 'no_pesticide') {
+                return `${plot.name} มีปัญหาแมลงแต่ไม่ได้บรรทุกน้ำยาเพียงพอ`;
+            }
+            if (outcome.result === 'no_fertilizer') {
+                return `${plot.name} ต้องใช้ปุ๋ย แต่โดรนไม่ได้บรรทุกปุ๋ยพอ`;
+            }
+            if (outcome.result === 'wrong_fertilizer_action') {
+                return `${plot.name} ไม่ได้ขาดปุ๋ย จึงควรให้กฎอื่นจัดการก่อน`;
+            }
+            if (outcome.result === 'basket_full') {
+                return `${plot.name} ต้องใช้ตะกร้าเก็บเกี่ยว ลองบรรทุกตะกร้าเพิ่มหรือลดทรัพยากรอื่น`;
+            }
+            if (outcome.result === 'tainted_harvest') {
+                return `${plot.name} มีแมลงอยู่ ควรกำจัดศัตรูพืชก่อนเก็บเกี่ยว`;
+            }
+            if (outcome.result === 'wrong_weed_action') {
+                return `${plot.name} ไม่มีวัชพืช จึงไม่ควรใช้คำสั่งกำจัดวัชพืช`;
             }
             return `${plot.name} ยังไม่ปลอดภัย ลองตรวจเงื่อนไขและคำสั่งอีกครั้ง`;
         }
@@ -4488,8 +4897,9 @@
         }
 
         function buildHint() {
-            if (!expectedPriority.length) return 'อ่านสถานะแปลงก่อน แล้วเลือกเงื่อนไขที่ควรตรวจเป็นอันดับแรก';
-            return `ลองเรียงกฎเป็น ${expectedPriority.map((item) => cardLabel(item, conditionMap)).join(' → ')}`;
+            const wavePriority = currentWave().expectedPriority || expectedPriority;
+            if (!wavePriority.length) return 'อ่านสถานะแปลงก่อน แล้วเลือกเงื่อนไขที่ควรตรวจเป็นอันดับแรก';
+            return `ลองเรียงกฎเป็น ${wavePriority.map((item) => cardLabel(item, conditionMap)).join(' → ')}`;
         }
 
         function describePlot(plot) {
@@ -4497,6 +4907,8 @@
                 plot.soil === 'dry' ? 'ดินแห้ง' : 'ดินชื้น',
                 plot.rain ? 'ฝนตก' : 'ไม่มีฝน',
                 plot.pest ? 'มีแมลง' : 'ไม่มีแมลง',
+                plot.needFertilizer ? 'พืชขาดปุ๋ย' : 'ไม่ขาดปุ๋ย',
+                plot.weed ? 'มีวัชพืช' : 'ไม่มีวัชพืช',
                 plot.crop === 'ripe' ? 'ผลผลิตสุก' : 'ผลผลิตยังโต'
             ].join(', ');
         }
@@ -4505,7 +4917,7 @@
             if (result?.result === 'flood' || result?.result === 'overwater') return '🌊';
             if (result?.result === 'miss' || result?.result === 'no_water') return '🥀';
             if (result?.result === 'harvested') return '🧺';
-            if (result?.result === 'pest_cleared' || result?.result === 'recover') return '🌱';
+            if (result?.result === 'pest_cleared' || result?.result === 'recover' || result?.result === 'fertilized' || result?.result === 'weed_cleared') return '🌱';
             if (plot.soil === 'dry') return '🥀';
             if (plot.crop === 'ripe') return '🌿';
             return '🥬';
@@ -4534,6 +4946,37 @@
 
         function clamp(value, min, max) {
             return Math.max(min, Math.min(max, value));
+        }
+
+        function normalizeLoadout(loadout) {
+            const slotCount = currentWave().loadoutSlots || gameConfig.loadoutSlots || 4;
+            const source = Array.isArray(loadout) ? loadout : [];
+            return Array.from({ length: slotCount }, (_, index) => source[index] || null);
+        }
+
+        function loadoutCapacity() {
+            return currentWave().loadoutCapacity || gameConfig.loadoutCapacity || 6;
+        }
+
+        function loadoutWeight(loadout) {
+            return (loadout || []).reduce((total, value) => {
+                if (!value || !resourceMap[value]) return total;
+                return total + (resourceMap[value].weight || 1);
+            }, 0);
+        }
+
+        function loadoutCounts(loadout) {
+            return (loadout || []).reduce((counts, value) => {
+                if (!value) return counts;
+                counts[value] = (counts[value] || 0) + (resourceMap[value]?.capacity || 1);
+                return counts;
+            }, {});
+        }
+
+        function batteryDrainForWeight(weight) {
+            if (weight <= 2) return 5;
+            if (weight <= 4) return 7;
+            return 10;
         }
 
         function wait(ms) {

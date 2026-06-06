@@ -80,22 +80,31 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         /* กล่องเกม */
         .game-wrapper {
             background: white;
-            border-radius: 25px;
+            border-radius: 8px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
             padding: 20px;
             margin: 0 auto;
-            max-width: 1000px;
-            width: fit-content;
+            max-width: min(1180px, calc(100vw - 32px));
+            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             border: 6px solid #fff;
             outline: 3px dashed <?php echo $theme['border']; ?>;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
         }
 
         #game-container canvas {
-            border-radius: 15px;
+            max-width: 100%;
+            height: auto !important;
+            border-radius: 8px;
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
         }
 

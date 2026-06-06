@@ -150,7 +150,7 @@
 .side-panel {
   grid-area: side;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   gap: 12px;
   align-self: stretch;
   min-width: 0;
@@ -185,6 +185,7 @@
 }
 
 .farm-stage {
+  --tray-safe-height: 84px;
   position: relative;
   width: 100%;
   min-height: 390px;
@@ -194,6 +195,11 @@
     linear-gradient(180deg, rgba(241, 249, 243, 0.86), rgba(232, 244, 236, 0.94)),
     url("../img/bg_farm.webp") center/cover;
 }
+
+/* BOARD SAFE AREA NOTE:
+   item tray เป็นพื้นที่แยกด้านล่าง ไม่ overlay ทับวัตถุบนสายพาน
+   ถ้ามีการย้าย tray กลับเข้า stage ในอนาคต ให้ใช้ --tray-safe-height
+   เพื่อกัน conveyor item ไม่ให้เคลื่อนเข้าเขต tray */
 
 .farm-stage.greenhouse {
   background:
@@ -373,39 +379,67 @@
   font-weight: 700;
 }
 
-.queue-strip {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
+.item-tray {
+  position: relative;
+  z-index: 2;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 6px;
+  min-height: 72px;
+  margin: 12px;
+  padding: 10px;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.96);
   overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
-.queue-chip {
+.tray-item {
   flex: 0 0 auto;
-  width: 34px;
-  height: 30px;
+  width: 112px;
+  min-height: 50px;
   display: grid;
-  place-items: center;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding: 7px 8px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   background: #ffffff;
-  font-size: 18px;
+  color: #334155;
+  text-align: left;
   filter: grayscale(0.2);
+  cursor: pointer;
 }
 
-.queue-chip.done {
+.tray-item.selected {
+  border-color: #0ea5e9;
+  background: #e0f2fe;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.16);
+}
+
+.tray-item.done {
   background: #dcfce7;
   filter: grayscale(1);
   opacity: 0.7;
+}
+
+.tray-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+}
+
+.tray-label {
+  min-width: 0;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .toolbox-head,
@@ -446,6 +480,7 @@
 .palette-group,
 .control-panel,
 .feedback-card,
+.item-inspector,
 .block-trash {
   padding: 10px;
   border: 1px solid #e2e8f0;
@@ -718,6 +753,74 @@
   line-height: 1.5;
 }
 
+.item-inspector {
+  max-height: 260px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.item-inspector h4 {
+  margin: 0 0 8px;
+  color: #18392b;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.inspector-content {
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.inspector-title-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #172033;
+}
+
+.inspector-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  font-size: 22px;
+}
+
+.inspector-props {
+  margin: 0 0 8px;
+  padding-left: 18px;
+}
+
+.inspector-props li + li {
+  margin-top: 3px;
+}
+
+.inspector-hint,
+.inspector-warning {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.inspector-hint {
+  background: #ecfeff;
+  color: #155e75;
+}
+
+.inspector-warning {
+  background: #fff7ed;
+  color: #9a3412;
+}
+
+.item-inspector.has-decoy {
+  border-color: #fed7aa;
+}
+
 .result-overlay {
   position: fixed;
   inset: 0;
@@ -860,6 +963,10 @@
   .farm-stage {
     min-height: 360px;
   }
+
+  .item-inspector {
+    max-height: none;
+  }
 }
 
 @media (max-width: 680px) {
@@ -906,6 +1013,14 @@
 
   .farm-stage {
     min-height: 330px;
+  }
+
+  .item-tray {
+    margin: 10px;
+  }
+
+  .tray-item {
+    width: 104px;
   }
 
   .machine {

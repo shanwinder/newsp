@@ -114,6 +114,7 @@
             paused: false,
             rules: [],
             levelStars: []
+            selectedInspectItemId: null
         };
 
         let eventRoot = null;
@@ -168,8 +169,8 @@
                                 <div class="machine output-pass" id="machine-pass"></div>
                                 <div class="scan-gate" id="scan-gate"><span class="scan-label">SCAN</span></div>
                                 <div class="conveyor-belt" id="conveyor-belt"></div>
-                                <div class="queue-strip" id="queue-strip"></div>
                             </div>
+                            <div class="item-tray" id="queue-strip" aria-label="รายการวัตถุในรอบนี้"></div>
                         </section>
 
                         <aside class="conveyor-panel side-panel">
@@ -186,6 +187,10 @@
                             <section id="conveyor-feedback" class="feedback-card">
                                 <div class="feedback-title">คำแนะนำ</div>
                                 <div class="feedback-body">ลากบล็อกเงื่อนไขและคำสั่งไปใส่ช่องให้ครบ</div>
+                            </section>
+                            <section class="item-inspector" id="item-inspector" aria-live="polite">
+                                <h4>รายละเอียดวัตถุ</h4>
+                                <div class="inspector-content">คลิกรายการในแถบวัตถุเพื่อดูคุณสมบัติก่อนเริ่มสายพาน</div>
                             </section>
                         </aside>
 
@@ -241,12 +246,20 @@
                 showFeedback('ล้างกฎแล้ว ลองวางโปรแกรมใหม่อีกครั้ง', 'info');
             });
             container.querySelector('#hint-conveyor').addEventListener('click', showHint);
+            container.querySelector('#queue-strip').addEventListener('click', (event) => {
+                const itemButton = event.target.closest('.tray-item');
+                if (!itemButton) return;
+                state.selectedInspectItemId = itemButton.dataset.itemId;
+                renderQueue();
+                renderInspector();
+            });
         }
 
         function loadLevel(index) {
             state.levelIndex = index;
             state.processedCount = 0;
             state.paused = false;
+            state.selectedInspectItemId = null;
             const current = level();
             container.querySelector('#farm-stage').classList.toggle('greenhouse', current.theme === 'greenhouse');
             container.querySelector('#conveyor-level-pill').textContent = `ด่านย่อย ${index + 1} / ${gameConfig.levels.length}`;
@@ -266,6 +279,7 @@
             });
             renderMachines();
             renderQueue();
+            renderInspector();
             updateStats();
             setControls(false);
             showFeedback(current.intro || 'ตั้งกฎจากบนลงล่าง แล้วกดเริ่มสายพาน', 'info');
@@ -291,12 +305,51 @@
             const queue = container.querySelector('#queue-strip');
             queue.innerHTML = '';
             level().itemQueue.forEach((item, index) => {
-                const chip = document.createElement('span');
-                chip.className = `queue-chip${index < state.processedCount ? ' done' : ''}`;
-                chip.textContent = item.fallbackIcon || item.icon || '•';
-                chip.title = item.label || item.key;
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = `tray-item${index < state.processedCount ? ' done' : ''}${item.id === state.selectedInspectItemId ? ' selected' : ''}`;
+                chip.dataset.itemId = item.id;
+                chip.innerHTML = `
+                    <span class="tray-icon">${escapeHtml(item.fallbackIcon || item.icon || '•')}</span>
+                    <span class="tray-label">${escapeHtml(item.label || item.key)}</span>
+                `;
+                chip.title = item.inspect?.title || item.label || item.key;
                 queue.appendChild(chip);
             });
+        }
+
+        function renderInspector() {
+            const panel = container.querySelector('#item-inspector');
+            const content = panel.querySelector('.inspector-content');
+            const items = level().itemQueue || [];
+            const item = findById(items, state.selectedInspectItemId);
+            if (!item) {
+                content.innerHTML = 'คลิกรายการในแถบวัตถุเพื่อดูคุณสมบัติก่อนเริ่มสายพาน';
+                panel.classList.remove('has-decoy');
+                return;
+            }
+
+            const inspect = item.inspect || {};
+            const properties = inspect.properties || inferProperties(item.props || {});
+            const warning = inspect.warning || (item.isDecoy ? 'ตัวหลอก: สังเกตเงื่อนไขให้ละเอียดก่อนเลือกเส้นทาง' : '');
+            panel.classList.toggle('has-decoy', Boolean(item.isDecoy));
+            content.innerHTML = `
+                <div class="inspector-title-row">
+                    <span class="inspector-icon">${escapeHtml(item.fallbackIcon || item.icon || '•')}</span>
+                    <strong>${escapeHtml(inspect.title || item.label || item.key)}</strong>
+                </div>
+                <ul class="inspector-props">
+                    ${properties.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}
+                </ul>
+                ${inspect.hint ? `<div class="inspector-hint">${escapeHtml(inspect.hint)}</div>` : ''}
+                ${warning ? `<div class="inspector-warning">${escapeHtml(warning)}</div>` : ''}
+            `;
+        }
+
+        function inferProperties(props) {
+            const entries = Object.entries(props || {});
+            if (!entries.length) return ['ยังไม่มีข้อมูลคุณสมบัติเพิ่มเติม'];
+            return entries.map(([key, value]) => `${key}: ${value}`);
         }
 
         function showHint() {
@@ -394,7 +447,7 @@
 
             readout.textContent = correct
                 ? `${item.label}: ${actionMeta.successText || 'ทำงานถูกต้อง'}`
-                : `${item.label}: ${item.feedback || wrongText(current, item, action)}`;
+                : `${item.label}: ${wrongFeedback(current, item, action)}`;
 
             const target = machineEl ? centerOf(stage, machineEl) : path.pass;
             await moveItemTo(element, target.x, target.y, 620);
@@ -409,7 +462,7 @@
             // ตอนนี้ระบบใช้ fallbackIcon เพื่อให้ prototype ทำงานได้ทันที
             // ในอนาคตสามารถเปลี่ยนเป็น PNG หรือ Sprite Sheet ได้โดยแก้เฉพาะ levelConfig.asset
             // ห้ามผูก logic กับ emoji โดยตรง เพราะ emoji เป็นเพียง fallback ด้านการแสดงผล
-            // Logic ต้องอ่านจาก props เท่านั้น เช่น type, dirty, size, ripeness, weight, moisture, temperature
+            // Logic ต้องอ่านจาก props เท่านั้น เช่น type, dirty, size, ripeness, weight, shell, temperature
             if (item.asset?.path && item.asset?.ready === true) {
                 return `<img class="item-asset" src="${escapeHtml(item.asset.path)}" alt="${escapeHtml(item.asset.description || item.label || '')}">`;
             }
@@ -458,7 +511,9 @@
             });
         }
 
-        function wrongText(current, item, actualAction) {
+        function wrongFeedback(current, item, actualAction) {
+            if (item.isDecoy && item.decoyReason) return item.decoyReason;
+            if (item.feedback) return item.feedback;
             const actual = labelOf(current.actions, actualAction, 'ปล่อยผ่าน');
             const expected = labelOf(current.actions, item.expectedAction, 'ปล่อยผ่าน');
             return `เลือก "${actual}" แต่ควรเป็น "${expected}" ลองดูเงื่อนไขของรายการนี้อีกครั้ง`;

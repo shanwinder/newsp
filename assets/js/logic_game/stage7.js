@@ -1,98 +1,95 @@
-// Stage 7: Smart Farm Manager - Produce Sorting with If.
+// Stage 7: Smart Farm Manager - Vegetable Produce with If.
 (function () {
     const config = {
         title: 'บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ',
-        subtitle: 'เกมที่ 1: โรงคัดแยกผลผลิตของพี่สมปอง | ฝึกใช้ If เท่านั้น',
-        resultText: 'คุณเขียนกฎ If เพื่อคัดแยกผลผลิตครบทั้ง 3 ภารกิจแล้ว',
+        subtitle: 'เกมที่ 1: โรงคัดผักสวนครัว | ฝึกใช้ If เท่านั้น',
+        resultText: 'คุณเขียนกฎ If เพื่อคัดแยกผลผลิตจากพืชผักครบทั้ง 3 ภารกิจแล้ว',
         levels: [
             {
                 title: '7-1 แครอทเปื้อนโคลน',
-                mission: 'ส่งแครอทเปื้อนโคลนเข้าเครื่องล้าง',
-                brief: 'แครอทเปื้อนโคลนต้องเข้าล้าง ส่วนแครอทสะอาดปล่อยผ่านอัตโนมัติ',
-                intro: 'ใช้กฎ If เพียงบรรทัดเดียว: ถ้าเจอแครอทเปื้อนโคลน ให้ส่งไปเครื่องล้าง',
+                mission: 'คัดแครอทเปื้อนโคลนไปล้างน้ำก่อนลงตะกร้า',
+                brief: 'ถ้าเป็นแครอทเปื้อนโคลนให้ส่งเข้าเครื่องล้าง ส่วนแครอทอื่นปล่อยผ่านอัตโนมัติ',
+                intro: 'ใช้กฎ If เพียงบรรทัดเดียว: ถ้าเจอแครอทเปื้อนโคลน ให้ส่งเข้าเครื่องล้าง',
                 lessonType: 'if',
                 lessonTypeLabel: 'If',
-                theme: 'produce',
+                theme: 'vegetable',
                 hint: 'ถ้า [แครอทเปื้อนโคลน] -> [ส่งเข้าเครื่องล้าง]',
                 ruleSlots: [{ type: 'if' }],
                 conditions: [
-                    { id: 'dirty_carrot', label: 'แครอทเปื้อนโคลน', match: { type: 'carrot', dirty: true } }
+                    { id: 'muddy_carrot', label: 'แครอทเปื้อนโคลน', match: { type: 'carrot', muddy: true } }
                 ],
                 actions: [
                     { id: 'wash', label: 'ส่งเข้าเครื่องล้าง', successText: 'เครื่องล้างพ่นน้ำ แครอทสะอาดเด้งลงตะกร้า' },
-                    { id: 'pass', label: 'ปล่อยผ่านอัตโนมัติ', successText: 'แครอทสะอาดลงตะกร้าโดยไม่ต้องล้างซ้ำ' }
+                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'แครอทที่ไม่เปื้อนโคลนลงตะกร้าปกติ' }
                 ],
                 machines: [
                     { slot: 'a', label: 'เครื่องล้าง', icon: '🚿', actions: ['wash'] },
-                    { slot: 'pass', label: 'ตะกร้าสะอาด', icon: '🧺', actions: ['pass'] }
+                    { slot: 'pass', label: 'ตะกร้าปกติ', icon: '🧺', actions: ['pass'] }
                 ],
                 itemQueue: [
-                    carrot('A', true), carrot('B', false), carrot('C', true), carrot('D', false),
-                    carrot('E', true), carrot('F', false), carrot('G', true), carrot('H', false),
-                    carrot('I', true), carrot('J', false), carrot('K', true), carrot('L', false)
+                    carrot('A', 'muddy'), carrot('B', 'clean'), carrot('C', 'dark_decoy'), carrot('D', 'muddy'),
+                    carrot('E', 'dust_tip_decoy'), carrot('F', 'clean'), carrot('G', 'muddy'), carrot('H', 'shadow_decoy'),
+                    carrot('I', 'clean'), carrot('J', 'muddy'), carrot('K', 'dark_decoy'), carrot('L', 'clean')
                 ],
-                expectedLogic: [{ condition: 'dirty_carrot', action: 'wash' }],
+                expectedLogic: [{ condition: 'muddy_carrot', action: 'wash' }],
                 scoring: defaultScoring()
             },
             {
-                title: '7-2 ไข่ร้าวต้องแยกออก',
-                mission: 'ส่งไข่ร้าวเข้าถาดคัดทิ้ง',
-                brief: 'ไข่มีรอยร้าวต้องแยกออก ส่วนไข่ดีปล่อยผ่านไปกล่องขาย',
-                intro: 'ยังใช้ If เท่านั้น แต่ต้องสังเกตรอยแตกที่เล็กลง',
+                title: '7-2 ผักกาดมีหนอน',
+                mission: 'ส่งผักกาดที่มีหนอนไปโต๊ะตรวจศัตรูพืช',
+                brief: 'ถ้าผักกาดมีหนอนให้ส่งตรวจ ส่วนจุดดิน รูใบ และใบงอที่ไม่พบหนอนให้ปล่อยผ่าน',
+                intro: 'ยังใช้ If เท่านั้น แต่ต้องดูว่าเงื่อนไขคือมีหนอนจริง ไม่ใช่แค่ผักดูไม่สมบูรณ์',
                 lessonType: 'if',
                 lessonTypeLabel: 'If',
-                theme: 'produce',
-                hint: 'ถ้า [ไข่มีรอยร้าว] -> [ส่งเข้าถาดคัดทิ้ง]',
+                theme: 'vegetable',
+                hint: 'ถ้า [ผักกาดมีหนอน] -> [ส่งไปโต๊ะตรวจศัตรูพืช]',
                 ruleSlots: [{ type: 'if' }],
                 conditions: [
-                    { id: 'cracked_egg', label: 'ไข่มีรอยร้าว', match: { type: 'egg', cracked: true } }
+                    { id: 'lettuce_has_worm', label: 'ผักกาดมีหนอน', match: { type: 'lettuce', hasWorm: true } }
                 ],
                 actions: [
-                    { id: 'reject_tray', label: 'ส่งเข้าถาดคัดทิ้ง', successText: 'ไข่ร้าวถูกวางลงถาดคัดทิ้งอย่างปลอดภัย' },
-                    { id: 'pass', label: 'ปล่อยผ่านกล่องขาย', successText: 'ไข่ดีเข้ากล่องขายเรียบร้อย' }
+                    { id: 'pest_table', label: 'ส่งไปโต๊ะตรวจศัตรูพืช', successText: 'แว่นขยายตรวจพบหนอนและแยกผักออกทันที' },
+                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'ผักกาดที่ไม่มีหนอนลงตะกร้าปกติ' }
                 ],
                 machines: [
-                    { slot: 'a', label: 'ถาดคัดทิ้ง', icon: '🧺', actions: ['reject_tray'] },
-                    { slot: 'pass', label: 'กล่องขาย', icon: '📦', actions: ['pass'] }
-                ],
-                itemQueue: [
-                    egg('A', true), egg('B', false), egg('C', false), egg('D', true),
-                    egg('E', false), egg('F', true), egg('G', false), egg('H', true),
-                    egg('I', false), egg('J', true), egg('K', false), egg('L', true)
-                ],
-                expectedLogic: [{ condition: 'cracked_egg', action: 'reject_tray' }],
-                scoring: defaultScoring()
-            },
-            {
-                title: '7-3 ผักมีหนอนต้องตรวจพิเศษ',
-                mission: 'ส่งผักที่มีหนอนไปโต๊ะตรวจพิเศษ',
-                brief: 'ผักหลายชนิดวิ่งเร็วขึ้นเล็กน้อย ถ้ามีหนอนต้องแยกไปตรวจ',
-                intro: 'ด่านสุดท้ายของเกม If มีตัวหลอกหลายชนิด แต่โครงสร้างกฎยังเป็น If บรรทัดเดียว',
-                lessonType: 'if',
-                lessonTypeLabel: 'If',
-                theme: 'produce',
-                hint: 'ถ้า [ผักมีหนอน] -> [ส่งไปโต๊ะตรวจพิเศษ]',
-                ruleSlots: [{ type: 'if' }],
-                conditions: [
-                    { id: 'wormy_vegetable', label: 'ผักมีหนอน', match: { category: 'vegetable', worm: true } }
-                ],
-                actions: [
-                    { id: 'inspect_table', label: 'ส่งไปโต๊ะตรวจพิเศษ', successText: 'โต๊ะตรวจเปิดแว่นขยายและแยกผักมีหนอนออก' },
-                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'ผักปกติลงตะกร้าขายได้' }
-                ],
-                machines: [
-                    { slot: 'a', label: 'โต๊ะตรวจพิเศษ', icon: '🔎', actions: ['inspect_table'] },
+                    { slot: 'a', label: 'โต๊ะตรวจศัตรูพืช', icon: '🔎', actions: ['pest_table'] },
                     { slot: 'pass', label: 'ตะกร้าผักดี', icon: '🧺', actions: ['pass'] }
                 ],
                 itemQueue: [
-                    vegetable('A', 'lettuce', true), vegetable('B', 'cabbage', false),
-                    vegetable('C', 'bok_choy', false), vegetable('D', 'lettuce', true),
-                    vegetable('E', 'spinach', false), vegetable('F', 'cabbage', true),
-                    vegetable('G', 'bok_choy', false), vegetable('H', 'spinach', true),
-                    vegetable('I', 'lettuce', false), vegetable('J', 'cabbage', false),
-                    vegetable('K', 'bok_choy', true), vegetable('L', 'spinach', false)
+                    lettuce('A', 'worm'), lettuce('B', 'normal'), lettuce('C', 'dirt_decoy'), lettuce('D', 'worm'),
+                    lettuce('E', 'holes_decoy'), lettuce('F', 'normal'), lettuce('G', 'curled_decoy'), lettuce('H', 'worm'),
+                    lettuce('I', 'dirt_decoy'), lettuce('J', 'normal'), lettuce('K', 'worm'), lettuce('L', 'holes_decoy')
                 ],
-                expectedLogic: [{ condition: 'wormy_vegetable', action: 'inspect_table' }],
+                expectedLogic: [{ condition: 'lettuce_has_worm', action: 'pest_table' }],
+                scoring: defaultScoring()
+            },
+            {
+                title: '7-3 มันฝรั่งงอก',
+                mission: 'แยกมันฝรั่งที่มีหน่องอกออกจากมันฝรั่งปกติ',
+                brief: 'ถ้ามีหน่องอกให้ส่งไปคัดแยกพิเศษ สิ่งที่แค่เปื้อนดินหรือรูปร่างแปลกยังไม่ใช่เงื่อนไข',
+                intro: 'ด่าน If ที่ละเอียดขึ้น ต้องสังเกตเฉพาะหน่องอก ไม่ตัดสินจากสีหรือรูปร่าง',
+                lessonType: 'if',
+                lessonTypeLabel: 'If',
+                theme: 'vegetable',
+                hint: 'ถ้า [มันฝรั่งมีหน่องอก] -> [ส่งไปคัดแยกพิเศษ]',
+                ruleSlots: [{ type: 'if' }],
+                conditions: [
+                    { id: 'sprouted_potato', label: 'มันฝรั่งมีหน่องอก', match: { type: 'potato', sprout: true } }
+                ],
+                actions: [
+                    { id: 'special_sort', label: 'ส่งไปคัดแยกพิเศษ', successText: 'ประตูพิเศษเปิดและแยกมันฝรั่งงอกออกจากตะกร้าปกติ' },
+                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'มันฝรั่งปกติลงตะกร้าขายได้' }
+                ],
+                machines: [
+                    { slot: 'a', label: 'คัดแยกพิเศษ', icon: '⚠️', actions: ['special_sort'] },
+                    { slot: 'pass', label: 'ตะกร้ามันฝรั่ง', icon: '🧺', actions: ['pass'] }
+                ],
+                itemQueue: [
+                    potato('A', 'sprouted'), potato('B', 'normal'), potato('C', 'dirty_decoy'), potato('D', 'odd_decoy'),
+                    potato('E', 'sprouted'), potato('F', 'dark_spot_decoy'), potato('G', 'normal'), potato('H', 'sprouted'),
+                    potato('I', 'dirty_decoy'), potato('J', 'normal'), potato('K', 'sprouted'), potato('L', 'dark_spot_decoy')
+                ],
+                expectedLogic: [{ condition: 'sprouted_potato', action: 'special_sort' }],
                 scoring: defaultScoring()
             }
         ]
@@ -109,64 +106,162 @@
     }
 
     function asset(key, description) {
+        // ASSET NOTE:
+        // ตอนนี้ใช้ fallbackIcon เพื่อให้ prototype ทำงานได้ทันที
+        // ในอนาคตสามารถเปลี่ยนเป็น PNG หรือ Sprite Sheet ได้โดยแก้เฉพาะ levelConfig.asset
+        // ห้ามผูก logic กับ emoji โดยตรง เพราะ emoji เป็นเพียง fallback ด้านการแสดงผล
+        // item ทุกชิ้นควรมี asset.path, width, height, description และ futureSpriteSheet
         return {
             key,
-            path: `../assets/img/conveyor/produce/${key}.png`,
+            path: `../assets/img/conveyor/vegetables/${key}.png`,
             width: 96,
             height: 96,
             description,
             futureSpriteSheet: {
-                path: `../assets/img/conveyor/produce/${key}_sheet.png`,
+                path: `../assets/img/conveyor/vegetables/${key}_sheet.png`,
                 frameWidth: 96,
                 frameHeight: 96,
-                animations: ['idle', 'move', 'bounce_correct', 'drop_wrong']
+                animations: ['idle', 'scan', 'route_result']
             }
         };
     }
 
-    function carrot(id, dirty) {
+    function makeItem({ id, key, label, icon, props, expectedAction, sensor, feedback, isDecoy = false, decoyReason = '', inspect }) {
         return {
-            id: `carrot_${id}`,
-            label: dirty ? 'แครอทเปื้อนโคลน' : 'แครอทสะอาด',
-            fallbackIcon: '🥕',
-            asset: asset(dirty ? 'dirty_carrot' : 'clean_carrot', dirty ? 'ภาพแครอทมีคราบโคลน' : 'ภาพแครอทสะอาด'),
-            props: { type: 'carrot', dirty },
-            sensor: dirty ? 'เครื่องสแกนพบคราบโคลนบนแครอท' : 'เครื่องสแกนพบแครอทสะอาด',
-            expectedAction: dirty ? 'wash' : 'pass',
-            feedback: dirty ? 'แครอทเปื้อนโคลนควรเข้าเครื่องล้าง' : 'แครอทสะอาดไม่ต้องล้างซ้ำ'
+            id,
+            key,
+            label,
+            category: 'vegetable_produce',
+            fallbackIcon: icon,
+            isDecoy,
+            decoyReason,
+            asset: asset(key, `ภาพ${label}สำหรับด่านผักสวนครัว`),
+            inspect,
+            props,
+            sensor,
+            expectedAction,
+            feedback
         };
     }
 
-    function egg(id, cracked) {
-        return {
-            id: `egg_${id}`,
-            label: cracked ? 'ไข่มีรอยร้าว' : 'ไข่ดี',
-            fallbackIcon: '🥚',
-            asset: asset(cracked ? 'cracked_egg' : 'good_egg', cracked ? 'ภาพไข่มีรอยร้าว' : 'ภาพไข่ดีไม่มีรอยแตก'),
-            props: { type: 'egg', cracked },
-            sensor: cracked ? 'เลนส์สแกนพบรอยร้าวบนเปลือกไข่' : 'เปลือกไข่เรียบ ไม่มีรอยแตก',
-            expectedAction: cracked ? 'reject_tray' : 'pass',
-            feedback: cracked ? 'ไข่ร้าวควรถูกคัดออกก่อนลงกล่องขาย' : 'ไข่ดีควรปล่อยผ่านไปกล่องขาย'
-        };
+    function carrot(id, variant) {
+        const data = {
+            muddy: {
+                label: 'แครอทเปื้อนโคลน', props: { type: 'carrot', muddy: true, color: 'orange', mark: 'mud' }, expectedAction: 'wash',
+                sensor: 'เครื่องสแกนพบคราบโคลนบนแครอท', feedback: 'แครอทเปื้อนโคลนควรเข้าเครื่องล้าง',
+                properties: ['ชนิด: แครอท', 'คราบโคลน: มี', 'สีเข้ม: ไม่ใช่ข้อมูลหลัก'], hint: 'เงื่อนไขของด่านนี้คือคราบโคลนจริง'
+            },
+            clean: {
+                label: 'แครอทสะอาด', props: { type: 'carrot', muddy: false, color: 'orange', mark: 'none' }, expectedAction: 'pass',
+                sensor: 'แครอทสะอาด ไม่มีคราบโคลน', feedback: 'แครอทสะอาดควรปล่อยผ่าน',
+                properties: ['ชนิด: แครอท', 'คราบโคลน: ไม่มี', 'สถานะ: ลงตะกร้าได้'], hint: 'ไม่เข้าเงื่อนไข If จึงปล่อยผ่านอัตโนมัติ'
+            },
+            dark_decoy: {
+                label: 'แครอทสีเข้ม', props: { type: 'carrot', muddy: false, color: 'dark_orange', mark: 'none' }, expectedAction: 'pass',
+                sensor: 'สีแครอทเข้ม แต่ไม่พบคราบโคลน', feedback: 'สีเข้มไม่ใช่คราบโคลน',
+                isDecoy: true, decoyReason: 'แครอทชิ้นนี้สีเข้ม แต่ไม่ได้มีคราบโคลนจริง จึงไม่ต้องส่งเข้าเครื่องล้าง',
+                properties: ['ชนิด: แครอท', 'สี: เข้ม', 'คราบโคลน: ไม่มี'], hint: 'อย่าสับสนระหว่างสีเข้มกับคราบโคลน'
+            },
+            dust_tip_decoy: {
+                label: 'แครอทมีดินติดปลาย', props: { type: 'carrot', muddy: false, color: 'orange', mark: 'dust_tip' }, expectedAction: 'pass',
+                sensor: 'มีดินติดปลายเล็กน้อย ยังไม่ถือว่าเปื้อนโคลน', feedback: 'ดินปลายเล็กน้อยไม่ตรงเงื่อนไขเปื้อนโคลน',
+                isDecoy: true, decoyReason: 'แครอทมีดินติดปลายเล็กน้อย แต่ไม่ถือว่าเปื้อนโคลนทั้งชิ้น จึงควรปล่อยผ่าน',
+                properties: ['ชนิด: แครอท', 'ดินติดปลาย: เล็กน้อย', 'คราบโคลน: ไม่มี'], hint: 'ต้องมีคราบโคลนชัดเจนจึงเข้าเงื่อนไข'
+            },
+            shadow_decoy: {
+                label: 'แครอทมีเงาสีน้ำตาล', props: { type: 'carrot', muddy: false, color: 'orange', mark: 'shadow' }, expectedAction: 'pass',
+                sensor: 'เงาสีน้ำตาลจากแสง ไม่ใช่คราบโคลน', feedback: 'เงาจากแสงไม่ควรถูกส่งไปล้าง',
+                isDecoy: true, decoyReason: 'แครอทมีเงาสีน้ำตาลจากแสง ไม่ใช่คราบโคลนจริง จึงควรปล่อยผ่าน',
+                properties: ['ชนิด: แครอท', 'รอยที่เห็น: เงาจากแสง', 'คราบโคลน: ไม่มี'], hint: 'ดูว่ารอยนั้นเป็นคราบจริงหรือแค่เงา'
+            }
+        }[variant];
+        return makeItem({
+            id: `carrot_${variant}_${id}`,
+            key: `carrot_${variant}`,
+            icon: '🥕',
+            inspect: { title: data.label, properties: data.properties, hint: data.hint, warning: data.isDecoy ? 'ตัวหลอก: ดูคล้ายเข้าเงื่อนไขแต่ยังไม่ใช่คราบโคลนจริง' : '' },
+            ...data
+        });
     }
 
-    function vegetable(id, type, worm) {
-        const labels = {
-            lettuce: 'ผักกาดหอม',
-            cabbage: 'กะหล่ำปลี',
-            bok_choy: 'ผักกวางตุ้ง',
-            spinach: 'ผักโขม'
-        };
-        return {
-            id: `veg_${type}_${id}`,
-            label: worm ? `${labels[type]}มีหนอน` : labels[type],
-            fallbackIcon: worm ? '🐛' : '🥬',
-            asset: asset(worm ? `${type}_worm` : `${type}_clean`, worm ? `ภาพ${labels[type]}มีหนอน` : `ภาพ${labels[type]}ปกติ`),
-            props: { category: 'vegetable', type, worm },
-            sensor: worm ? `พบหนอนบน${labels[type]}` : `${labels[type]}ไม่มีหนอน`,
-            expectedAction: worm ? 'inspect_table' : 'pass',
-            feedback: worm ? 'ผักมีหนอนต้องไปโต๊ะตรวจพิเศษ' : 'ผักปกติควรปล่อยผ่านลงตะกร้า'
-        };
+    function lettuce(id, variant) {
+        const data = {
+            worm: {
+                label: 'ผักกาดมีหนอน', props: { type: 'lettuce', hasWorm: true, dirt: false, holes: true }, expectedAction: 'pest_table',
+                sensor: 'พบหนอนขยับอยู่บนใบผักกาด', feedback: 'ผักกาดมีหนอนต้องไปโต๊ะตรวจศัตรูพืช',
+                properties: ['ชนิด: ผักกาด', 'หนอน: พบ', 'สถานะ: ต้องตรวจศัตรูพืช'], hint: 'ถ้าเห็นหนอนจริง ให้ใช้กฎ If'
+            },
+            normal: {
+                label: 'ผักกาดปกติ', props: { type: 'lettuce', hasWorm: false, dirt: false, holes: false }, expectedAction: 'pass',
+                sensor: 'ผักกาดปกติ ไม่พบหนอน', feedback: 'ผักกาดปกติควรปล่อยผ่าน',
+                properties: ['ชนิด: ผักกาด', 'หนอน: ไม่พบ', 'สถานะ: ลงตะกร้าได้'], hint: 'ไม่เข้าเงื่อนไขจึงปล่อยผ่านอัตโนมัติ'
+            },
+            dirt_decoy: {
+                label: 'ผักกาดมีจุดดิน', props: { type: 'lettuce', hasWorm: false, dirt: true, holes: false }, expectedAction: 'pass',
+                sensor: 'พบจุดดิน แต่ไม่พบหนอน', feedback: 'จุดดินไม่ใช่หนอน',
+                isDecoy: true, decoyReason: 'ผักกาดมีจุดดิน แต่เงื่อนไขคือมีหนอน จึงไม่ต้องส่งไปโต๊ะตรวจศัตรูพืช',
+                properties: ['ชนิด: ผักกาด', 'จุดดิน: มี', 'หนอน: ไม่พบ'], hint: 'ด่านนี้ตรวจหนอน ไม่ได้ตรวจความสกปรก'
+            },
+            holes_decoy: {
+                label: 'ผักกาดมีรูเล็ก ๆ', props: { type: 'lettuce', hasWorm: false, dirt: false, holes: true }, expectedAction: 'pass',
+                sensor: 'มีรูเล็ก ๆ บนใบ แต่ไม่พบหนอน', feedback: 'รูใบอย่างเดียวไม่พอ ต้องพบหนอน',
+                isDecoy: true, decoyReason: 'ผักกาดมีรูเล็ก ๆ แต่ไม่พบหนอนจริง จึงควรปล่อยผ่าน',
+                properties: ['ชนิด: ผักกาด', 'รูบนใบ: มี', 'หนอน: ไม่พบ'], hint: 'ต้องสังเกตว่ามีตัวหนอนหรือไม่'
+            },
+            curled_decoy: {
+                label: 'ผักกาดใบงอ', props: { type: 'lettuce', hasWorm: false, dirt: false, holes: false, curled: true }, expectedAction: 'pass',
+                sensor: 'ใบผักกาดงอ แต่ไม่มีศัตรูพืช', feedback: 'ใบงอไม่ใช่เงื่อนไขมีหนอน',
+                isDecoy: true, decoyReason: 'ผักกาดใบงอแต่ไม่มีหนอน จึงไม่ควรส่งไปตรวจเกินจำเป็น',
+                properties: ['ชนิด: ผักกาด', 'ใบงอ: มี', 'หนอน: ไม่พบ'], hint: 'อย่าตัดสินจากผักดูไม่สมบูรณ์เพียงอย่างเดียว'
+            }
+        }[variant];
+        return makeItem({
+            id: `lettuce_${variant}_${id}`,
+            key: `lettuce_${variant}`,
+            icon: variant === 'worm' ? '🐛' : '🥬',
+            inspect: { title: data.label, properties: data.properties, hint: data.hint, warning: data.isDecoy ? 'ตัวหลอก: ดูเหมือนมีปัญหา แต่ยังไม่ใช่เงื่อนไขมีหนอน' : '' },
+            ...data
+        });
+    }
+
+    function potato(id, variant) {
+        const data = {
+            sprouted: {
+                label: 'มันฝรั่งมีหน่องอก', props: { type: 'potato', sprout: true, dirty: false, shape: 'normal' }, expectedAction: 'special_sort',
+                sensor: 'กรอบขยายพบหน่อเล็ก ๆ โผล่จากมันฝรั่ง', feedback: 'มันฝรั่งมีหน่องอกต้องคัดแยกพิเศษ',
+                properties: ['ชนิด: มันฝรั่ง', 'หน่องอก: มี', 'สถานะ: ต้องคัดแยกพิเศษ'], hint: 'มองหาหน่อที่โผล่ออกมา'
+            },
+            normal: {
+                label: 'มันฝรั่งปกติ', props: { type: 'potato', sprout: false, dirty: false, shape: 'normal' }, expectedAction: 'pass',
+                sensor: 'มันฝรั่งปกติ ไม่พบหน่องอก', feedback: 'มันฝรั่งปกติควรปล่อยผ่าน',
+                properties: ['ชนิด: มันฝรั่ง', 'หน่องอก: ไม่มี', 'สถานะ: ลงตะกร้าได้'], hint: 'ไม่มีหน่องอกจึงไม่เข้าเงื่อนไข If'
+            },
+            dirty_decoy: {
+                label: 'มันฝรั่งเปื้อนดิน', props: { type: 'potato', sprout: false, dirty: true, shape: 'normal' }, expectedAction: 'pass',
+                sensor: 'มีดินติดผิว แต่ไม่พบหน่องอก', feedback: 'ดินติดผิวไม่ใช่หน่องอก',
+                isDecoy: true, decoyReason: 'มันฝรั่งเปื้อนดิน แต่ไม่มีหน่องอก จึงไม่ต้องส่งไปคัดแยกพิเศษ',
+                properties: ['ชนิด: มันฝรั่ง', 'ดินติดผิว: มี', 'หน่องอก: ไม่มี'], hint: 'แยกดินออกจากหน่องอกให้ได้'
+            },
+            odd_decoy: {
+                label: 'มันฝรั่งรูปร่างบิดเบี้ยว', props: { type: 'potato', sprout: false, dirty: false, shape: 'odd' }, expectedAction: 'pass',
+                sensor: 'รูปร่างบิดเบี้ยว แต่ไม่มีหน่องอก', feedback: 'รูปร่างแปลกไม่ใช่เงื่อนไขของด่านนี้',
+                isDecoy: true, decoyReason: 'มันฝรั่งรูปร่างบิดเบี้ยว แต่ไม่มีหน่องอก จึงควรปล่อยผ่าน',
+                properties: ['ชนิด: มันฝรั่ง', 'รูปร่าง: บิดเบี้ยว', 'หน่องอก: ไม่มี'], hint: 'เงื่อนไขไม่เกี่ยวกับรูปร่าง'
+            },
+            dark_spot_decoy: {
+                label: 'มันฝรั่งมีจุดสีเข้ม', props: { type: 'potato', sprout: false, dirty: false, shape: 'normal', darkSpot: true }, expectedAction: 'pass',
+                sensor: 'พบจุดสีเข้ม แต่ไม่พบหน่องอก', feedback: 'จุดสีเข้มไม่ใช่หน่องอก',
+                isDecoy: true, decoyReason: 'มันฝรั่งมีจุดสีเข้ม แต่ไม่มีหน่องอก จึงไม่ควรคัดแยกพิเศษ',
+                properties: ['ชนิด: มันฝรั่ง', 'จุดสีเข้ม: มี', 'หน่องอก: ไม่มี'], hint: 'ต้องเห็นหน่อ ไม่ใช่แค่จุดบนผิว'
+            }
+        }[variant];
+        return makeItem({
+            id: `potato_${variant}_${id}`,
+            key: `potato_${variant}`,
+            icon: '🥔',
+            inspect: { title: data.label, properties: data.properties, hint: data.hint, warning: data.isDecoy ? 'ตัวหลอก: คล้ายผิดปกติ แต่ไม่ใช่มันฝรั่งงอก' : '' },
+            ...data
+        });
     }
 
     function boot() {

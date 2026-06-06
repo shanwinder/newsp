@@ -1,12 +1,6 @@
 // Shared engine for Smart Farm Manager stages 7-9.
 (function () {
-    const PASS_ACTIONS = new Set(['pass', 'all_off']);
-    const DROP_OFFSETS = {
-        a: { x: 16, y: -118 },
-        b: { x: 565, y: -116 },
-        c: { x: 520, y: 118 },
-        pass: { x: 20, y: 116 }
-    };
+    const SCAN_DELAY_MS = 420;
 
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -22,10 +16,6 @@
         return new Promise((resolve) => window.setTimeout(resolve, ms));
     }
 
-    function clamp(value, min, max) {
-        return Math.max(min, Math.min(max, value));
-    }
-
     function findById(list, id) {
         return (list || []).find((item) => item.id === id) || null;
     }
@@ -35,73 +25,53 @@
         return found ? found.label : (fallback || id || '');
     }
 
-    function checkCondition(item, conditionId) {
-        const props = item.props || item;
-        switch (conditionId) {
-            case 'carrot_dirty':
-                return props.type === 'carrot' && props.dirty === true;
-            case 'orange_big':
-                return props.type === 'orange' && props.size === 'big';
-            case 'mango_ripe':
-                return props.type === 'mango' && props.ripeness === 'ripe';
-            case 'mango_raw':
-                return props.type === 'mango' && props.ripeness === 'raw';
-            case 'sheep_woolly':
-                return props.type === 'sheep' && props.wool === 'long';
-            case 'animal_cow':
-                return props.type === 'cow';
-            case 'pig_under_40':
-                return props.type === 'pig' && props.weight < 40;
-            case 'pig_over_80':
-                return props.type === 'pig' && props.weight > 80;
-            case 'soil_low_moisture':
-                return props.type === 'plant_pot' && props.moisture < 30;
-            case 'rain':
-                return props.weather === 'rain';
-            case 'temp_over_35':
-                return props.temperature > 35;
-            case 'temp_under_15':
-                return props.temperature < 15;
-            case 'else':
-                return true;
-            default:
-                return false;
+    function playAudio(kind) {
+        const src = kind === 'wrong' ? '../assets/sound/wrong.mp3' : '../assets/sound/correct.mp3';
+        try {
+            const audio = new Audio(src);
+            audio.volume = kind === 'wrong' ? 0.35 : 0.42;
+            audio.play().catch(() => {});
+        } catch (error) {
+            // Browser autoplay rules may block this flourish before interaction.
         }
     }
 
-    function evaluateRules(item, rules) {
-        for (const rule of rules) {
+    function createPredicate(condition) {
+        if (!condition) return () => false;
+        if (typeof condition.test === 'function') {
+            return (props, item) => Boolean(condition.test(props, item));
+        }
+        if (condition.match && typeof condition.match === 'object') {
+            return (props) => Object.entries(condition.match).every(([key, value]) => props[key] === value);
+        }
+        if (condition.compare) {
+            const { key, op, value } = condition.compare;
+            return (props) => {
+                const actual = props[key];
+                if (op === '<') return actual < value;
+                if (op === '<=') return actual <= value;
+                if (op === '>') return actual > value;
+                if (op === '>=') return actual >= value;
+                if (op === '!=') return actual !== value;
+                return actual === value;
+            };
+        }
+        return () => false;
+    }
+
+    function checkCondition(item, conditionId, conditions = []) {
+        if (conditionId === 'else') return true;
+        const condition = findById(conditions, conditionId);
+        return createPredicate(condition)(item.props || {}, item);
+    }
+
+    function evaluateRules(item, rules, conditions = []) {
+        for (const rule of rules || []) {
             if (!rule || !rule.action) continue;
-            if (rule.type === 'else' || rule.condition === 'else') {
-                return rule.action;
-            }
-            if (rule.condition && checkCondition(item, rule.condition)) {
-                return rule.action;
-            }
+            if (rule.type === 'else' || rule.condition === 'else') return rule.action;
+            if (rule.condition && checkCondition(item, rule.condition, conditions)) return rule.action;
         }
         return 'pass';
-    }
-
-    function buildRules(rows) {
-        return rows.map((row, index) => ({
-            type: row.type || (index === 0 ? 'if' : 'else_if'),
-            condition: row.condition || (row.type === 'else' ? 'else' : null),
-            action: row.action || null
-        }));
-    }
-
-    function starsForLevel(level, stats, hintUsed) {
-        const total = Math.max(1, stats.total);
-        const accuracy = stats.correct / total;
-        const scoring = level.scoring || {};
-        if (accuracy >= (scoring.threeStarAccuracy ?? 0.95)
-            && stats.damaged <= (scoring.maxDamagedForThreeStars ?? 1)
-            && !hintUsed) {
-            return 3;
-        }
-        if (accuracy >= 0.8 && stats.damaged <= 4) return 2;
-        if (accuracy >= (scoring.passAccuracy ?? 0.8)) return 1;
-        return 0;
     }
 
     function getPassState(level, stats) {
@@ -110,50 +80,47 @@
         const scoring = level.scoring || {};
         return {
             accuracy,
-            passed: accuracy >= (scoring.passAccuracy ?? 0.8)
-                && stats.damaged <= (scoring.maxDamaged ?? 4)
+            passed: accuracy >= (scoring.passAccuracy ?? 0.6)
+                && stats.damaged <= (scoring.maxDamaged ?? Number.POSITIVE_INFINITY)
         };
     }
 
-    function playAudio(kind) {
-        const src = kind === 'wrong' ? '../assets/sound/wrong.mp3' : '../assets/sound/correct.mp3';
-        try {
-            const audio = new Audio(src);
-            audio.volume = kind === 'wrong' ? 0.35 : 0.42;
-            audio.play().catch(() => {});
-        } catch (error) {
-            // Audio is only a small flourish. Browsers may block it before user interaction.
-        }
+    function starsForLevel(level, stats) {
+        const total = Math.max(1, stats.total);
+        const accuracy = stats.correct / total;
+        const scoring = level.scoring || {};
+        if (accuracy >= (scoring.threeStarAccuracy ?? 0.9) && stats.damaged <= (scoring.maxDamagedForThreeStars ?? 1)) return 3;
+        if (accuracy >= (scoring.twoStarAccuracy ?? 0.75)) return 2;
+        if (accuracy >= (scoring.oneStarAccuracy ?? 0.6)) return 1;
+        return 0;
     }
 
     function initConveyorLogic(gameConfig) {
         const container = document.getElementById('game-container');
         if (!container) return;
+        if (!window.FarmMissions?.DragDropManager) {
+            throw new Error('Smart Farm Manager requires conveyor_drag_drop.js before conveyor_logic_base.js');
+        }
 
         const state = {
             levelIndex: 0,
             startedAt: Date.now(),
             attempts: 0,
-            mistakes: 0,
             totalCorrect: 0,
             totalItems: 0,
-            coins: 0,
-            combo: 0,
-            maxCombo: 0,
-            hintUsed: false,
-            selected: null,
-            history: [],
+            totalDamaged: 0,
+            processedCount: 0,
             running: false,
             paused: false,
-            levelStars: [],
-            processedCount: 0,
-            rules: []
+            rules: [],
+            levelStars: []
         };
 
         let eventRoot = null;
+        let dragDrop = null;
 
         renderShell();
-        bindEvents();
+        bindControls();
         loadLevel(0);
 
         function level() {
@@ -163,27 +130,32 @@
         function renderShell() {
             container.innerHTML = `
                 <div class="conveyor-shell">
-                    <div class="conveyor-top">
+                    <header class="conveyor-top">
                         <div>
                             <h3 class="conveyor-title">${escapeHtml(gameConfig.title)}</h3>
                             <p class="conveyor-subtitle">${escapeHtml(gameConfig.subtitle)}</p>
                         </div>
                         <div class="conveyor-statbar">
-                            <div class="conveyor-stat">คะแนน<strong id="conveyor-score">0</strong></div>
-                            <div class="conveyor-stat">Combo<strong id="conveyor-combo">x0</strong></div>
-                            <div class="conveyor-stat">เหรียญ<strong id="conveyor-coins">0</strong></div>
-                            <div class="conveyor-stat">สินค้า<strong id="conveyor-count">0/0</strong></div>
+                            <div class="conveyor-stat">รายการ<strong id="conveyor-count">0/0</strong></div>
+                            <div class="conveyor-stat">ถูกต้อง<strong id="conveyor-correct">0</strong></div>
+                            <div class="conveyor-stat">ผิดพลาด<strong id="conveyor-wrong">0</strong></div>
+                            <div class="conveyor-stat">เสียหาย<strong id="conveyor-damaged">0</strong></div>
                             <div class="conveyor-stat">ดาว<strong id="conveyor-stars">-</strong></div>
                         </div>
-                    </div>
+                    </header>
 
-                    <div class="conveyor-layout">
-                        <section class="conveyor-panel conveyor-main">
-                            <div class="conveyor-brief">
-                                <div class="conveyor-level" id="conveyor-level-pill">ด่านย่อย 1 / 3</div>
-                                <h4 id="conveyor-level-title">Smart Farm Manager</h4>
-                                <p id="conveyor-level-brief">ตั้งกฎให้เครื่องจักรฟาร์มทำงาน</p>
-                            </div>
+                    <div class="smart-farm-shell">
+                        <section class="mission-card">
+                            <div class="conveyor-level" id="conveyor-level-pill">ด่านย่อย 1 / 3</div>
+                            <h4 id="mission-title">Smart Farm Manager</h4>
+                            <dl class="mission-list">
+                                <div><dt>เป้าหมาย</dt><dd id="mission-goal">ตั้งกฎควบคุมฟาร์ม</dd></div>
+                                <div><dt>ตรรกะที่ใช้</dt><dd id="mission-logic">If</dd></div>
+                                <div><dt>รายการทั้งหมด</dt><dd id="mission-total">0 ชิ้น</dd></div>
+                            </dl>
+                        </section>
+
+                        <section class="conveyor-panel board-panel">
                             <div class="farm-stage" id="farm-stage">
                                 <div class="farm-skyline"></div>
                                 <div class="machine output-a" id="machine-a"></div>
@@ -192,30 +164,24 @@
                                 <div class="machine output-pass" id="machine-pass"></div>
                                 <div class="scan-gate" id="scan-gate"><span class="scan-label">SCAN</span></div>
                                 <div class="conveyor-belt" id="conveyor-belt"></div>
-                                <div class="combo-burst" id="combo-burst">Combo!</div>
-                                <div class="sensor-readout" id="sensor-readout">เลือกบล็อกแล้ววางลงช่องกฎ</div>
+                                <div class="sensor-readout" id="sensor-readout">ลากบล็อกเพื่อสร้างกฎ แล้วเริ่มสายพาน</div>
                                 <div class="queue-strip" id="queue-strip"></div>
                             </div>
                         </section>
 
-                        <aside class="conveyor-panel builder-panel">
-                            <div class="builder-head">
-                                <h4>แผงสร้างโปรแกรม</h4>
+                        <aside class="conveyor-panel toolbox-panel">
+                            <div class="toolbox-head">
+                                <h4>Rule Toolbox</h4>
                                 <span class="lesson-pill" id="lesson-pill">If</span>
                             </div>
-                            <div class="rule-list" id="rule-list"></div>
-
-                            <div class="palette-grid">
-                                <section class="palette-group">
-                                    <h4>บล็อกเงื่อนไข</h4>
-                                    <div class="block-list" id="condition-blocks"></div>
-                                </section>
-                                <section class="palette-group">
-                                    <h4>บล็อกคำสั่ง</h4>
-                                    <div class="block-list" id="action-blocks"></div>
-                                </section>
-                            </div>
-
+                            <section class="palette-group">
+                                <h4>บล็อกเงื่อนไข</h4>
+                                <div class="block-list" id="condition-blocks"></div>
+                            </section>
+                            <section class="palette-group">
+                                <h4>บล็อกคำสั่ง</h4>
+                                <div class="block-list" id="action-blocks"></div>
+                            </section>
                             <section class="control-panel">
                                 <h4>แผงควบคุม</h4>
                                 <div class="control-grid">
@@ -226,129 +192,74 @@
                                     <button type="button" class="conveyor-control hint" id="hint-conveyor">คำใบ้</button>
                                 </div>
                             </section>
-
                             <section id="conveyor-feedback" class="feedback-card">
                                 <div class="feedback-title">คำแนะนำ</div>
                                 <div class="feedback-body">ลากบล็อกเงื่อนไขและคำสั่งไปใส่ช่องให้ครบ</div>
                             </section>
                         </aside>
+
+                        <section class="conveyor-panel program-panel">
+                            <div class="program-head">
+                                <div>
+                                    <h4>Program Builder</h4>
+                                    <p id="program-subtitle">วางกฎให้ระบบอ่านจากบนลงล่าง</p>
+                                </div>
+                                <div class="block-trash" id="block-trash">ลากบล็อกที่วางแล้วมาที่นี่เพื่อลบ</div>
+                            </div>
+                            <div class="rule-list" id="rule-list"></div>
+                            <div class="rule-preview" id="rule-preview"></div>
+                        </section>
                     </div>
                 </div>
             `;
             eventRoot = container.querySelector('.conveyor-shell');
+            dragDrop = new window.FarmMissions.DragDropManager({
+                rootElement: eventRoot,
+                rulePanel: container.querySelector('#rule-list'),
+                conditionContainer: container.querySelector('#condition-blocks'),
+                actionContainer: container.querySelector('#action-blocks'),
+                trashElement: container.querySelector('#block-trash'),
+                previewElement: container.querySelector('#rule-preview'),
+                onRulesChanged: (rules) => { state.rules = rules; },
+                onFeedback: showFeedback
+            });
         }
 
-        function bindEvents() {
-            container.addEventListener('click', (event) => {
-                const block = event.target.closest('.logic-block');
-                if (block) {
-                    if (state.running) return;
-                    state.selected = { kind: block.dataset.kind, value: block.dataset.value };
-                    renderBlocks();
-                    showFeedback(`เลือก "${block.textContent.trim()}" แล้ว แตะช่องที่ต้องการวาง`, 'info');
-                    return;
-                }
-
-                const slot = event.target.closest('.rule-slot');
-                if (slot && !slot.classList.contains('fixed')) {
-                    handleSlotTap(slot);
-                }
-            });
-
-            container.addEventListener('dragstart', (event) => {
-                const block = event.target.closest('.logic-block');
-                const row = event.target.closest('.rule-row');
-                if (block) {
-                    if (state.running) return event.preventDefault();
-                    const payload = { kind: block.dataset.kind, value: block.dataset.value };
-                    event.dataTransfer.setData('application/json', JSON.stringify(payload));
-                    event.dataTransfer.effectAllowed = 'copy';
-                    state.selected = payload;
-                    renderBlocks();
-                    return;
-                }
-                if (row && row.draggable) {
-                    event.dataTransfer.setData('text/rule-row', row.dataset.ruleIndex);
-                    row.classList.add('dragging');
-                }
-            });
-
-            container.addEventListener('dragend', (event) => {
-                const row = event.target.closest('.rule-row');
-                if (row) row.classList.remove('dragging');
-                container.querySelectorAll('.drag-over').forEach((item) => item.classList.remove('drag-over'));
-            });
-
-            container.addEventListener('dragover', (event) => {
-                const slot = event.target.closest('.rule-slot');
-                const row = event.target.closest('.rule-row');
-                if (slot && !slot.classList.contains('fixed')) {
-                    event.preventDefault();
-                    slot.classList.add('drop-target');
-                    return;
-                }
-                if (row && row.draggable && hasTransferType(event, 'text/rule-row')) {
-                    event.preventDefault();
-                    row.classList.add('drag-over');
-                }
-            });
-
-            container.addEventListener('dragleave', (event) => {
-                const slot = event.target.closest('.rule-slot');
-                const row = event.target.closest('.rule-row');
-                if (slot) slot.classList.remove('drop-target');
-                if (row) row.classList.remove('drag-over');
-            });
-
-            container.addEventListener('drop', (event) => {
-                const slot = event.target.closest('.rule-slot');
-                const row = event.target.closest('.rule-row');
-                if (slot && !slot.classList.contains('fixed')) {
-                    event.preventDefault();
-                    slot.classList.remove('drop-target');
-                    try {
-                        const payload = JSON.parse(event.dataTransfer.getData('application/json'));
-                        applyToSlot(slot, payload);
-                    } catch (error) {
-                        showFeedback('วางบล็อกนี้ไม่ได้ ช่องเงื่อนไขรับเฉพาะเงื่อนไข และช่องคำสั่งรับเฉพาะคำสั่ง', 'error');
-                    }
-                    return;
-                }
-                if (row && row.draggable && hasTransferType(event, 'text/rule-row')) {
-                    event.preventDefault();
-                    row.classList.remove('drag-over');
-                    reorderRows(Number(event.dataTransfer.getData('text/rule-row')), Number(row.dataset.ruleIndex));
-                }
-            });
-
+        function bindControls() {
             container.querySelector('#run-conveyor').addEventListener('click', runConveyor);
             container.querySelector('#pause-conveyor').addEventListener('click', togglePause);
-            container.querySelector('#undo-conveyor').addEventListener('click', undo);
-            container.querySelector('#clear-conveyor').addEventListener('click', clearRules);
+            container.querySelector('#undo-conveyor').addEventListener('click', () => {
+                if (!dragDrop.undo()) showFeedback('ยังไม่มีขั้นตอนให้ย้อนกลับ', 'info');
+            });
+            container.querySelector('#clear-conveyor').addEventListener('click', () => {
+                dragDrop.clear();
+                showFeedback('ล้างกฎแล้ว ลองวางโปรแกรมใหม่อีกครั้ง', 'info');
+            });
             container.querySelector('#hint-conveyor').addEventListener('click', showHint);
-        }
-
-        function hasTransferType(event, type) {
-            return Array.from(event.dataTransfer?.types || []).includes(type);
         }
 
         function loadLevel(index) {
             state.levelIndex = index;
-            const current = level();
-            state.rules = buildRules(current.ruleSlots || [{ type: 'if' }]);
-            state.history = [];
-            state.selected = null;
-            state.combo = 0;
             state.processedCount = 0;
             state.paused = false;
+            const current = level();
             container.querySelector('#farm-stage').classList.toggle('greenhouse', current.theme === 'greenhouse');
             container.querySelector('#conveyor-level-pill').textContent = `ด่านย่อย ${index + 1} / ${gameConfig.levels.length}`;
-            container.querySelector('#conveyor-level-title').textContent = current.title;
-            container.querySelector('#conveyor-level-brief').textContent = current.brief;
+            container.querySelector('#mission-title').textContent = current.title;
+            container.querySelector('#mission-goal').textContent = current.mission || current.brief;
+            container.querySelector('#mission-logic').textContent = current.lessonTypeLabel || current.lessonType;
+            container.querySelector('#mission-total').textContent = `${current.itemQueue.length} ชิ้น`;
             container.querySelector('#lesson-pill').textContent = current.lessonTypeLabel || current.lessonType;
+            container.querySelector('#program-subtitle').textContent = current.allowReorder
+                ? 'ลากแถว If / Else If เพื่อสลับลำดับได้'
+                : 'วางกฎให้ครบก่อนเริ่มสายพาน';
+            dragDrop.loadLevel({
+                ruleSlots: current.ruleSlots,
+                conditions: current.conditions,
+                actions: current.actions,
+                allowReorder: current.allowReorder
+            });
             renderMachines();
-            renderRules();
-            renderBlocks();
             renderQueue();
             updateStats();
             setControls(false);
@@ -367,7 +278,7 @@
                     return;
                 }
                 element.style.display = '';
-                element.innerHTML = `<span class="machine-icon">${escapeHtml(machine.icon || '📦')}</span>${escapeHtml(machine.label)}`;
+                element.innerHTML = `<span class="machine-icon">${escapeHtml(machine.icon || '□')}</span>${escapeHtml(machine.label)}`;
             });
         }
 
@@ -377,159 +288,15 @@
             level().itemQueue.forEach((item, index) => {
                 const chip = document.createElement('span');
                 chip.className = `queue-chip${index < state.processedCount ? ' done' : ''}`;
-                chip.textContent = item.icon || '•';
+                chip.textContent = item.fallbackIcon || item.icon || '•';
                 chip.title = item.label || item.key;
                 queue.appendChild(chip);
             });
         }
 
-        function renderRules() {
-            const current = level();
-            const list = container.querySelector('#rule-list');
-            list.innerHTML = '';
-            const canReorder = current.allowReorder !== false;
-            state.rules.forEach((rule, index) => {
-                const row = document.createElement('div');
-                row.className = 'rule-row';
-                row.dataset.ruleIndex = index;
-                row.draggable = canReorder && !state.running && rule.type !== 'else';
-                const label = rule.type === 'else'
-                    ? 'นอกเหนือ'
-                    : rule.type === 'else_if'
-                        ? 'หรือถ้า'
-                        : 'ถ้า';
-                row.innerHTML = `
-                    <div class="rule-kind">${escapeHtml(label)}</div>
-                    <div class="rule-slots">
-                        ${renderConditionSlot(rule, index)}
-                        ${renderActionSlot(rule, index)}
-                    </div>
-                `;
-                list.appendChild(row);
-            });
-        }
-
-        function renderConditionSlot(rule, index) {
-            if (rule.type === 'else') {
-                return `<div class="rule-slot fixed filled" data-rule-index="${index}" data-kind="condition">กรณีอื่นทั้งหมด</div>`;
-            }
-            const filled = Boolean(rule.condition);
-            const text = filled ? labelOf(level().conditions, rule.condition) : 'วางเงื่อนไข';
-            return `<div class="rule-slot condition-slot${filled ? ' filled' : ''}" data-rule-index="${index}" data-kind="condition">${escapeHtml(text)}</div>`;
-        }
-
-        function renderActionSlot(rule, index) {
-            const filled = Boolean(rule.action);
-            const text = filled ? labelOf(level().actions, rule.action) : 'วางคำสั่ง';
-            return `<div class="rule-slot action-slot${filled ? ' filled' : ''}" data-rule-index="${index}" data-kind="action">${escapeHtml(text)}</div>`;
-        }
-
-        function renderBlocks() {
-            const conditionRoot = container.querySelector('#condition-blocks');
-            const actionRoot = container.querySelector('#action-blocks');
-            conditionRoot.innerHTML = '';
-            actionRoot.innerHTML = '';
-            level().conditions.forEach((condition) => conditionRoot.appendChild(createBlock('condition', condition)));
-            level().actions.forEach((action) => actionRoot.appendChild(createBlock('action', action)));
-        }
-
-        function createBlock(kind, item) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = `logic-block ${kind}${state.selected && state.selected.kind === kind && state.selected.value === item.id ? ' selected' : ''}`;
-            button.draggable = !state.running;
-            button.dataset.kind = kind;
-            button.dataset.value = item.id;
-            button.textContent = item.label;
-            button.title = kind === 'condition' ? `เงื่อนไข: ${item.label}` : `คำสั่ง: ${item.label}`;
-            button.disabled = state.running;
-            return button;
-        }
-
-        function handleSlotTap(slot) {
-            const ruleIndex = Number(slot.dataset.ruleIndex);
-            const kind = slot.dataset.kind;
-            if (!state.selected) {
-                if (state.rules[ruleIndex][kind]) {
-                    pushHistory();
-                    state.rules[ruleIndex][kind] = null;
-                    renderRules();
-                    showFeedback('ลบบล็อกออกจากช่องแล้ว', 'info');
-                    return;
-                }
-                showFeedback('เลือกบล็อกด้านล่างก่อน แล้วค่อยแตะช่องนี้', 'info');
-                return;
-            }
-            applyToSlot(slot, state.selected);
-        }
-
-        function applyToSlot(slot, payload) {
-            const ruleIndex = Number(slot.dataset.ruleIndex);
-            const kind = slot.dataset.kind;
-            if (!payload || payload.kind !== kind) {
-                const target = kind === 'condition' ? 'บล็อกเงื่อนไข' : 'บล็อกคำสั่ง';
-                showFeedback(`ช่องนี้ต้องใช้${target}เท่านั้น`, 'error');
-                return;
-            }
-            pushHistory();
-            state.rules[ruleIndex][kind] = payload.value;
-            state.selected = null;
-            renderRules();
-            renderBlocks();
-            showFeedback('วางบล็อกสำเร็จ กฎนี้จะถูกอ่านตามลำดับจากบนลงล่าง', 'success');
-        }
-
-        function reorderRows(from, to) {
-            if (from === to || state.running) return;
-            const movable = state.rules[from];
-            const target = state.rules[to];
-            if (!movable || !target || movable.type === 'else' || target.type === 'else') {
-                showFeedback('แถว Else ต้องอยู่ท้ายสุดเสมอ', 'error');
-                return;
-            }
-            pushHistory();
-            const [row] = state.rules.splice(from, 1);
-            state.rules.splice(to, 0, row);
-            renderRules();
-            showFeedback('สลับลำดับกฎแล้ว ระบบจะอ่านกฎบนสุดก่อน', 'info');
-        }
-
-        function pushHistory() {
-            state.history.push(JSON.stringify(state.rules));
-            if (state.history.length > 24) state.history.shift();
-        }
-
-        function undo() {
-            if (state.running) return;
-            const previous = state.history.pop();
-            if (!previous) {
-                showFeedback('ยังไม่มีขั้นตอนให้ย้อนกลับ', 'info');
-                return;
-            }
-            state.rules = JSON.parse(previous);
-            state.selected = null;
-            renderRules();
-            renderBlocks();
-            showFeedback('ย้อนกลับ 1 ขั้นแล้ว', 'info');
-        }
-
-        function clearRules() {
-            if (state.running) return;
-            pushHistory();
-            state.rules = buildRules(level().ruleSlots || [{ type: 'if' }]);
-            state.selected = null;
-            renderRules();
-            renderBlocks();
-            showFeedback('ล้างกฎแล้ว ลองวางโปรแกรมใหม่อีกครั้ง', 'info');
-        }
-
         function showHint() {
             if (state.running) return;
-            state.hintUsed = true;
-            const current = level();
-            const hint = current.hint || expectedText(current);
-            showFeedback(hint, 'info');
-            updateStats();
+            showFeedback(level().hint || expectedText(level()), 'info');
         }
 
         function expectedText(current) {
@@ -540,18 +307,9 @@
             }).join(' | ');
         }
 
-        function getMissingRule() {
-            for (let index = 0; index < state.rules.length; index++) {
-                const rule = state.rules[index];
-                if (rule.type !== 'else' && !rule.condition) return 'ยังมีช่องเงื่อนไขว่างอยู่';
-                if (!rule.action) return 'ยังมีช่องคำสั่งว่างอยู่';
-            }
-            return null;
-        }
-
         async function runConveyor() {
             if (state.running) return;
-            const missing = getMissingRule();
+            const missing = dragDrop.validateRules();
             if (missing) {
                 showFeedback(`${missing} ลากบล็อกให้ครบก่อนเริ่มสายพาน`, 'error');
                 playAudio('wrong');
@@ -561,58 +319,42 @@
             state.running = true;
             state.paused = false;
             state.attempts++;
-            state.combo = 0;
             state.processedCount = 0;
             setControls(true);
-            updateStats();
             renderQueue();
+            updateStats();
 
             const current = level();
-            const stats = { total: current.itemQueue.length, correct: 0, damaged: 0, coins: 0, maxCombo: 0 };
-            const belt = container.querySelector('#conveyor-belt');
-            belt.classList.add('running');
+            const stats = { total: current.itemQueue.length, correct: 0, damaged: 0 };
+            container.querySelector('#conveyor-belt').classList.add('running');
             showFeedback('สายพานเริ่มทำงาน เครื่องสแกนจะอ่านกฎจากบนลงล่าง', 'info');
 
             for (const item of current.itemQueue) {
                 await waitWhilePaused();
-                const outcome = await processItem(item, stats);
+                const outcome = await processItem(item);
                 if (outcome.correct) {
                     stats.correct++;
                     state.totalCorrect++;
-                    state.combo++;
-                    state.maxCombo = Math.max(state.maxCombo, state.combo);
-                    stats.maxCombo = Math.max(stats.maxCombo, state.combo);
-                    state.coins += 5;
-                    stats.coins += 5;
-                    if (state.combo >= 3) {
-                        const bonus = state.combo % 3 === 0 ? 10 : 0;
-                        if (bonus) {
-                            state.coins += bonus;
-                            stats.coins += bonus;
-                        }
-                        showCombo(state.combo, bonus);
-                    }
                     playAudio('correct');
                 } else {
                     stats.damaged++;
-                    state.mistakes++;
-                    state.combo = 0;
+                    state.totalDamaged++;
                     playAudio('wrong');
                 }
                 state.totalItems++;
                 state.processedCount++;
                 renderQueue();
                 updateStats(stats);
-                await delay(outcome.correct ? 360 : 620);
+                await delay(outcome.correct ? 320 : 580);
             }
 
-            belt.classList.remove('running');
+            container.querySelector('#conveyor-belt').classList.remove('running');
             state.running = false;
             setControls(false);
             finishLevel(stats);
         }
 
-        async function processItem(item, stats) {
+        async function processItem(item) {
             const current = level();
             clearMachineState();
             const stage = container.querySelector('#farm-stage');
@@ -620,34 +362,84 @@
             const scanner = container.querySelector('#scan-gate');
             const element = document.createElement('div');
             element.className = 'conveyor-item';
-            element.innerHTML = `<span class="item-icon">${escapeHtml(item.icon || '📦')}</span><span class="item-name">${escapeHtml(item.label || item.key)}</span>`;
+            element.innerHTML = `${renderItemVisual(item)}<span class="item-name">${escapeHtml(item.label || item.key)}</span>`;
             stage.appendChild(element);
+
+            const path = getStagePath(stage, scanner, element);
+            moveItemTo(element, path.start.x, path.start.y, 0);
             readout.textContent = item.sensor || item.label || 'กำลังเข้าจุดสแกน';
 
             await delay(80);
-            element.style.transform = 'translate3d(270px, 0, 0)';
-            await delay(760);
+            await moveItemTo(element, path.scan.x, path.scan.y, 520);
+
+            // SCAN ALIGNMENT NOTE:
+            // ก่อนตรวจเงื่อนไข ต้องจัดตำแหน่งวัตถุให้ตรงกลางเครื่องสแกนเสมอ
+            // เพื่อป้องกัน sprite/ภาพ fallback คลาดเคลื่อนหรือดูเหมือนยังไม่เข้าเครื่องสแกน
             scanner.classList.add('scanning');
             readout.textContent = `สแกน: ${item.sensor || item.label}`;
-            await delay(720);
+            await delay(SCAN_DELAY_MS);
             scanner.classList.remove('scanning');
 
-            const action = evaluateRules(item, state.rules);
+            const action = evaluateRules(item, state.rules, current.conditions);
             const actionMeta = findById(current.actions, action) || {};
             const correct = action === item.expectedAction;
             const machine = machineForAction(current, action);
-            const targetOffset = DROP_OFFSETS[machine?.slot || (PASS_ACTIONS.has(action) ? 'pass' : 'c')] || DROP_OFFSETS.c;
             const machineEl = machine ? container.querySelector(`#machine-${machine.slot}`) : container.querySelector('#machine-pass');
             if (machineEl) machineEl.classList.add(correct ? 'active' : 'error');
 
             readout.textContent = correct
                 ? `${item.label}: ${actionMeta.successText || 'ทำงานถูกต้อง'}`
                 : `${item.label}: ${item.feedback || wrongText(current, item, action)}`;
-            element.style.transform = `translate3d(${targetOffset.x}px, ${targetOffset.y}px, 0)`;
-            element.style.opacity = correct ? '0.98' : '0.78';
-            await delay(760);
+
+            const target = machineEl ? centerOf(stage, machineEl) : path.pass;
+            await moveItemTo(element, target.x, target.y, 620);
+            element.style.opacity = correct ? '0.98' : '0.74';
+            await delay(180);
             element.remove();
             return { correct, action };
+        }
+
+        function renderItemVisual(item) {
+            // ASSET NOTE:
+            // ตอนนี้ระบบใช้ fallbackIcon เพื่อให้ prototype ทำงานได้ทันที
+            // ในอนาคตสามารถเปลี่ยนเป็น PNG หรือ Sprite Sheet ได้โดยแก้เฉพาะ levelConfig.asset
+            // ห้ามผูก logic กับ emoji โดยตรง เพราะ emoji เป็นเพียง fallback ด้านการแสดงผล
+            // Logic ต้องอ่านจาก props เท่านั้น เช่น type, dirty, size, ripeness, weight, moisture, temperature
+            if (item.asset?.path && item.asset?.ready === true) {
+                return `<img class="item-asset" src="${escapeHtml(item.asset.path)}" alt="${escapeHtml(item.asset.description || item.label || '')}">`;
+            }
+            return `<span class="item-icon">${escapeHtml(item.fallbackIcon || item.icon || '□')}</span>`;
+        }
+
+        function getStagePath(stage, scanner, element) {
+            const stageRect = stage.getBoundingClientRect();
+            const scannerCenter = centerOf(stage, scanner);
+            const belt = container.querySelector('#conveyor-belt');
+            const beltRect = belt.getBoundingClientRect();
+            const y = beltRect.top - stageRect.top + (beltRect.height / 2);
+            const itemWidth = element.offsetWidth || 86;
+            return {
+                start: { x: itemWidth / 2 + 16, y },
+                scan: { x: scannerCenter.x, y },
+                pass: { x: stageRect.width - itemWidth, y },
+            };
+        }
+
+        function centerOf(stage, element) {
+            const stageRect = stage.getBoundingClientRect();
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.left - stageRect.left + (rect.width / 2),
+                y: rect.top - stageRect.top + (rect.height / 2)
+            };
+        }
+
+        function moveItemTo(element, x, y, duration) {
+            return new Promise((resolve) => {
+                element.style.transitionDuration = `${duration}ms`;
+                element.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0) translate(-50%, -50%)`;
+                window.setTimeout(resolve, Math.max(0, duration));
+            });
         }
 
         function machineForAction(current, action) {
@@ -670,18 +462,17 @@
         function finishLevel(stats) {
             const current = level();
             const passState = getPassState(current, stats);
-            const stars = starsForLevel(current, stats, state.hintUsed);
+            const stars = starsForLevel(current, stats);
             const percent = Math.round(passState.accuracy * 100);
 
             if (passState.passed) {
                 state.levelStars[state.levelIndex] = stars;
-                state.coins += 20 + (stars === 3 ? 30 : 0);
                 updateStats(stats);
-                showFeedback(`ผ่านด่าน! ถูกต้อง ${stats.correct}/${stats.total} (${percent}%) ได้ ${'⭐'.repeat(stars) || '0 ดาว'} และ Combo สูงสุด x${stats.maxCombo}`, 'success');
+                showFeedback(`ผ่านด่าน! ถูกต้อง ${stats.correct}/${stats.total} (${percent}%) เสียหาย ${stats.damaged} ได้ ${'★'.repeat(stars) || '0 ดาว'}`, 'success');
                 if (state.levelIndex < gameConfig.levels.length - 1) {
-                    window.setTimeout(() => loadLevel(state.levelIndex + 1), 1650);
+                    window.setTimeout(() => loadLevel(state.levelIndex + 1), 1500);
                 } else {
-                    window.setTimeout(showFinalResult, 1250);
+                    window.setTimeout(showFinalResult, 1100);
                 }
             } else {
                 showFeedback(`ยังไม่ผ่าน: ถูกต้อง ${stats.correct}/${stats.total} (${percent}%) เสียหาย ${stats.damaged} ชิ้น ลองแก้กฎแล้วเริ่มใหม่`, 'error');
@@ -690,61 +481,58 @@
 
         function showFinalResult() {
             const duration = Math.max(1, Math.floor((Date.now() - state.startedAt) / 1000));
-            const averageStars = Math.max(1, Math.round(state.levelStars.reduce((sum, item) => sum + item, 0) / state.levelStars.length));
+            const stars = Math.max(0, Math.round(state.levelStars.reduce((sum, item) => sum + item, 0) / Math.max(1, state.levelStars.length)));
+            const wrong = Math.max(0, state.totalItems - state.totalCorrect);
             const overlay = document.createElement('div');
             overlay.className = 'result-overlay';
             overlay.innerHTML = `
                 <div class="result-card">
                     <h3>ภารกิจฟาร์มอัจฉริยะสำเร็จ!</h3>
-                    <p>คุณตั้งกฎ If / Else If / Else ควบคุมสายพานครบทุกด่านย่อยแล้ว</p>
-                    <div class="result-stars">${'⭐'.repeat(averageStars)}</div>
+                    <p>${escapeHtml(gameConfig.resultText || 'คุณสร้างกฎควบคุมฟาร์มครบทุกด่านย่อยแล้ว')}</p>
+                    <div class="result-stars">${'★'.repeat(stars) || '0 ดาว'}</div>
                     <div class="result-metrics">
                         <div class="result-metric">ถูกต้อง<strong>${state.totalCorrect}/${state.totalItems}</strong></div>
-                        <div class="result-metric">Combo สูงสุด<strong>x${state.maxCombo}</strong></div>
-                        <div class="result-metric">เหรียญ<strong>${state.coins}</strong></div>
+                        <div class="result-metric">ผิดพลาด<strong>${wrong}</strong></div>
+                        <div class="result-metric">เสียหาย<strong>${state.totalDamaged}</strong></div>
                     </div>
-                    <p class="mt-3 mb-0">กำลังบันทึกผลลัพธ์...</p>
+                    <div class="result-actions">
+                        <button type="button" class="result-button" id="replay-stage">เล่นซ้ำ</button>
+                        <a class="result-button secondary" href="game_select.php?game_id=${encodeURIComponent(window.GAME_ID || 3)}">กลับหน้าเลือกด่าน</a>
+                    </div>
+                    <p class="result-saving">กำลังบันทึกผลลัพธ์...</p>
                 </div>
             `;
             document.body.appendChild(overlay);
+            overlay.querySelector('#replay-stage').addEventListener('click', () => window.location.reload());
             window.setTimeout(() => {
                 if (typeof window.sendResult === 'function') {
-                    window.sendResult(window.STAGE_ID, averageStars, duration, state.attempts);
+                    window.sendResult(window.STAGE_ID, stars, duration, state.attempts);
                 }
             }, 1850);
         }
 
-        function showCombo(combo, bonus) {
-            const burst = container.querySelector('#combo-burst');
-            burst.textContent = bonus ? `Super Farm Combo x${combo} +${bonus}` : `Combo x${combo}`;
-            burst.classList.remove('show');
-            void burst.offsetWidth;
-            burst.classList.add('show');
-        }
-
         function updateStats(runStats = null) {
-            const score = state.totalCorrect * 100 + state.coins * 3;
-            container.querySelector('#conveyor-score').textContent = String(score);
-            container.querySelector('#conveyor-combo').textContent = `x${state.combo}`;
-            container.querySelector('#conveyor-coins').textContent = String(state.coins);
-            container.querySelector('#conveyor-count').textContent = `${state.processedCount}/${level().itemQueue.length}`;
+            const currentTotal = level().itemQueue.length;
+            const runCorrect = runStats ? runStats.correct : 0;
+            const runDamaged = runStats ? runStats.damaged : 0;
+            container.querySelector('#conveyor-count').textContent = `${state.processedCount}/${currentTotal}`;
+            container.querySelector('#conveyor-correct').textContent = String(runStats ? runCorrect : 0);
+            container.querySelector('#conveyor-wrong').textContent = String(runStats ? Math.max(0, state.processedCount - runCorrect) : 0);
+            container.querySelector('#conveyor-damaged').textContent = String(runStats ? runDamaged : 0);
             const stars = state.levelStars[state.levelIndex];
-            container.querySelector('#conveyor-stars').textContent = stars ? '⭐'.repeat(stars) : '-';
+            container.querySelector('#conveyor-stars').textContent = stars ? '★'.repeat(stars) : '-';
             if (runStats) {
-                const readout = container.querySelector('#sensor-readout');
-                readout.textContent = `ถูก ${runStats.correct}/${runStats.total} | เสียหาย ${runStats.damaged} | Combo สูงสุด x${runStats.maxCombo}`;
+                container.querySelector('#sensor-readout').textContent = `ถูก ${runStats.correct}/${runStats.total} | ผิด ${Math.max(0, state.processedCount - runStats.correct)} | เสียหาย ${runStats.damaged}`;
             }
         }
 
         function setControls(running) {
-            container.querySelectorAll('.logic-block').forEach((button) => { button.disabled = running; });
+            dragDrop.setLocked(running);
             container.querySelector('#run-conveyor').disabled = running;
             container.querySelector('#undo-conveyor').disabled = running;
             container.querySelector('#clear-conveyor').disabled = running;
             container.querySelector('#hint-conveyor').disabled = running;
             container.querySelector('#pause-conveyor').disabled = !running;
-            renderRules();
-            renderBlocks();
         }
 
         function togglePause() {
@@ -756,9 +544,7 @@
         }
 
         async function waitWhilePaused() {
-            while (state.paused) {
-                await delay(160);
-            }
+            while (state.paused) await delay(160);
         }
 
         function showFeedback(message, type = 'info') {

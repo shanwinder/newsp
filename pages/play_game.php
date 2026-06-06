@@ -96,7 +96,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             position: relative;
             border: 6px solid #fff;
             outline: 3px dashed <?php echo $theme['border']; ?>;
-            overflow: hidden;
+            overflow: <?php echo $is_conveyor_condition_stage ? 'visible' : 'hidden'; ?>;
         }
 
         #game-container {
@@ -174,7 +174,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div class="col-md-3"></div>
         </div>
 
-        <div class="game-wrapper">
+        <div class="game-wrapper <?php echo $is_conveyor_condition_stage ? 'conveyor-wrapper' : ''; ?>">
             <div id="game-container"></div>
         </div>
     </div>
@@ -219,6 +219,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <script src="../assets/js/game_ui_motion.js"></script>
     <?php endif; ?>
     <?php if ($is_conveyor_condition_stage): ?>
+        <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
         <script src="../assets/js/logic_game/conveyor_logic_base.js"></script>
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>

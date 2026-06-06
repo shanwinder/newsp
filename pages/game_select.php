@@ -79,11 +79,18 @@ if ($can_create_project) {
     $project_status = $work_row['status'] ?? null;
 }
 
+$project_cta_texts = [
+    1 => 'ขั้นต่อไป: ออกแบบภารกิจตรรกะคัดแยกของคุณเอง',
+    2 => 'ขั้นต่อไป: ออกแบบภารกิจเส้นทางรถไถของคุณเอง',
+    3 => 'ขั้นต่อไป: ออกแบบภารกิจ Smart Farm Manager ของคุณเอง',
+    4 => 'ขั้นต่อไป: ออกแบบภารกิจแก้บั๊กฟาร์มของคุณเอง'
+];
+
 $project_cta = [
     'hero_class' => 'project-hero-new',
     'icon' => 'bi-stars',
     'title' => 'เยี่ยมมาก! คุณผ่านบทเรียนนี้ครบทุกด่านแล้ว',
-    'text' => 'ขั้นต่อไป: ออกแบบภารกิจเส้นทางรถไถของคุณเอง',
+    'text' => $project_cta_texts[$game_id] ?? $project_cta_texts[2],
     'button' => 'เข้าห้องสร้างชิ้นงาน',
     'sticky' => 'พร้อมสร้างชิ้นงานแล้ว'
 ];

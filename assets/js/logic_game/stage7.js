@@ -1,150 +1,171 @@
-// Stage 7: Smart Farm Manager - Fruit & Veggie Classifier.
+// Stage 7: Smart Farm Manager - Produce Sorting with If.
 (function () {
     const config = {
-        title: 'Smart Farm Manager: โรงคัดแยกผลผลิตของพี่สมปอง',
-        subtitle: 'ตั้งกฎ If / Else If / Else เพื่อคัดแยกผลผลิตบนสายพานอัจฉริยะ',
+        title: 'บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ',
+        subtitle: 'เกมที่ 1: โรงคัดแยกผลผลิตของพี่สมปอง | ฝึกใช้ If เท่านั้น',
+        resultText: 'คุณเขียนกฎ If เพื่อคัดแยกผลผลิตครบทั้ง 3 ภารกิจแล้ว',
         levels: [
             {
                 title: '7-1 แครอทเปื้อนโคลน',
-                brief: 'คัดแครอทเปื้อนโคลนเข้าเครื่องล้าง ส่วนแครอทสะอาดปล่อยลงตะกร้า',
-                intro: 'เริ่มจากกฎเดียว: ถ้าเจอแครอทเปื้อนโคลน ให้ส่งไปล้างน้ำ',
+                mission: 'ส่งแครอทเปื้อนโคลนเข้าเครื่องล้าง',
+                brief: 'แครอทเปื้อนโคลนต้องเข้าล้าง ส่วนแครอทสะอาดปล่อยผ่านอัตโนมัติ',
+                intro: 'ใช้กฎ If เพียงบรรทัดเดียว: ถ้าเจอแครอทเปื้อนโคลน ให้ส่งไปเครื่องล้าง',
                 lessonType: 'if',
                 lessonTypeLabel: 'If',
                 theme: 'produce',
-                hint: 'ถ้า [แครอทเปื้อนโคลน] -> [ส่งไปเครื่องล้างน้ำ]',
+                hint: 'ถ้า [แครอทเปื้อนโคลน] -> [ส่งเข้าเครื่องล้าง]',
                 ruleSlots: [{ type: 'if' }],
                 conditions: [
-                    { id: 'carrot_dirty', label: 'แครอทเปื้อนโคลน' }
+                    { id: 'dirty_carrot', label: 'แครอทเปื้อนโคลน', match: { type: 'carrot', dirty: true } }
                 ],
                 actions: [
-                    { id: 'wash', label: 'ส่งไปเครื่องล้างน้ำ', successText: 'เครื่องล้างหมุนพ่นน้ำ แครอทสะอาดลงตะกร้า' },
-                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'แครอทสะอาดลงตะกร้าแบบไม่เสียเวลา' }
+                    { id: 'wash', label: 'ส่งเข้าเครื่องล้าง', successText: 'เครื่องล้างพ่นน้ำ แครอทสะอาดเด้งลงตะกร้า' },
+                    { id: 'pass', label: 'ปล่อยผ่านอัตโนมัติ', successText: 'แครอทสะอาดลงตะกร้าโดยไม่ต้องล้างซ้ำ' }
                 ],
                 machines: [
-                    { slot: 'a', label: 'เครื่องล้างน้ำ', icon: '🚿', actions: ['wash'] },
+                    { slot: 'a', label: 'เครื่องล้าง', icon: '🚿', actions: ['wash'] },
                     { slot: 'pass', label: 'ตะกร้าสะอาด', icon: '🧺', actions: ['pass'] }
                 ],
                 itemQueue: [
                     carrot('A', true), carrot('B', false), carrot('C', true), carrot('D', false),
                     carrot('E', true), carrot('F', false), carrot('G', true), carrot('H', false),
-                    carrot('I', true), carrot('J', false)
+                    carrot('I', true), carrot('J', false), carrot('K', true), carrot('L', false)
                 ],
-                expectedLogic: [
-                    { condition: 'carrot_dirty', action: 'wash' }
-                ],
-                scoring: { passAccuracy: 0.8, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
+                expectedLogic: [{ condition: 'dirty_carrot', action: 'wash' }],
+                scoring: defaultScoring()
             },
             {
-                title: '7-2 คัดขนาดส้มแสนอร่อย',
-                brief: 'ส้มลูกใหญ่เข้ากล่องพรีเมียม ส่วนส้มอื่นเข้ากล่องแปรรูป',
-                intro: 'ด่านนี้ต้องใช้ Else เพื่อจัดการส้มที่ไม่เข้าเงื่อนไขลูกใหญ่',
-                lessonType: 'if_else',
-                lessonTypeLabel: 'If / Else',
+                title: '7-2 ไข่ร้าวต้องแยกออก',
+                mission: 'ส่งไข่ร้าวเข้าถาดคัดทิ้ง',
+                brief: 'ไข่มีรอยร้าวต้องแยกออก ส่วนไข่ดีปล่อยผ่านไปกล่องขาย',
+                intro: 'ยังใช้ If เท่านั้น แต่ต้องสังเกตรอยแตกที่เล็กลง',
+                lessonType: 'if',
+                lessonTypeLabel: 'If',
                 theme: 'produce',
-                hint: 'ถ้า [ส้มลูกใหญ่] -> [ใส่กล่องพรีเมียม] | นอกเหนือจากนี้ -> [กล่องทำน้ำส้ม]',
-                ruleSlots: [{ type: 'if' }, { type: 'else' }],
+                hint: 'ถ้า [ไข่มีรอยร้าว] -> [ส่งเข้าถาดคัดทิ้ง]',
+                ruleSlots: [{ type: 'if' }],
                 conditions: [
-                    { id: 'orange_big', label: 'ส้มลูกใหญ่' }
+                    { id: 'cracked_egg', label: 'ไข่มีรอยร้าว', match: { type: 'egg', cracked: true } }
                 ],
                 actions: [
-                    { id: 'premium_box', label: 'ใส่กล่องพรีเมียม', successText: 'ส้มลูกใหญ่เด้งเข้ากล่องพรีเมียม' },
-                    { id: 'juice_box', label: 'ใส่กล่องทำน้ำส้ม', successText: 'ส้มขนาดอื่นเข้ากล่องแปรรูปพอดี' }
+                    { id: 'reject_tray', label: 'ส่งเข้าถาดคัดทิ้ง', successText: 'ไข่ร้าวถูกวางลงถาดคัดทิ้งอย่างปลอดภัย' },
+                    { id: 'pass', label: 'ปล่อยผ่านกล่องขาย', successText: 'ไข่ดีเข้ากล่องขายเรียบร้อย' }
                 ],
                 machines: [
-                    { slot: 'a', label: 'กล่องพรีเมียม', icon: '🎁', actions: ['premium_box'] },
-                    { slot: 'b', label: 'กล่องทำน้ำส้ม', icon: '📦', actions: ['juice_box'] }
+                    { slot: 'a', label: 'ถาดคัดทิ้ง', icon: '🧺', actions: ['reject_tray'] },
+                    { slot: 'pass', label: 'กล่องขาย', icon: '📦', actions: ['pass'] }
                 ],
                 itemQueue: [
-                    orange('A', 'big'), orange('B', 'small'), orange('C', 'small'), orange('D', 'big'),
-                    orange('E', 'big'), orange('F', 'small'), orange('G', 'big'), orange('H', 'small'),
-                    orange('I', 'small'), orange('J', 'big')
+                    egg('A', true), egg('B', false), egg('C', false), egg('D', true),
+                    egg('E', false), egg('F', true), egg('G', false), egg('H', true),
+                    egg('I', false), egg('J', true), egg('K', false), egg('L', true)
                 ],
-                expectedLogic: [
-                    { condition: 'orange_big', action: 'premium_box' },
-                    { condition: 'else', action: 'juice_box' }
-                ],
-                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
+                expectedLogic: [{ condition: 'cracked_egg', action: 'reject_tray' }],
+                scoring: defaultScoring()
             },
             {
-                title: '7-3 คัดเกรดมะม่วงตามความสุก',
-                brief: 'มะม่วงสุกขายแพ็คคู่ มะม่วงดิบทำดอง และมะม่วงเน่าลงถังปุ๋ยหมัก',
-                intro: 'ด่านนี้ระบบอ่าน If ก่อน แล้วอ่าน Else If และจบที่ Else',
-                lessonType: 'if_else_if_else',
-                lessonTypeLabel: 'If / Else If / Else',
+                title: '7-3 ผักมีหนอนต้องตรวจพิเศษ',
+                mission: 'ส่งผักที่มีหนอนไปโต๊ะตรวจพิเศษ',
+                brief: 'ผักหลายชนิดวิ่งเร็วขึ้นเล็กน้อย ถ้ามีหนอนต้องแยกไปตรวจ',
+                intro: 'ด่านสุดท้ายของเกม If มีตัวหลอกหลายชนิด แต่โครงสร้างกฎยังเป็น If บรรทัดเดียว',
+                lessonType: 'if',
+                lessonTypeLabel: 'If',
                 theme: 'produce',
-                hint: 'ถ้า [มะม่วงสีเหลืองสุก] -> [ขายแพ็คคู่] | หรือถ้า [มะม่วงสีเขียวดิบ] -> [ทำมะม่วงดอง] | นอกเหนือจากนี้ -> [ถังปุ๋ยหมัก]',
-                ruleSlots: [{ type: 'if' }, { type: 'else_if' }, { type: 'else' }],
+                hint: 'ถ้า [ผักมีหนอน] -> [ส่งไปโต๊ะตรวจพิเศษ]',
+                ruleSlots: [{ type: 'if' }],
                 conditions: [
-                    { id: 'mango_ripe', label: 'มะม่วงสีเหลืองสุก' },
-                    { id: 'mango_raw', label: 'มะม่วงสีเขียวดิบ' }
+                    { id: 'wormy_vegetable', label: 'ผักมีหนอน', match: { category: 'vegetable', worm: true } }
                 ],
                 actions: [
-                    { id: 'pack_pair', label: 'ขายแพ็คคู่', successText: 'มะม่วงสุกเข้ากล่องแพ็คคู่' },
-                    { id: 'pickle', label: 'ทำมะม่วงดอง', successText: 'มะม่วงดิบลงถังดองเรียบร้อย' },
-                    { id: 'compost', label: 'ถังปุ๋ยหมัก', successText: 'มะม่วงเน่าไปเป็นปุ๋ยให้ฟาร์ม' }
+                    { id: 'inspect_table', label: 'ส่งไปโต๊ะตรวจพิเศษ', successText: 'โต๊ะตรวจเปิดแว่นขยายและแยกผักมีหนอนออก' },
+                    { id: 'pass', label: 'ปล่อยผ่านลงตะกร้า', successText: 'ผักปกติลงตะกร้าขายได้' }
                 ],
                 machines: [
-                    { slot: 'a', label: 'แพ็คคู่', icon: '🥭', actions: ['pack_pair'] },
-                    { slot: 'b', label: 'ถังมะม่วงดอง', icon: '🫙', actions: ['pickle'] },
-                    { slot: 'c', label: 'ถังปุ๋ยหมัก', icon: '🍂', actions: ['compost'] }
+                    { slot: 'a', label: 'โต๊ะตรวจพิเศษ', icon: '🔎', actions: ['inspect_table'] },
+                    { slot: 'pass', label: 'ตะกร้าผักดี', icon: '🧺', actions: ['pass'] }
                 ],
                 itemQueue: [
-                    mango('A', 'ripe'), mango('B', 'raw'), mango('C', 'rotten'), mango('D', 'ripe'),
-                    mango('E', 'rotten'), mango('F', 'raw'), mango('G', 'ripe'), mango('H', 'raw'),
-                    mango('I', 'rotten'), mango('J', 'ripe')
+                    vegetable('A', 'lettuce', true), vegetable('B', 'cabbage', false),
+                    vegetable('C', 'bok_choy', false), vegetable('D', 'lettuce', true),
+                    vegetable('E', 'spinach', false), vegetable('F', 'cabbage', true),
+                    vegetable('G', 'bok_choy', false), vegetable('H', 'spinach', true),
+                    vegetable('I', 'lettuce', false), vegetable('J', 'cabbage', false),
+                    vegetable('K', 'bok_choy', true), vegetable('L', 'spinach', false)
                 ],
-                expectedLogic: [
-                    { condition: 'mango_ripe', action: 'pack_pair' },
-                    { condition: 'mango_raw', action: 'pickle' },
-                    { condition: 'else', action: 'compost' }
-                ],
-                scoring: { passAccuracy: 0.85, threeStarAccuracy: 0.95, maxDamaged: 3, maxDamagedForThreeStars: 1 }
+                expectedLogic: [{ condition: 'wormy_vegetable', action: 'inspect_table' }],
+                scoring: defaultScoring()
             }
         ]
     };
 
+    function defaultScoring() {
+        return {
+            oneStarAccuracy: 0.6,
+            twoStarAccuracy: 0.75,
+            threeStarAccuracy: 0.9,
+            maxDamagedForThreeStars: 1,
+            passAccuracy: 0.6
+        };
+    }
+
+    function asset(key, description) {
+        return {
+            key,
+            path: `../assets/img/conveyor/produce/${key}.png`,
+            width: 96,
+            height: 96,
+            description,
+            futureSpriteSheet: {
+                path: `../assets/img/conveyor/produce/${key}_sheet.png`,
+                frameWidth: 96,
+                frameHeight: 96,
+                animations: ['idle', 'move', 'bounce_correct', 'drop_wrong']
+            }
+        };
+    }
+
     function carrot(id, dirty) {
         return {
-            key: `carrot_${id}`,
+            id: `carrot_${id}`,
             label: dirty ? 'แครอทเปื้อนโคลน' : 'แครอทสะอาด',
-            icon: '🥕',
+            fallbackIcon: '🥕',
+            asset: asset(dirty ? 'dirty_carrot' : 'clean_carrot', dirty ? 'ภาพแครอทมีคราบโคลน' : 'ภาพแครอทสะอาด'),
             props: { type: 'carrot', dirty },
-            sensor: dirty ? 'พบคราบโคลนที่ผิวแครอท' : 'ผิวแครอทสะอาดแล้ว',
+            sensor: dirty ? 'เครื่องสแกนพบคราบโคลนบนแครอท' : 'เครื่องสแกนพบแครอทสะอาด',
             expectedAction: dirty ? 'wash' : 'pass',
-            feedback: dirty
-                ? 'แครอทเปื้อนโคลนหลุดลงตะกร้า ลองใช้เงื่อนไขแครอทเปื้อนโคลน'
-                : 'แครอทสะอาดไม่ต้องเข้าเครื่องล้าง ปล่อยผ่านได้เลย'
+            feedback: dirty ? 'แครอทเปื้อนโคลนควรเข้าเครื่องล้าง' : 'แครอทสะอาดไม่ต้องล้างซ้ำ'
         };
     }
 
-    function orange(id, size) {
+    function egg(id, cracked) {
         return {
-            key: `orange_${id}`,
-            label: size === 'big' ? 'ส้มลูกใหญ่' : 'ส้มลูกเล็ก',
-            icon: '🍊',
-            props: { type: 'orange', size },
-            sensor: size === 'big' ? 'วงแหวนสแกนพบส้มลูกใหญ่' : 'วงแหวนสแกนพบส้มลูกเล็ก',
-            expectedAction: size === 'big' ? 'premium_box' : 'juice_box',
-            feedback: size === 'big'
-                ? 'ส้มลูกใหญ่ควรเข้ากล่องพรีเมียม'
-                : 'ส้มลูกเล็กไม่ควรเข้ากล่องพรีเมียม ใช้ Else ส่งไปกล่องทำน้ำส้ม'
+            id: `egg_${id}`,
+            label: cracked ? 'ไข่มีรอยร้าว' : 'ไข่ดี',
+            fallbackIcon: '🥚',
+            asset: asset(cracked ? 'cracked_egg' : 'good_egg', cracked ? 'ภาพไข่มีรอยร้าว' : 'ภาพไข่ดีไม่มีรอยแตก'),
+            props: { type: 'egg', cracked },
+            sensor: cracked ? 'เลนส์สแกนพบรอยร้าวบนเปลือกไข่' : 'เปลือกไข่เรียบ ไม่มีรอยแตก',
+            expectedAction: cracked ? 'reject_tray' : 'pass',
+            feedback: cracked ? 'ไข่ร้าวควรถูกคัดออกก่อนลงกล่องขาย' : 'ไข่ดีควรปล่อยผ่านไปกล่องขาย'
         };
     }
 
-    function mango(id, ripeness) {
-        const data = {
-            ripe: ['มะม่วงสีเหลืองสุก', '🥭', 'mango', 'yellow', 'ripe', 'pack_pair', 'มะม่วงสุกควรขายแพ็คคู่'],
-            raw: ['มะม่วงสีเขียวดิบ', '🥭', 'mango', 'green', 'raw', 'pickle', 'มะม่วงดิบควรส่งไปทำมะม่วงดอง'],
-            rotten: ['มะม่วงเน่าดำ', '🥭', 'mango', 'black', 'rotten', 'compost', 'มะม่วงเน่าไม่เข้าเงื่อนไขสุกหรือดิบ จึงควรลงถังปุ๋ยหมัก']
-        }[ripeness];
+    function vegetable(id, type, worm) {
+        const labels = {
+            lettuce: 'ผักกาดหอม',
+            cabbage: 'กะหล่ำปลี',
+            bok_choy: 'ผักกวางตุ้ง',
+            spinach: 'ผักโขม'
+        };
         return {
-            key: `mango_${id}`,
-            label: data[0],
-            icon: data[1],
-            props: { type: data[2], color: data[3], ripeness: data[4] },
-            sensor: `เครื่องสแกนสีอ่านค่า: ${data[0]}`,
-            expectedAction: data[5],
-            feedback: data[6]
+            id: `veg_${type}_${id}`,
+            label: worm ? `${labels[type]}มีหนอน` : labels[type],
+            fallbackIcon: worm ? '🐛' : '🥬',
+            asset: asset(worm ? `${type}_worm` : `${type}_clean`, worm ? `ภาพ${labels[type]}มีหนอน` : `ภาพ${labels[type]}ปกติ`),
+            props: { category: 'vegetable', type, worm },
+            sensor: worm ? `พบหนอนบน${labels[type]}` : `${labels[type]}ไม่มีหนอน`,
+            expectedAction: worm ? 'inspect_table' : 'pass',
+            feedback: worm ? 'ผักมีหนอนต้องไปโต๊ะตรวจพิเศษ' : 'ผักปกติควรปล่อยผ่านลงตะกร้า'
         };
     }
 

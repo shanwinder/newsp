@@ -37,14 +37,14 @@ if ($game_id === 1) {
     $is_under_construction = false;
 
 } else if ($game_id === 3) {
-    $game_title = "บทที่ 3: Smart Farm Manager (Condition)";
+    $game_title = "บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ";
     $game_theme = "info";
-    $mission_desc = "คุณคือผู้จัดการฟาร์มอัจฉริยะ ต้องสร้างกฎ If / Else If / Else ให้สายพานและเครื่องจักรตัดสินใจเองว่าจะคัดแยกผลผลิต ดูแลสัตว์ หรือควบคุมโรงเรือนอย่างไร";
+    $mission_desc = "คุณคือผู้จัดการฟาร์มอัจฉริยะ ต้องลากบล็อกเงื่อนไขและคำสั่งเพื่อสร้างกฎควบคุมสายพาน เครื่องจักร หุ่นยนต์เลี้ยงสัตว์ และโรงเรือนไฮเทค";
 
     $steps = [
         ['icon' => 'bi-radar', 'title' => '1. สแกนวัตถุบนสายพาน', 'desc' => 'ดูคุณสมบัติของผลผลิต สัตว์ หรือค่าจากเซ็นเซอร์ เช่น สี น้ำหนัก ความชื้น ฝน และอุณหภูมิ'],
         ['icon' => 'bi-collection', 'title' => '2. สร้างกฎฟาร์ม', 'desc' => 'ลากบล็อกเงื่อนไขและคำสั่ง วางเป็นกฎ If, Else If และ Else จากบนลงล่าง'],
-        ['icon' => 'bi-play-circle', 'title' => '3. เริ่มสายพาน!', 'desc' => 'ระบบจะสแกนวัตถุทีละชิ้น ประเมินกฎของคุณ และแสดงผลถูกผิดพร้อมคะแนน Combo']
+        ['icon' => 'bi-play-circle', 'title' => '3. เริ่มสายพาน!', 'desc' => 'ระบบจะสแกนวัตถุทีละชิ้น ประเมินกฎของคุณ และสรุปเป็นดาว จำนวนถูกผิด และรายการเสียหาย']
     ];
     $start_link = "../pages/game_select.php?game_id=3";
     $is_under_construction = false;
@@ -280,8 +280,8 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 3): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
                     <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If-Then-Else</div>
-                    <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้โดรนตัดสินใจเองได้ เหมือนการเขียนสมองให้หุ่นยนต์เกษตร</p>
-                    <p class="text-secondary small mb-3">โดรนจะอ่านกฎจากบนลงล่าง เช่น <strong>ถ้ามีแมลง ให้ไล่แมลง</strong> มิฉะนั้นถ้าฝนตกให้กลับฐาน มิฉะนั้นถ้าดินแห้งให้รดน้ำ ถ้าเรียงผิด โดรนอาจรดน้ำกลางฝนหรือบินผ่านแปลงที่มีแมลงได้</p>
+                    <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้ระบบฟาร์มตัดสินใจเองได้ เหมือนการเขียนสมองให้เครื่องจักรอัตโนมัติ</p>
+                    <p class="text-secondary small mb-3">ระบบจะอ่านกฎจากบนลงล่าง เช่น <strong>ถ้าผลผลิตเปื้อน ให้ส่งไปล้าง</strong> หรือถ้าความชื้นต่ำให้เปิดสปริงเกอร์ ถ้าเรียงผิด เครื่องจักรอาจส่งวัตถุไปปลายทางผิดได้</p>
                     <div class="row g-2">
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-info mb-1">If</span><br>ถ้าสถานการณ์นี้เป็นจริง ให้ทำคำสั่งที่กำหนด</div></div>
                         <div class="col-md-4"><div class="logic-term shadow-sm h-100"><span class="badge bg-success mb-1">Else If</span><br>ถ้าเงื่อนไขก่อนหน้าไม่จริง ค่อยตรวจเงื่อนไขถัดไป</div></div>

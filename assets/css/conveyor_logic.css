@@ -4,7 +4,8 @@
 }
 
 .conveyor-shell {
-  width: min(1120px, 96vw);
+  width: min(1180px, calc(100vw - 24px));
+  margin: 0 auto;
   font-family: "Kanit", sans-serif;
   color: #172033;
 }
@@ -14,9 +15,9 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
   align-items: start;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   padding: 14px 16px;
-  border: 1px solid #d7e4dc;
+  border: 1px solid #d8e5dc;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 12px 30px rgba(21, 39, 31, 0.08);
@@ -24,10 +25,10 @@
 
 .conveyor-title {
   margin: 0;
+  color: #18392b;
   font-size: 24px;
   line-height: 1.25;
   font-weight: 800;
-  color: #18392b;
 }
 
 .conveyor-subtitle {
@@ -41,78 +42,124 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  max-width: 520px;
+  max-width: 560px;
 }
 
 .conveyor-stat {
-  min-width: 86px;
+  min-width: 82px;
   padding: 7px 10px;
-  border: 1px solid #d7e4dc;
+  border: 1px solid #d8e5dc;
   border-radius: 8px;
   background: #f7fbf8;
+  color: #526173;
   text-align: center;
   font-size: 12px;
-  color: #526173;
 }
 
 .conveyor-stat strong {
   display: block;
   margin-top: 1px;
-  font-size: 17px;
   color: #172033;
+  font-size: 17px;
 }
 
-.conveyor-layout {
+.smart-farm-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(330px, 0.82fr);
-  gap: 12px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-areas:
+    "mission toolbox"
+    "board toolbox"
+    "program program";
+  gap: 16px;
+  align-items: start;
 }
 
-.conveyor-panel {
-  border: 1px solid #d7e4dc;
+.conveyor-panel,
+.mission-card {
+  border: 1px solid #d8e5dc;
   border-radius: 8px;
   background: #ffffff;
   box-shadow: 0 12px 30px rgba(21, 39, 31, 0.08);
 }
 
-.conveyor-main {
-  overflow: hidden;
-}
-
-.conveyor-brief {
-  padding: 12px 14px;
-  border-bottom: 1px solid #e4ece7;
-  background: #f8fbf4;
+.mission-card {
+  grid-area: mission;
+  padding: 14px 16px;
+  background: #f7fbf8;
 }
 
 .conveyor-level {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: #2e7050;
   font-size: 14px;
   font-weight: 800;
 }
 
-.conveyor-brief h4 {
-  margin: 0;
+.mission-card h4 {
+  margin: 0 0 10px;
   color: #172033;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 800;
+  line-height: 1.25;
 }
 
-.conveyor-brief p {
-  margin: 4px 0 0;
-  color: #526173;
+.mission-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.mission-list div {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #dce9df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.mission-list dt {
+  color: #5b6b61;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mission-list dd {
+  margin: 2px 0 0;
+  color: #172033;
   font-size: 14px;
-  line-height: 1.5;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.board-panel {
+  grid-area: board;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.toolbox-panel {
+  grid-area: toolbox;
+  max-height: 680px;
+  min-width: 0;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.program-panel {
+  grid-area: program;
+  min-width: 0;
+  padding: 12px;
+  overflow-x: auto;
 }
 
 .farm-stage {
   position: relative;
+  width: 100%;
   min-height: 390px;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(241, 249, 243, 0.86), rgba(232, 244, 236, 0.94)),
@@ -129,20 +176,19 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, rgba(255,255,255,0.24), transparent 30%, rgba(255,255,255,0.2));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.24), transparent 30%, rgba(255, 255, 255, 0.2));
 }
 
 .conveyor-belt {
   position: absolute;
   left: 6%;
   right: 6%;
-  top: 168px;
+  top: 44%;
   height: 88px;
   border: 4px solid #485363;
   border-radius: 8px;
-  background:
-    repeating-linear-gradient(90deg, #657184 0 30px, #515d6e 30px 60px);
-  box-shadow: inset 0 10px 0 rgba(255,255,255,0.08), 0 18px 30px rgba(20, 32, 43, 0.2);
+  background: repeating-linear-gradient(90deg, #657184 0 30px, #515d6e 30px 60px);
+  box-shadow: inset 0 10px 0 rgba(255, 255, 255, 0.08), 0 18px 30px rgba(20, 32, 43, 0.2);
 }
 
 .conveyor-belt.running {
@@ -168,7 +214,7 @@
 .scan-gate {
   position: absolute;
   left: 48%;
-  top: 92px;
+  top: 24%;
   width: 106px;
   height: 190px;
   transform: translateX(-50%);
@@ -198,7 +244,6 @@
   position: absolute;
   left: 50%;
   top: -32px;
-  transform: translateX(-50%);
   width: max-content;
   padding: 5px 10px;
   border-radius: 8px;
@@ -206,6 +251,7 @@
   color: #ffffff;
   font-size: 13px;
   font-weight: 800;
+  transform: translateX(-50%);
 }
 
 .machine {
@@ -217,12 +263,12 @@
   padding: 9px;
   border: 2px solid #d1d5db;
   border-radius: 8px;
-  background: rgba(255,255,255,0.92);
+  background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.14);
+  color: #263142;
   text-align: center;
   font-size: 13px;
   font-weight: 800;
-  color: #263142;
 }
 
 .machine .machine-icon {
@@ -241,32 +287,40 @@
   animation: machineShake 0.38s ease-in-out 2;
 }
 
-.machine.output-a { left: 7%; top: 44px; }
-.machine.output-b { right: 7%; top: 44px; }
-.machine.output-c { right: 11%; bottom: 28px; }
-.machine.output-pass { left: 9%; bottom: 28px; }
+.machine.output-a { left: 7%; top: 8%; }
+.machine.output-b { right: 7%; top: 8%; }
+.machine.output-c { right: 11%; bottom: 7%; }
+.machine.output-pass { left: 9%; bottom: 7%; }
 
 .conveyor-item {
   position: absolute;
-  left: 8%;
-  top: 166px;
-  width: 86px;
+  left: 0;
+  top: 0;
+  z-index: 8;
+  width: 88px;
   min-height: 78px;
   display: grid;
   place-items: center;
-  padding: 4px;
+  padding: 5px;
   border: 2px solid #ffffff;
   border-radius: 8px;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
-  transform: translate3d(0, 0, 0);
-  transition: transform 0.72s ease, opacity 0.28s ease;
-  z-index: 8;
+  transform: translate3d(0, 0, 0) translate(-50%, -50%);
+  transform-origin: center center;
+  transition-property: transform, opacity;
+  transition-timing-function: ease;
 }
 
 .conveyor-item .item-icon {
   font-size: 34px;
   line-height: 1;
+}
+
+.conveyor-item .item-asset {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .conveyor-item .item-name {
@@ -277,32 +331,10 @@
   line-height: 1.2;
 }
 
-.combo-burst {
-  position: absolute;
-  left: 50%;
-  top: 88px;
-  transform: translateX(-50%);
-  min-width: 180px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: rgba(250, 204, 21, 0.94);
-  color: #713f12;
-  font-size: 20px;
-  font-weight: 800;
-  text-align: center;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.combo-burst.show {
-  animation: comboPop 0.95s ease;
-}
-
 .sensor-readout {
   position: absolute;
   left: 50%;
-  top: 294px;
-  transform: translateX(-50%);
+  bottom: 18%;
   width: min(520px, 86%);
   min-height: 44px;
   padding: 9px 12px;
@@ -310,9 +342,10 @@
   border-radius: 8px;
   background: rgba(236, 254, 255, 0.94);
   color: #164e63;
+  text-align: center;
   font-size: 14px;
   font-weight: 700;
-  text-align: center;
+  transform: translateX(-50%);
 }
 
 .queue-strip {
@@ -327,10 +360,12 @@
   min-height: 42px;
   padding: 6px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.72);
+  background: rgba(255, 255, 255, 0.72);
+  overflow-x: auto;
 }
 
 .queue-chip {
+  flex: 0 0 auto;
   width: 34px;
   height: 30px;
   display: grid;
@@ -348,19 +383,17 @@
   opacity: 0.7;
 }
 
-.builder-panel {
-  padding: 12px;
-}
-
-.builder-head {
+.toolbox-head,
+.program-head {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.builder-head h4,
+.toolbox-head h4,
+.program-head h4,
 .palette-group h4,
 .control-panel h4 {
   margin: 0;
@@ -369,7 +402,14 @@
   font-weight: 800;
 }
 
+.program-head p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
 .lesson-pill {
+  flex: 0 0 auto;
   padding: 5px 8px;
   border-radius: 8px;
   background: #fff7ed;
@@ -378,14 +418,60 @@
   font-weight: 800;
 }
 
+.palette-group,
+.control-panel,
+.feedback-card,
+.rule-preview,
+.block-trash {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.palette-group + .palette-group,
+.control-panel,
+.feedback-card {
+  margin-top: 10px;
+}
+
+.block-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.logic-block {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.15);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: grab;
+  touch-action: manipulation;
+}
+
+.logic-block.condition { background: #1d7ed0; }
+.logic-block.action { background: #169b52; }
+
+.logic-block.selected {
+  outline: 3px solid #facc15;
+  outline-offset: 2px;
+}
+
 .rule-list {
   display: grid;
   gap: 8px;
+  min-width: 680px;
 }
 
 .rule-row {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 132px minmax(190px, 1fr) 32px minmax(190px, 1fr);
   gap: 8px;
   align-items: stretch;
   padding: 8px;
@@ -403,25 +489,24 @@
   outline-offset: 1px;
 }
 
-.rule-kind {
+.rule-label,
+.rule-arrow {
   display: grid;
   place-items: center;
   border-radius: 8px;
   background: #f59e0b;
   color: #ffffff;
+  text-align: center;
   font-size: 13px;
   font-weight: 800;
-  text-align: center;
 }
 
-.rule-slots {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 8px;
+.rule-arrow {
+  background: #fbbf24;
 }
 
-.rule-slot {
-  min-height: 48px;
+.drop-slot {
+  min-height: 50px;
   padding: 7px;
   border: 2px dashed #93c5fd;
   border-radius: 8px;
@@ -437,11 +522,11 @@
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
 
-.rule-slot.action-slot {
+.drop-slot.action-slot {
   border-color: #86efac;
 }
 
-.rule-slot.fixed {
+.drop-slot.fixed {
   cursor: default;
   border-style: solid;
   border-color: #f8c27a;
@@ -449,68 +534,68 @@
   color: #9a3412;
 }
 
-.rule-slot.filled {
+.drop-slot.filled {
   border-style: solid;
   color: #172033;
 }
 
-.rule-slot.drop-target {
+.drop-slot.drop-target {
   border-color: #0ea5e9;
   background: #e0f2fe;
   transform: translateY(-1px);
 }
 
-.palette-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 12px;
+.drop-slot.drop-reject {
+  border-color: #ef4444;
+  background: #fef2f2;
+  animation: slotReject 0.36s ease;
 }
 
-.palette-group,
-.control-panel,
-.feedback-card {
-  padding: 10px;
-  border: 1px solid #e2e8f0;
+.placed-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
   border-radius: 8px;
-  background: #f8fafc;
+  background: #eff6ff;
+  color: #1e3a8a;
+  cursor: grab;
 }
 
-.block-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+.action-slot .placed-block {
+  background: #ecfdf5;
+  color: #166534;
 }
 
-.logic-block {
-  min-height: 40px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 8px;
-  color: #ffffff;
+.slot-placeholder {
+  color: #64748b;
+}
+
+.block-trash {
+  flex: 0 0 auto;
+  max-width: 250px;
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
   font-size: 13px;
   font-weight: 800;
-  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.15);
-  cursor: grab;
-  touch-action: manipulation;
+  text-align: center;
 }
 
-.logic-block.condition {
-  background: #1d7ed0;
+.block-trash.drop-target {
+  border-color: #ef4444;
+  background: #fee2e2;
 }
 
-.logic-block.action {
-  background: #169b52;
-}
-
-.logic-block.selected {
-  outline: 3px solid #facc15;
-  outline-offset: 2px;
-}
-
-.control-panel {
+.rule-preview {
+  display: grid;
+  gap: 4px;
   margin-top: 10px;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .control-grid {
@@ -542,7 +627,6 @@
 }
 
 .feedback-card {
-  margin-top: 10px;
   background: #ecfeff;
   border-color: #a5f3fc;
 }
@@ -563,13 +647,8 @@
   font-weight: 800;
 }
 
-.feedback-card.success .feedback-title {
-  color: #166534;
-}
-
-.feedback-card.error .feedback-title {
-  color: #991b1b;
-}
+.feedback-card.success .feedback-title { color: #166534; }
+.feedback-card.error .feedback-title { color: #991b1b; }
 
 .feedback-body {
   color: #334155;
@@ -607,6 +686,7 @@
   margin: 12px 0;
   color: #f59e0b;
   font-size: 44px;
+  letter-spacing: 0;
 }
 
 .result-metrics {
@@ -628,6 +708,35 @@
   display: block;
   color: #172033;
   font-size: 18px;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.result-button {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #16a34a;
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.result-button.secondary {
+  background: #475569;
+}
+
+.result-saving {
+  margin: 14px 0 0;
+  color: #64748b;
+  font-size: 13px;
 }
 
 @keyframes beltMove {
@@ -652,17 +761,29 @@
   70% { transform: translateX(7px); }
 }
 
-@keyframes comboPop {
-  0% { opacity: 0; transform: translate(-50%, 18px) scale(0.82); }
-  25% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
-  80% { opacity: 1; transform: translate(-50%, -7px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -22px) scale(0.92); }
+@keyframes slotReject {
+  0%, 100% { transform: translateX(0); }
+  30% { transform: translateX(-6px); }
+  70% { transform: translateX(6px); }
 }
 
 @media (max-width: 980px) {
   .conveyor-top,
-  .conveyor-layout {
+  .smart-farm-shell {
     grid-template-columns: 1fr;
+  }
+
+  .smart-farm-shell {
+    grid-template-areas:
+      "mission"
+      "board"
+      "program"
+      "toolbox";
+  }
+
+  .toolbox-panel {
+    max-height: none;
+    overflow-y: visible;
   }
 
   .conveyor-statbar {
@@ -675,9 +796,9 @@
   }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 680px) {
   .conveyor-shell {
-    width: min(100%, 96vw);
+    width: min(100%, calc(100vw - 16px));
   }
 
   .conveyor-title {
@@ -685,20 +806,31 @@
   }
 
   .conveyor-stat {
-    min-width: 74px;
     flex: 1 1 74px;
+    min-width: 74px;
   }
 
-  .rule-row,
-  .rule-slots,
-  .palette-grid,
+  .mission-list,
   .control-grid,
   .result-metrics {
     grid-template-columns: 1fr;
   }
 
-  .rule-kind {
-    min-height: 34px;
+  .program-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .block-trash {
+    max-width: none;
+  }
+
+  .rule-list {
+    min-width: 560px;
+  }
+
+  .rule-row {
+    grid-template-columns: 104px minmax(150px, 1fr) 26px minmax(150px, 1fr);
   }
 
   .farm-stage {
@@ -717,5 +849,10 @@
 
   .conveyor-item {
     width: 72px;
+  }
+
+  .sensor-readout {
+    bottom: 20%;
+    font-size: 12px;
   }
 }

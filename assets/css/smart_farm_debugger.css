@@ -1,0 +1,525 @@
+.debugger-shell,
+.debugger-shell * {
+    box-sizing: border-box;
+}
+
+#game-container {
+    width: min(1120px, 96vw);
+}
+
+.debugger-shell {
+    width: 100%;
+    font-family: 'Kanit', sans-serif;
+    color: #172033;
+}
+
+.debugger-top,
+.debugger-panel,
+.debugger-stage-card {
+    background: #ffffff;
+    border: 1px solid #dde5ef;
+    border-radius: 8px;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, .08);
+}
+
+.debugger-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 15px 16px;
+    margin-bottom: 12px;
+}
+
+.debugger-kicker {
+    margin: 0 0 4px;
+    color: #b45309;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.debugger-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.debugger-subtitle {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 15px;
+}
+
+.debugger-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.debugger-badge {
+    border: 1px solid #fed7aa;
+    background: #fff7ed;
+    color: #9a3412;
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.debugger-flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.debugger-step {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    padding: 6px;
+}
+
+.debugger-step.active {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+.debugger-step.done {
+    background: #ecfdf5;
+    border-color: #22c55e;
+    color: #166534;
+}
+
+.debugger-layout {
+    display: grid;
+    grid-template-columns: minmax(430px, 1.05fr) minmax(360px, .95fr);
+    gap: 12px;
+}
+
+.debugger-panel {
+    min-width: 0;
+    padding: 14px;
+}
+
+.debugger-panel-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: #1f2937;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.debugger-farm {
+    min-height: 335px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background:
+        linear-gradient(180deg, rgba(219, 234, 254, .85) 0%, rgba(236, 253, 245, .86) 48%, rgba(220, 252, 231, .94) 100%),
+        repeating-linear-gradient(90deg, rgba(34, 197, 94, .12) 0, rgba(34, 197, 94, .12) 18px, rgba(255, 255, 255, .16) 18px, rgba(255, 255, 255, .16) 36px);
+}
+
+.debugger-route {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    top: 155px;
+    height: 58px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    border: 2px solid #cbd5e1;
+}
+
+.debugger-station {
+    position: absolute;
+    min-width: 114px;
+    min-height: 74px;
+    border: 1px solid #94a3b8;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .92);
+    display: grid;
+    place-items: center;
+    padding: 8px;
+    text-align: center;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.debugger-station.input { left: 22px; top: 74px; }
+.debugger-station.scan { left: calc(50% - 57px); top: 58px; }
+.debugger-station.output-a { right: 24px; top: 42px; }
+.debugger-station.output-b { right: 24px; bottom: 34px; }
+
+.debugger-item {
+    position: absolute;
+    left: 46px;
+    top: 146px;
+    width: 74px;
+    height: 74px;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 3px solid #f59e0b;
+    box-shadow: 0 14px 24px rgba(15, 23, 42, .18);
+    font-size: 39px;
+    transition: transform .45s ease, left .45s ease, top .45s ease, border-color .2s ease;
+    z-index: 3;
+}
+
+.debugger-item.run-1 { left: calc(50% - 37px); transform: scale(1.06); }
+.debugger-item.run-2 { left: calc(100% - 118px); top: 94px; }
+.debugger-item.run-3 { left: calc(100% - 118px); top: 210px; }
+.debugger-item.fixed { border-color: #22c55e; }
+.debugger-item.broken { border-color: #ef4444; animation: debuggerPulse .55s linear 3; }
+
+@keyframes debuggerPulse {
+    0%, 100% { transform: translateX(0) scale(1); }
+    25% { transform: translateX(-8px) scale(1.04); }
+    75% { transform: translateX(8px) scale(1.04); }
+}
+
+.debugger-alert {
+    position: absolute;
+    left: 22px;
+    right: 22px;
+    bottom: 18px;
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fff1f2;
+    color: #9f1239;
+    padding: 10px 12px;
+    font-weight: 800;
+}
+
+.debugger-alert.success {
+    background: #ecfdf5;
+    border-color: #86efac;
+    color: #166534;
+}
+
+.debugger-options,
+.debugger-actions,
+.debugger-hints,
+.debugger-repair-list,
+.debugger-rule-list {
+    display: grid;
+    gap: 9px;
+}
+
+.debugger-option,
+.debugger-button,
+.debugger-icon-button {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #0f172a;
+    font-family: inherit;
+    font-weight: 800;
+}
+
+.debugger-option {
+    min-height: 46px;
+    padding: 9px 12px;
+    text-align: left;
+}
+
+.debugger-option:hover,
+.debugger-button:hover,
+.debugger-icon-button:hover {
+    border-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.debugger-option.correct {
+    border-color: #22c55e;
+    background: #ecfdf5;
+}
+
+.debugger-option.wrong {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.debugger-rule {
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 10px;
+}
+
+.debugger-rule-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.debugger-rule-type {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    border-radius: 999px;
+    padding: 3px 10px;
+    background: #fed7aa;
+    color: #9a3412;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.debugger-rule-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+}
+
+.debugger-slot {
+    min-height: 42px;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+    padding: 7px 9px;
+    font-weight: 800;
+    text-align: left;
+}
+
+.debugger-slot.action {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.debugger-slot.clickable,
+.debugger-rule.clickable,
+.debugger-missing-else {
+    cursor: pointer;
+}
+
+.debugger-slot.found,
+.debugger-rule.found,
+.debugger-missing-else.found {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.debugger-arrow {
+    color: #64748b;
+    font-weight: 800;
+}
+
+.debugger-missing-else {
+    border: 2px dashed #f59e0b;
+    border-radius: 8px;
+    background: #fffbeb;
+    color: #92400e;
+    padding: 10px;
+    text-align: center;
+    font-weight: 800;
+}
+
+.debugger-repair {
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 10px;
+}
+
+.debugger-repair label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.debugger-select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    padding: 7px 9px;
+    font-family: inherit;
+    font-weight: 700;
+}
+
+.debugger-order-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.debugger-button {
+    min-height: 42px;
+    padding: 8px 13px;
+}
+
+.debugger-button.primary {
+    background: #d97706;
+    border-color: #d97706;
+    color: #ffffff;
+}
+
+.debugger-button.primary:hover {
+    background: #b45309;
+    color: #ffffff;
+}
+
+.debugger-button.success {
+    background: #16a34a;
+    border-color: #16a34a;
+    color: #ffffff;
+}
+
+.debugger-button.success:hover {
+    background: #15803d;
+    color: #ffffff;
+}
+
+.debugger-button:disabled,
+.debugger-option:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+}
+
+.debugger-message {
+    border-radius: 8px;
+    border: 1px solid #bae6fd;
+    background: #f0f9ff;
+    color: #075985;
+    padding: 10px 12px;
+    font-weight: 700;
+    min-height: 46px;
+}
+
+.debugger-message.error {
+    border-color: #fecaca;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.debugger-message.success {
+    border-color: #86efac;
+    background: #ecfdf5;
+    color: #166534;
+}
+
+.debugger-message.warning {
+    border-color: #fde68a;
+    background: #fffbeb;
+    color: #92400e;
+}
+
+.debugger-summary {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    display: grid;
+    place-items: center;
+    background: rgba(15, 23, 42, .78);
+    padding: 18px;
+}
+
+.debugger-summary-card {
+    width: min(640px, 96vw);
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, .25);
+}
+
+.debugger-summary-card h3 {
+    margin: 0 0 10px;
+    color: #111827;
+    font-weight: 800;
+}
+
+.debugger-summary-card p {
+    color: #475569;
+}
+
+.debugger-stars {
+    color: #f59e0b;
+    font-size: 42px;
+    letter-spacing: 0;
+}
+
+@media (max-width: 940px) {
+    .debugger-top,
+    .debugger-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .debugger-badges {
+        justify-content: flex-start;
+    }
+
+    .debugger-flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .debugger-farm {
+        min-height: 305px;
+    }
+}
+
+@media (max-width: 560px) {
+    #game-container {
+        width: 100%;
+    }
+
+    .debugger-title {
+        font-size: 19px;
+    }
+
+    .debugger-layout {
+        gap: 10px;
+    }
+
+    .debugger-panel {
+        padding: 11px;
+    }
+
+    .debugger-rule-body {
+        grid-template-columns: 1fr;
+    }
+
+    .debugger-arrow {
+        text-align: center;
+    }
+
+    .debugger-flow {
+        grid-template-columns: 1fr;
+    }
+}

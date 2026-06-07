@@ -39,16 +39,22 @@ $projectConfigs = [
         'rubric' => 'ตรวจความสนุกของภารกิจ Smart Farm Manager ความถูกต้องของเงื่อนไขและคำสั่ง ลำดับการตรวจ If / Else If / Else Animation ที่สื่อผลลัพธ์ และ Feedback ที่ช่วยให้เพื่อนแก้กฎได้'
     ],
     4 => [
-        'title' => 'สร้างโจทย์บั๊กฟาร์มและวิธีแก้ไข',
-        'subtitle' => 'ออกแบบชุดคำสั่งที่ผิด ระบุบั๊ก และเสนอวิธีแก้ไขอย่างเป็นขั้นตอน',
+        'title' => 'สร้างโจทย์บั๊กฟาร์มของฉัน',
+        'subtitle' => 'ออกแบบระบบฟาร์มที่มีบั๊ก ให้เพื่อนสังเกตอาการ จับบล็อกผิด และเสนอวิธีแก้',
         'theme' => '#d97706',
         'icon' => 'bi-bug',
         'fields' => [
-            'buggy_steps' => ['label' => 'ชุดคำสั่งที่ผิด', 'placeholder' => 'เช่น ถ้าดินแห้ง -> รดน้ำ / ถ้าฝนตก -> รดน้ำ'],
-            'bug_point' => ['label' => 'จุดที่เป็นบั๊ก', 'placeholder' => 'เช่น คำสั่งฝนตกผิด เพราะควรหยุดรดน้ำ ไม่ใช่รดน้ำเพิ่ม'],
-            'fix' => ['label' => 'วิธีแก้ไขและเหตุผล', 'placeholder' => 'เช่น ตรวจฝนตกก่อน แล้วค่อยตรวจดินแห้ง เพื่อป้องกันน้ำท่วม']
+            'title' => ['label' => 'ชื่อโจทย์บั๊ก', 'placeholder' => 'เช่น ไข่ร้าวหลุดถาดพรีเมียม'],
+            'system_theme' => ['label' => 'ระบบฟาร์มที่เลือก', 'placeholder' => 'เช่น โรงคัดไข่, ระบบรดน้ำ, โรงเรือนอุณหภูมิ, สายพานแครอท'],
+            'bug_type' => ['label' => 'ประเภทบั๊ก', 'placeholder' => 'เช่น action_bug, condition_bug, broad_condition_bug, order_bug, missing_else_bug, numeric_bug'],
+            'correct_rules' => ['label' => 'กฎที่ถูกต้อง', 'placeholder' => 'เช่น ถ้า ไข่ใบใหญ่และไม่ร้าว -> ถาดพรีเมียม / นอกเหนือจากนี้ -> ถังคัดทิ้ง'],
+            'buggy_rules' => ['label' => 'กฎที่ใส่บั๊กให้เพื่อนแก้', 'placeholder' => 'เช่น ถ้า ไข่ใบใหญ่ -> ถาดพรีเมียม / นอกเหนือจากนี้ -> ถังคัดทิ้ง'],
+            'symptom' => ['label' => 'อาการที่ผู้เล่นจะเห็นก่อนแก้', 'placeholder' => 'เช่น ไข่ใบใหญ่แต่ร้าวถูกส่งเข้าถาดพรีเมียม'],
+            'bug_targets' => ['label' => 'จุดที่เป็นบั๊ก', 'placeholder' => 'เช่น กฎแถวแรก ช่องเงื่อนไข เพราะคำว่า “ไข่ใบใหญ่” กว้างเกินไป'],
+            'fix_explanation' => ['label' => 'วิธีแก้และเหตุผล', 'placeholder' => 'เช่น ต้องเปลี่ยนเงื่อนไขแรกเป็น ไข่ใบใหญ่และไม่ร้าว เพื่อกันไข่ร้าวออก'],
+            'playtest_note' => ['label' => 'ผลการทดลองเล่นโจทย์', 'placeholder' => 'เช่น เมื่อลองแก้ตามวิธีนี้ ไข่ร้าวไปถังคัดทิ้งและถาดพรีเมียมเหลือเฉพาะไข่ดี']
         ],
-        'rubric' => 'ตรวจการระบุบั๊ก ความถูกต้องของวิธีแก้ และความชัดเจนของเหตุผล'
+        'rubric' => 'ตรวจว่ามีระบบฟาร์ม กฎถูก กฎผิด อาการ จุดบั๊ก วิธีแก้ และเหตุผลครบถ้วน เพื่อนสามารถใช้โจทย์นี้ฝึก Debugging ได้จริง'
     ]
 ];
 
@@ -153,6 +159,10 @@ if ($work) {
                             <li>มีวัตถุหรือเหตุการณ์พร้อมคุณสมบัติที่ใช้ตรวจเงื่อนไข</li>
                             <li>มีแนวคิด Animation ที่แสดงผลจากกฎของระบบฟาร์ม</li>
                             <li>มี Feedback ที่บอกสาเหตุเมื่อกฎผิด</li>
+                        <?php elseif ($game_id === 4): ?>
+                            <li>มีระบบฟาร์ม กฎที่ถูกต้อง และกฎที่มีบั๊ก</li>
+                            <li>มีอาการให้เพื่อนสังเกตก่อนแก้</li>
+                            <li>ระบุจุดบั๊กและวิธีแก้พร้อมเหตุผล</li>
                         <?php endif; ?>
                     </ul>
                 </div>
@@ -166,7 +176,11 @@ if ($work) {
 
         document.getElementById('project-form').addEventListener('submit', function (event) {
             event.preventDefault();
-            const workData = { project_type: 'structured_reflection', game_id: GAME_ID };
+            const workData = {
+                project_type: GAME_ID === 4 ? 'smart_farm_debug_challenge' : 'structured_reflection',
+                game_id: GAME_ID,
+                builder_version: GAME_ID === 4 ? '1.0' : undefined
+            };
             let missing = false;
             fieldKeys.forEach((key) => {
                 const value = document.getElementById(`field-${key}`).value.trim();

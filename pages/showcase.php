@@ -317,9 +317,15 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
-            buggy_steps: 'ชุดคำสั่งที่ผิด',
-            bug_point: 'จุดที่เป็นบั๊ก',
-            fix: 'วิธีแก้ไข'
+            title: 'ชื่อโจทย์บั๊ก',
+            system_theme: 'ระบบฟาร์มที่เลือก',
+            bug_type: 'ประเภทบั๊ก',
+            correct_rules: 'กฎที่ถูกต้อง',
+            buggy_rules: 'กฎที่ใส่บั๊ก',
+            symptom: 'อาการที่ผู้เล่นจะเห็น',
+            bug_targets: 'จุดที่เป็นบั๊ก',
+            fix_explanation: 'วิธีแก้และเหตุผล',
+            playtest_note: 'ผลการทดลองเล่นโจทย์'
         };
 
         let worksList = {}; 
@@ -354,10 +360,29 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             return window.SmartFarmBuilderPreview?.getSummary(data) || null;
         }
 
+        function getDebugChallengeSummary(data) {
+            if (!data || data.project_type !== 'smart_farm_debug_challenge') return null;
+            return {
+                kind: 'debug_challenge',
+                title: data.title || 'โจทย์บั๊กฟาร์ม',
+                system: data.system_theme || 'ระบบฟาร์ม',
+                bugType: data.bug_type || 'debugging',
+                symptom: data.symptom || ''
+            };
+        }
+
         function renderProjectSummary(summary) {
             if (!summary) return '';
             if (summary.kind === 'smart_farm') {
                 return window.SmartFarmBuilderPreview.renderBadges(summary);
+            }
+            if (summary.kind === 'debug_challenge') {
+                return `
+                    <div class="project-summary small mt-2">
+                        <span class="badge text-bg-warning rounded-pill">${escapeHtml(summary.bugType)}</span>
+                        <span class="badge text-bg-light border rounded-pill">${escapeHtml(summary.system)}</span>
+                    </div>
+                `;
             }
             return `
                 <div class="project-summary small mt-2">
@@ -421,7 +446,8 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         const tractorSummary = getTractorRouteSummary(parsedWorkData);
                         const smartSummaryRaw = getSmartFarmSummary(parsedWorkData);
                         const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
-                        const activeSummary = smartSummary || tractorSummary;
+                        const debugSummary = getDebugChallengeSummary(parsedWorkData);
+                        const activeSummary = smartSummary || debugSummary || tractorSummary;
                         const projectSummaryHTML = renderProjectSummary(activeSummary);
                         let playButtonHTML = '';
                         if (smartSummary) {
@@ -539,6 +565,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             const summary = getTractorRouteSummary(parsedModalData);
             const smartSummaryRaw = getSmartFarmSummary(parsedModalData);
             const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
+            const debugSummary = getDebugChallengeSummary(parsedModalData);
             const modalSummaryHTML = smartSummary ? `
                 <div class="alert alert-success py-2 small mb-3 border-0 shadow-sm rounded-3">
                     <strong>${escapeHtml(smartSummary.title)}</strong><br>
@@ -546,6 +573,12 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                     วัตถุ ${smartSummary.itemCount} |
                     ตัวหลอก ${smartSummary.decoyCount} |
                     ${smartSummary.tested ? `ทดสอบแล้ว ${Math.round(smartSummary.accuracy * 100)}%` : 'ยังไม่พร้อมให้เล่น'}
+                </div>
+            ` : (debugSummary ? `
+                <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
+                    <strong>${escapeHtml(debugSummary.title)}</strong><br>
+                    ${escapeHtml(debugSummary.system)} |
+                    ${escapeHtml(debugSummary.bugType)}
                 </div>
             ` : (summary ? `
                 <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
@@ -556,7 +589,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                     ผลผลิต ${summary.cropCount} |
                     ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
                 </div>
-            ` : '');
+            ` : ''));
             document.getElementById('modal-project-summary').innerHTML = modalSummaryHTML;
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
@@ -802,7 +835,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             stage.innerHTML = `
                 <div style="height:100%; display:flex; align-items:center; justify-content:center;">
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:18px; padding:24px; width:90%; max-height:88%; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,.08);">
-                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">ชิ้นงานแก้ปัญหา</div>
+                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์บั๊กฟาร์ม' : 'ชิ้นงานแก้ปัญหา'}</div>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).slice(0, 3).map(key => `
                             <div style="margin-bottom:12px;">
                                 <div style="font-weight:700; color:#64748b; font-size:16px;">${STRUCTURED_LABELS[key]}</div>

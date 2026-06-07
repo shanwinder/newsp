@@ -29,6 +29,7 @@ $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
 $is_sequence_stage = in_array($stage_id, [4, 5, 6], true);
 $is_conveyor_condition_stage = in_array($stage_id, [7, 8, 9], true);
+$is_debugger_stage = in_array($stage_id, [10, 11, 12], true);
 
 // 3. LOGIC เลือกไฟล์เกม (ผูกไฟล์ JS ตาม 4 ภารกิจการเรียนรู้)
 $game_script = "";
@@ -72,6 +73,9 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php if ($is_conveyor_condition_stage): ?>
         <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
     <?php endif; ?>
+    <?php if ($is_debugger_stage): ?>
+        <link rel="stylesheet" href="../assets/css/smart_farm_debugger.css">
+    <?php endif; ?>
 
     <style>
         body {
@@ -96,7 +100,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             position: relative;
             border: 6px solid #fff;
             outline: 3px dashed <?php echo $theme['border']; ?>;
-            overflow: <?php echo $is_conveyor_condition_stage ? 'visible' : 'hidden'; ?>;
+            overflow: <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'visible' : 'hidden'; ?>;
         }
 
         #game-container {
@@ -107,6 +111,15 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
 
         .game-wrapper.conveyor-wrapper {
             max-width: min(1220px, calc(100vw - 24px));
+            padding: 14px;
+            align-items: stretch;
+            border: 1px solid <?php echo $theme['border']; ?>;
+            outline: 0;
+            overflow: visible;
+        }
+
+        .game-wrapper.debugger-wrapper {
+            max-width: min(1240px, calc(100vw - 24px));
             padding: 14px;
             align-items: stretch;
             border: 1px solid <?php echo $theme['border']; ?>;
@@ -183,7 +196,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div class="col-md-3"></div>
         </div>
 
-        <div class="game-wrapper <?php echo $is_conveyor_condition_stage ? 'conveyor-wrapper' : ''; ?>">
+        <div class="game-wrapper <?php echo $is_conveyor_condition_stage ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debugger-wrapper' : ''; ?>">
             <div id="game-container"></div>
         </div>
     </div>
@@ -230,6 +243,10 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php if ($is_conveyor_condition_stage): ?>
         <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
         <script src="../assets/js/logic_game/conveyor_logic_base.js"></script>
+    <?php endif; ?>
+    <?php if ($is_debugger_stage): ?>
+        <script src="../assets/js/logic_game/debug_drag_drop.js"></script>
+        <script src="../assets/js/logic_game/smart_farm_debugger.js"></script>
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 

@@ -179,9 +179,15 @@ if (!$context) {
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
-            buggy_steps: 'ชุดคำสั่งที่ผิด',
-            bug_point: 'จุดที่เป็นบั๊ก',
-            fix: 'วิธีแก้ไข'
+            title: 'ชื่อโจทย์บั๊ก',
+            system_theme: 'ระบบฟาร์มที่เลือก',
+            bug_type: 'ประเภทบั๊ก',
+            correct_rules: 'กฎที่ถูกต้อง',
+            buggy_rules: 'กฎที่ใส่บั๊ก',
+            symptom: 'อาการที่ผู้เล่นจะเห็น',
+            bug_targets: 'จุดที่เป็นบั๊ก',
+            fix_explanation: 'วิธีแก้และเหตุผล',
+            playtest_note: 'ผลการทดลองเล่นโจทย์'
         };
 
         function changeGame() {
@@ -542,7 +548,7 @@ if (!$context) {
             stage.innerHTML = `
                 <div class="h-100 d-flex flex-column justify-content-center">
                     <div class="bg-white rounded-4 shadow-sm border p-4">
-                        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-journal-text"></i> ชิ้นงานสะท้อนการแก้ปัญหา</h4>
+                        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-journal-text"></i> ${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์บั๊กฟาร์มของนักเรียน' : 'ชิ้นงานสะท้อนการแก้ปัญหา'}</h4>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).map(key => `
                             <div class="mb-3">
                                 <div class="small fw-bold text-secondary">${STRUCTURED_LABELS[key]}</div>

@@ -127,6 +127,48 @@ function validate_smart_farm_work($items) {
     }
 }
 
+function validate_smart_farm_debug_work($items) {
+    if (!is_array($items)) {
+        respond_error('ข้อมูลชิ้นงานบทที่ 4 ไม่ถูกต้อง');
+    }
+
+    if (($items['project_type'] ?? '') !== 'smart_farm_debug_challenge') {
+        respond_error('บทที่ 4 ต้องส่งงานในรูปแบบ Smart Farm Debug Challenge เท่านั้น');
+    }
+
+    $requiredFields = [
+        'title' => 'กรุณาตั้งชื่อโจทย์บั๊ก',
+        'system_theme' => 'กรุณาเลือกระบบฟาร์ม',
+        'bug_type' => 'กรุณาระบุประเภทบั๊ก',
+        'correct_rules' => 'กรุณาเขียนกฎที่ถูกต้อง',
+        'buggy_rules' => 'กรุณาเขียนกฎที่ใส่บั๊ก',
+        'symptom' => 'กรุณาเขียนอาการที่ผู้เล่นจะเห็น',
+        'bug_targets' => 'กรุณาระบุจุดที่เป็นบั๊ก',
+        'fix_explanation' => 'กรุณาอธิบายวิธีแก้และเหตุผล',
+        'playtest_note' => 'กรุณาบันทึกผลการทดลองเล่นโจทย์'
+    ];
+
+    foreach ($requiredFields as $field => $message) {
+        if (trim($items[$field] ?? '') === '') {
+            respond_error($message);
+        }
+    }
+
+    $allowedBugTypes = [
+        'action_bug',
+        'condition_bug',
+        'broad_condition_bug',
+        'condition_too_broad',
+        'order_bug',
+        'missing_else_bug',
+        'numeric_bug',
+        'if_pass_through_bug'
+    ];
+    if (!in_array(trim($items['bug_type'] ?? ''), $allowedBugTypes, true)) {
+        respond_error('ประเภทบั๊กไม่ตรงกับบทเรียน');
+    }
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 if ($data) {
@@ -135,6 +177,9 @@ if ($data) {
     $items = $data['items'] ?? null;
     if ($game_id === 3) {
         validate_smart_farm_work($items);
+    }
+    if ($game_id === 4) {
+        validate_smart_farm_debug_work($items);
     }
     $work_data = json_encode($data['items'], JSON_UNESCAPED_UNICODE); // แปลง Array กลับเป็น JSON String
     $desc = $data['description'];

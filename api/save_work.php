@@ -132,40 +132,36 @@ function validate_smart_farm_debug_work($items) {
         respond_error('ข้อมูลชิ้นงานบทที่ 4 ไม่ถูกต้อง');
     }
 
-    if (($items['project_type'] ?? '') !== 'smart_farm_debug_challenge') {
+    $allowedProjectTypes = ['smart_farm_debug_challenge', 'smart_farm_debug_lite_challenge'];
+    if (!in_array($items['project_type'] ?? '', $allowedProjectTypes, true)) {
         respond_error('บทที่ 4 ต้องส่งงานในรูปแบบ Smart Farm Debug Challenge เท่านั้น');
     }
 
     $requiredFields = [
         'title' => 'กรุณาตั้งชื่อโจทย์บั๊ก',
-        'system_theme' => 'กรุณาเลือกระบบฟาร์ม',
-        'bug_type' => 'กรุณาระบุประเภทบั๊ก',
-        'correct_rules' => 'กรุณาเขียนกฎที่ถูกต้อง',
-        'buggy_rules' => 'กรุณาเขียนกฎที่ใส่บั๊ก',
-        'symptom' => 'กรุณาเขียนอาการที่ผู้เล่นจะเห็น',
-        'bug_targets' => 'กรุณาระบุจุดที่เป็นบั๊ก',
-        'fix_explanation' => 'กรุณาอธิบายวิธีแก้และเหตุผล',
         'playtest_note' => 'กรุณาบันทึกผลการทดลองเล่นโจทย์'
     ];
+
+    // Lite version uses different fields
+    if (($items['project_type'] ?? '') === 'smart_farm_debug_lite_challenge') {
+        $requiredFields['theme'] = 'กรุณาเลือกธีมฟาร์ม';
+        $requiredFields['problemText'] = 'กรุณาเขียนอาการเสีย';
+        $requiredFields['bugTarget'] = 'กรุณาระบุจุดผิด';
+        $requiredFields['correctFix'] = 'กรุณาเขียนวิธีซ่อม';
+    } else {
+        $requiredFields['system_theme'] = 'กรุณาเลือกระบบฟาร์ม';
+        $requiredFields['bug_type'] = 'กรุณาระบุประเภทบั๊ก';
+        $requiredFields['correct_rules'] = 'กรุณาเขียนกฎที่ถูกต้อง';
+        $requiredFields['buggy_rules'] = 'กรุณาเขียนกฎที่ใส่บั๊ก';
+        $requiredFields['symptom'] = 'กรุณาเขียนอาการที่ผู้เล่นจะเห็น';
+        $requiredFields['bug_targets'] = 'กรุณาระบุจุดที่เป็นบั๊ก';
+        $requiredFields['fix_explanation'] = 'กรุณาอธิบายวิธีแก้และเหตุผล';
+    }
 
     foreach ($requiredFields as $field => $message) {
         if (trim($items[$field] ?? '') === '') {
             respond_error($message);
         }
-    }
-
-    $allowedBugTypes = [
-        'action_bug',
-        'condition_bug',
-        'broad_condition_bug',
-        'condition_too_broad',
-        'order_bug',
-        'missing_else_bug',
-        'numeric_bug',
-        'if_pass_through_bug'
-    ];
-    if (!in_array(trim($items['bug_type'] ?? ''), $allowedBugTypes, true)) {
-        respond_error('ประเภทบั๊กไม่ตรงกับบทเรียน');
     }
 }
 

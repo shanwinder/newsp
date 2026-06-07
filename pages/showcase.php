@@ -37,7 +37,7 @@ $game_meta = [
     ],
     4 => [
         'lesson_no' => 'บทที่ 4',
-        'title' => 'กู้วิกฤตฟาร์ม',
+        'title' => 'ช่างซ่อมฟาร์มอัจฉริยะ',
         'icon' => 'bi-bug-fill',
         'theme' => 'danger'
     ]
@@ -325,7 +325,12 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             symptom: 'อาการที่ผู้เล่นจะเห็น',
             bug_targets: 'จุดที่เป็นบั๊ก',
             fix_explanation: 'วิธีแก้และเหตุผล',
-            playtest_note: 'ผลการทดลองเล่นโจทย์'
+            playtest_note: 'ผลการทดลองเล่นโจทย์',
+            // Lite version fields
+            theme: 'ธีมฟาร์ม',
+            problemText: 'อาการเสีย',
+            bugTarget: 'จุดผิด',
+            correctFix: 'วิธีซ่อมที่ถูกต้อง'
         };
 
         let worksList = {}; 
@@ -361,13 +366,16 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
         }
 
         function getDebugChallengeSummary(data) {
-            if (!data || data.project_type !== 'smart_farm_debug_challenge') return null;
+            if (!data) return null;
+            // Support both old and new Lite project types
+            if (data.project_type !== 'smart_farm_debug_challenge' && data.project_type !== 'smart_farm_debug_lite_challenge') return null;
+            const isLite = data.project_type === 'smart_farm_debug_lite_challenge';
             return {
                 kind: 'debug_challenge',
                 title: data.title || 'โจทย์บั๊กฟาร์ม',
-                system: data.system_theme || 'ระบบฟาร์ม',
-                bugType: data.bug_type || 'debugging',
-                symptom: data.symptom || ''
+                system: isLite ? (data.theme || 'ฟาร์ม') : (data.system_theme || 'ระบบฟาร์ม'),
+                bugType: isLite ? (data.bugTarget || 'หาบั๊ก') : (data.bug_type || 'debugging'),
+                symptom: isLite ? (data.problemText || '') : (data.symptom || '')
             };
         }
 

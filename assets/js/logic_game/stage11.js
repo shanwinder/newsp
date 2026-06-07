@@ -1,173 +1,269 @@
-// Stage 11: Order, numeric, and missing-else bugs.
+// Stage 11: ซ่อมโรงเรือนอัจฉริยะ — Smart Farm Debugger Lite
 (function () {
-    const conditions = [
-        { id: 'rainy', label: 'ฝนตก' },
-        { id: 'soil_dry', label: 'ดินแห้ง' },
-        { id: 'temp_gt_50', label: 'อุณหภูมิ > 50°C' },
-        { id: 'temp_gt_35', label: 'อุณหภูมิ > 35°C' },
-        { id: 'temp_lt_15', label: 'อุณหภูมิ < 15°C' },
-        { id: 'else', label: 'ทุกกรณีที่เหลือ' }
-    ];
-
-    const actions = [
-        { id: 'sprinkler_on', label: 'เปิดสปริงเกอร์' },
-        { id: 'sprinkler_off', label: 'ปิดสปริงเกอร์' },
-        { id: 'observe', label: 'รอดูสถานการณ์' },
-        { id: 'fan_on', label: 'เปิดพัดลม' },
-        { id: 'lamp_on', label: 'เปิดหลอดไฟ' },
-        { id: 'all_off', label: 'ปิดระบบทั้งหมด' }
-    ];
-
     const config = {
-        title: 'ด่าน 11: โรงเรือนรวน ลำดับเพี้ยน',
-        subtitle: 'ตรวจลำดับเงื่อนไข ตัวเลข และกรณี Else ที่ตกหล่น',
+        title: 'ด่าน 11: ซ่อมโรงเรือนอัจฉริยะ',
+        subtitle: 'ฝึกหาบั๊กขั้นสูง — ลำดับผิด ตัวเลขผิด และขาดคำสั่ง',
         levels: [
+            // LEVEL 11-1
             {
-                title: '11-1 ฝนตกแต่ยังรดน้ำ',
-                subtitle: 'Order Bug: ลำดับเงื่อนไขมีผลต่อผลลัพธ์',
-                intro: 'ฝนกำลังตก แต่ระบบยังเปิดสปริงเกอร์จนแปลงน้ำท่วม',
-                observePrompt: 'ดูว่าระบบตรวจเงื่อนไขไหนก่อน แล้วเหตุใดฝนตกยังรดน้ำ',
-                symptomPrompt: 'อาการที่เห็นคืออะไร',
-                scene: {
-                    item: { icon: '🌧️', label: 'ฝนตกและดินแห้ง' },
-                    inputLabel: 'ข้อมูลเซ็นเซอร์',
-                    scanLabel: 'ตัวตัดสินใจ',
-                    outputALabel: 'เปิดน้ำ',
-                    outputBLabel: 'ปิดน้ำ',
-                    warning: 'ฝนตกแต่สปริงเกอร์ยังเปิด แปลงเริ่มน้ำท่วม',
-                    fixedMessage: 'ระบบตรวจฝนก่อน จึงปิดสปริงเกอร์ทันที'
+                levelId: '11-1',
+                title: 'ฝนตกแต่สปริงเกอร์ยังเปิด',
+                theme: 'greenhouse_repair',
+                sceneType: 'farm_repair',
+                problemText: 'ฝนตกแล้ว แต่สปริงเกอร์ยังเปิด แปลงผักน้ำท่วม',
+                missionText: 'ซ่อมลำดับเงื่อนไขให้ปิดสปริงเกอร์เมื่อฝนตก',
+                objects: [
+                    {
+                        id: 'rain_cloud',
+                        label: 'เมฆฝน',
+                        fallbackIcon: '🌧️',
+                        asset: {
+                            key: 'rain_cloud',
+                            path: '../assets/img/debug/weather/rain_cloud.png',
+                            width: 96, height: 96,
+                            description: 'เมฆฝนตกหนัก'
+                        },
+                        anchor: 'rain'
+                    },
+                    {
+                        id: 'sprinkler',
+                        label: 'สปริงเกอร์',
+                        fallbackIcon: '💦',
+                        asset: {
+                            key: 'sprinkler',
+                            path: '../assets/img/debug/machine/sprinkler.png',
+                            width: 96, height: 96,
+                            description: 'สปริงเกอร์รดน้ำอัตโนมัติ'
+                        },
+                        anchor: 'sprinkler'
+                    },
+                    {
+                        id: 'flooded_crop',
+                        label: 'แปลงผักน้ำท่วม',
+                        fallbackIcon: '🥬',
+                        asset: {
+                            key: 'flooded_crop',
+                            path: '../assets/img/debug/vegetable/flooded_crop.png',
+                            width: 96, height: 96,
+                            description: 'แปลงผักที่ถูกน้ำท่วม'
+                        },
+                        anchor: 'cropBed'
+                    }
+                ],
+                additionalBlocks: [
+                    { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'if' },
+                    { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'else_if' }
+                ],
+                correctBlock: {
+                    additionalBlocks: [
+                        { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'if' },
+                        { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'else_if' }
+                    ]
                 },
-                symptomOptions: [
-                    { id: 'wrong_order', label: 'เครื่องจักรทำงานผิดเวลาเพราะลำดับเงื่อนไข', correct: true, feedback: 'ใช่ ดินแห้งถูกตรวจก่อนฝนตก ระบบจึงเปิดน้ำก่อน' },
-                    { id: 'numeric', label: 'ค่าตัวเลขของอุณหภูมิผิด', correct: false, feedback: 'ด่านนี้ยังไม่เกี่ยวกับตัวเลข ลองดูว่ากฎไหนถูกตรวจก่อน' },
-                    { id: 'missing_else', label: 'ไม่มี Else รองรับกรณีปกติ', correct: false, feedback: 'มี Else แล้ว แต่ระบบเข้าเงื่อนไขแรกก่อนถึง Else' }
-                ],
-                buggyRules: [
-                    { type: 'if', condition: 'soil_dry', action: 'sprinkler_on' },
-                    { type: 'else_if', condition: 'rainy', action: 'sprinkler_off' },
-                    { type: 'else', condition: 'else', action: 'observe' }
-                ],
-                correctRules: [
-                    { type: 'if', condition: 'rainy', action: 'sprinkler_off' },
-                    { type: 'else_if', condition: 'soil_dry', action: 'sprinkler_on' },
-                    { type: 'else', condition: 'else', action: 'observe' }
-                ],
-                bugTargets: [
-                    { ruleIndex: 0, slot: 'rule', reason: 'ต้องตรวจฝนตกก่อนดินแห้ง ไม่เช่นนั้นระบบเปิดน้ำเร็วเกินไป' }
-                ],
-                repairOptions: { conditions, actions },
+                questionText: 'ควรดูอะไรก่อน?',
+                choices: {
+                    bugTargetChoices: [
+                        { id: 'order', label: 'ลำดับเงื่อนไข' },
+                        { id: 'action', label: 'คำสั่ง' }
+                    ],
+                    fixChoices: [
+                        { id: 'dry_first', label: 'ดูดินแห้งก่อน' },
+                        { id: 'rain_first', label: 'ดูฝนตกก่อน' }
+                    ]
+                },
+                answer: {
+                    bugTarget: 'order',
+                    fixChoice: 'rain_first'
+                },
+                feedback: {
+                    correct: 'ถูกต้อง! ถ้าฝนตก ต้องหยุดรดน้ำก่อน ไม่อย่างนั้นน้ำจะท่วมแปลง',
+                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งไม่ได้ผิด แต่ลำดับการเช็คอาจไม่ถูก',
+                    wrongFix: 'ยังไม่ถูก ถ้าดูดินแห้งก่อน ฝนตกก็จะไม่ถูกเช็ค',
+                    afterFix: 'ระบบเดิมเช็คดินแห้งก่อน ทำให้เปิดสปริงเกอร์ทั้งที่ฝนตก พอสลับลำดับให้ดูฝนก่อน ก็จะปิดสปริงเกอร์ได้ทัน'
+                },
                 hints: [
-                    'เมื่อทั้ง “ฝนตก” และ “ดินแห้ง” เป็นจริง ระบบจะใช้กฎแรกที่เจอก่อน',
-                    'ถ้าตรวจดินแห้งก่อน ระบบจะเปิดสปริงเกอร์ทันที',
-                    'สลับให้ “ฝนตก -> ปิดสปริงเกอร์” เป็นกฎแรก'
-                ],
-                huntFeedback: 'ยังไม่ใช่จุดหลัก กฎแต่ละข้อดูถูก แต่ตำแหน่งของกฎผิด',
-                repairFeedback: 'ลำดับยังทำให้ดินแห้งถูกตรวจก่อนฝนตก ลองเลื่อนกฎฝนตกขึ้น',
-                success: 'เรียงลำดับถูกแล้ว ระบบให้ฝนตกมีความสำคัญก่อนการรดน้ำ',
-                explain: 'บั๊กนี้เป็น Order Bug เพราะเงื่อนไขแต่ละข้อไม่ได้ผิด แต่เรียงลำดับผิด ทำให้กฎแรกจับสถานการณ์ก่อน'
+                    'ลองดูว่าระบบเช็คอะไรก่อน',
+                    'ฝนตกแล้วน้ำท่วม ควรเช็คฝนก่อน',
+                    'เปลี่ยนลำดับให้ดูฝนตกก่อนดินแห้ง'
+                ]
             },
+            // LEVEL 11-2
             {
-                title: '11-2 โรงเรือนร้อนแต่ไม่เปิดพัดลม',
-                subtitle: 'Numeric Bug: ตัวเลขผิดทำให้ไม่เข้าเงื่อนไข',
-                intro: 'โรงเรือน 38°C แต่พัดลมไม่เปิด เพราะเงื่อนไขตั้งค่าสูงเกินไป',
-                observePrompt: 'เทียบอุณหภูมิที่เกิดขึ้นกับตัวเลขในเงื่อนไข',
-                symptomPrompt: 'อาการที่เห็นคืออะไร',
-                scene: {
-                    item: { icon: '🌡️', label: 'อุณหภูมิ 38°C' },
-                    inputLabel: 'เซ็นเซอร์ร้อน',
-                    scanLabel: 'ตรวจอุณหภูมิ',
-                    outputALabel: 'ปิดระบบ',
-                    outputBLabel: 'เปิดพัดลม',
-                    warning: '38°C แต่พัดลมไม่เปิด โรงเรือนร้อนเกินไป',
-                    fixedMessage: 'เมื่อเกิน 35°C พัดลมเปิดทันที'
+                levelId: '11-2',
+                title: 'โรงเรือนร้อนแต่พัดลมไม่เปิด',
+                theme: 'greenhouse_repair',
+                sceneType: 'farm_repair',
+                problemText: 'อุณหภูมิ 38°C แต่พัดลมไม่เปิด',
+                missionText: 'แก้ตัวเลขเงื่อนไขให้พัดลมเปิดได้ทัน',
+                objects: [
+                    {
+                        id: 'thermometer',
+                        label: 'เทอร์โมมิเตอร์',
+                        fallbackIcon: '🌡️',
+                        asset: {
+                            key: 'thermometer',
+                            path: '../assets/img/debug/sensor/thermometer.png',
+                            width: 64, height: 96,
+                            description: 'เทอร์โมมิเตอร์วัดอุณหภูมิ'
+                        },
+                        anchor: 'thermometer'
+                    },
+                    {
+                        id: 'fan',
+                        label: 'พัดลมระบายอากาศ',
+                        fallbackIcon: '🌀',
+                        asset: {
+                            key: 'fan',
+                            path: '../assets/img/debug/machine/fan.png',
+                            width: 96, height: 96,
+                            description: 'พัดลมระบายอากาศในโรงเรือน'
+                        },
+                        anchor: 'fan'
+                    },
+                    {
+                        id: 'greenhouse',
+                        label: 'โรงเรือน',
+                        fallbackIcon: '🏠',
+                        asset: {
+                            key: 'greenhouse',
+                            path: '../assets/img/debug/building/greenhouse.png',
+                            width: 128, height: 128,
+                            description: 'โรงเรือนปลูกผัก'
+                        },
+                        anchor: 'greenhouse'
+                    }
+                ],
+                buggyBlock: {
+                    condition: 'อุณหภูมิสูงกว่า 50°C',
+                    action: 'เปิดพัดลม',
+                    type: 'if'
                 },
-                symptomOptions: [
-                    { id: 'numeric_wrong', label: 'ค่าตัวเลขในเงื่อนไขสูงเกินไป', correct: true, feedback: 'ถูกต้อง 38°C ไม่มากกว่า 50°C จึงไม่เปิดพัดลม' },
-                    { id: 'wrong_action', label: 'คำสั่งเปิดพัดลมผิดปลายทาง', correct: false, feedback: 'คำสั่งเปิดพัดลมถูกแล้ว ปัญหาอยู่ที่ตัวเลขในเงื่อนไข' },
-                    { id: 'wrong_order', label: 'ฝนตกถูกตรวจช้าเกินไป', correct: false, feedback: 'ด่านนี้เป็นโรงเรือนอุณหภูมิ ไม่เกี่ยวกับฝนตก' }
-                ],
-                buggyRules: [
-                    { type: 'if', condition: 'temp_gt_50', action: 'fan_on' },
-                    { type: 'else_if', condition: 'temp_lt_15', action: 'lamp_on' },
-                    { type: 'else', condition: 'else', action: 'all_off' }
-                ],
-                correctRules: [
-                    { type: 'if', condition: 'temp_gt_35', action: 'fan_on' },
-                    { type: 'else_if', condition: 'temp_lt_15', action: 'lamp_on' },
-                    { type: 'else', condition: 'else', action: 'all_off' }
-                ],
-                bugTargets: [
-                    { ruleIndex: 0, slot: 'condition', reason: 'ตัวเลข 50°C สูงเกินไป ควรเปิดพัดลมเมื่อมากกว่า 35°C' }
-                ],
-                repairOptions: { conditions, actions },
+                correctBlock: {
+                    condition: 'อุณหภูมิสูงกว่า 35°C',
+                    action: 'เปิดพัดลม',
+                    type: 'if'
+                },
+                choices: {
+                    bugTargetChoices: [
+                        { id: 'condition', label: 'เงื่อนไข (ตัวเลข)' },
+                        { id: 'action', label: 'คำสั่ง' }
+                    ],
+                    fixChoices: [
+                        { id: '50', label: 'มากกว่า 50°C' },
+                        { id: '35', label: 'มากกว่า 35°C' }
+                    ]
+                },
+                answer: {
+                    bugTarget: 'condition',
+                    fixChoice: '35'
+                },
+                feedback: {
+                    correct: 'ถูกต้อง! 38°C ร้อนเกินแล้ว ระบบควรเปิดพัดลมตั้งแต่เกิน 35°C',
+                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งเปิดพัดลมถูกแล้ว แต่ตัวเลขเงื่อนไขอาจสูงเกินไป',
+                    wrongFix: 'ยังไม่ถูก 50°C สูงเกินไป ผักจะเหี่ยวก่อนถึง 50°C',
+                    afterFix: 'เงื่อนไขเดิมตั้งไว้ 50°C ซึ่งสูงเกินไป ผักทนไม่ได้ขนาดนั้น พอเปลี่ยนเป็น 35°C พัดลมก็เปิดทันเวลา'
+                },
                 hints: [
-                    '38°C ไม่เข้าเงื่อนไข “มากกว่า 50°C”',
-                    'คำสั่งเปิดพัดลมถูกแล้ว ให้ดูตัวเลขในเงื่อนไขแรก',
-                    'เปลี่ยนเงื่อนไขเป็น “อุณหภูมิ > 35°C”'
-                ],
-                huntFeedback: 'ยังไม่ใช่สาเหตุหลัก คำสั่งถูกแล้ว แต่ค่าที่ใช้เปรียบเทียบผิด',
-                repairFeedback: 'ตัวเลขยังไม่ทำให้ 38°C เข้าเงื่อนไขเปิดพัดลม',
-                success: 'แก้ตัวเลขถูกแล้ว โรงเรือนร้อนจึงเปิดพัดลมได้',
-                explain: 'บั๊กนี้เป็น Numeric Bug เพราะเงื่อนไขใช้ค่า > 50°C สูงเกินไป ทำให้อุณหภูมิ 38°C ไม่เข้าเงื่อนไข'
+                    'อุณหภูมิ 38°C เกินเท่าไหร่?',
+                    'ตัวเลขในเงื่อนไขสูงเกินจริง',
+                    'เปลี่ยนจาก 50°C เป็น 35°C'
+                ]
             },
+            // LEVEL 11-3
             {
-                title: '11-3 อุณหภูมิปกติแต่ระบบค้าง',
-                subtitle: 'Missing Else Bug: ไม่มีคำสั่งสำหรับกรณีปกติ',
-                intro: 'อุณหภูมิ 25°C ไม่ร้อนและไม่หนาว แต่ระบบไม่มี Else จึงไม่รู้จะทำอะไร',
-                observePrompt: 'ดูว่าเมื่อไม่เข้า If หรือ Else If แล้วระบบมีทางออกหรือไม่',
-                symptomPrompt: 'อาการที่เห็นคืออะไร',
-                scene: {
-                    item: { icon: '🏡', label: 'อุณหภูมิ 25°C' },
-                    inputLabel: 'โรงเรือนปกติ',
-                    scanLabel: 'ตรวจอุณหภูมิ',
-                    outputALabel: 'ระบบค้าง',
-                    outputBLabel: 'ปิดระบบ',
-                    warning: '25°C ไม่เข้าเงื่อนไขใด ระบบจึงค้าง',
-                    fixedMessage: 'กรณีปกติเข้า Else แล้วปิดระบบทั้งหมด'
+                levelId: '11-3',
+                title: 'อากาศปกติแต่ระบบค้าง',
+                theme: 'greenhouse_repair',
+                sceneType: 'farm_repair',
+                problemText: 'อุณหภูมิ 25°C ระบบไม่รู้ว่าจะทำอะไร',
+                missionText: 'เพิ่มคำสั่งสำหรับกรณีที่อากาศปกติ',
+                objects: [
+                    {
+                        id: 'thermometer',
+                        label: 'เทอร์โมมิเตอร์',
+                        fallbackIcon: '🌡️',
+                        asset: {
+                            key: 'thermometer',
+                            path: '../assets/img/debug/sensor/thermometer.png',
+                            width: 64, height: 96,
+                            description: 'เทอร์โมมิเตอร์วัดอุณหภูมิ'
+                        },
+                        anchor: 'thermometer'
+                    },
+                    {
+                        id: 'control_panel',
+                        label: 'แผงควบคุม',
+                        fallbackIcon: '🎛️',
+                        asset: {
+                            key: 'control_panel',
+                            path: '../assets/img/debug/machine/control_panel.png',
+                            width: 96, height: 96,
+                            description: 'แผงควบคุมระบบโรงเรือน'
+                        },
+                        anchor: 'controlPanel'
+                    },
+                    {
+                        id: 'greenhouse',
+                        label: 'โรงเรือน',
+                        fallbackIcon: '🏠',
+                        asset: {
+                            key: 'greenhouse',
+                            path: '../assets/img/debug/building/greenhouse.png',
+                            width: 128, height: 128,
+                            description: 'โรงเรือนปลูกผัก'
+                        },
+                        anchor: 'greenhouse'
+                    }
+                ],
+                additionalBlocks: [
+                    { condition: 'ร้อนมาก', action: 'เปิดพัดลม', type: 'if' },
+                    { condition: 'หนาวมาก', action: 'เปิดหลอดไฟ', type: 'else_if' }
+                ],
+                missingBlock: {
+                    condition: 'กรณีอื่น',
+                    action: 'ปิดระบบ',
+                    type: 'else'
                 },
-                symptomOptions: [
-                    { id: 'missing_else', label: 'ระบบไม่มีคำสั่งสำหรับกรณีปกติ', correct: true, feedback: 'ถูกต้อง 25°C ไม่เข้าเงื่อนไขร้อนหรือหนาว จึงต้องมี Else' },
-                    { id: 'numeric', label: 'ตัวเลข 35°C ผิดเสมอ', correct: false, feedback: '35°C และ 15°C ใช้แบ่งร้อน/หนาวได้ ปัญหาคือกรณีปกติหายไป' },
-                    { id: 'wrong_action', label: 'คำสั่งเปิดหลอดไฟผิด', correct: false, feedback: 'หลอดไฟใช้ตอนหนาว แต่สถานการณ์นี้คืออุณหภูมิปกติ' }
-                ],
-                buggyRules: [
-                    { type: 'if', condition: 'temp_gt_35', action: 'fan_on' },
-                    { type: 'else_if', condition: 'temp_lt_15', action: 'lamp_on' }
-                ],
-                correctRules: [
-                    { type: 'if', condition: 'temp_gt_35', action: 'fan_on' },
-                    { type: 'else_if', condition: 'temp_lt_15', action: 'lamp_on' },
-                    { type: 'else', condition: 'else', action: 'all_off' }
-                ],
-                bugTargets: [
-                    { ruleIndex: 2, slot: 'else', reason: 'ขาด Else สำหรับอุณหภูมิปกติ จึงต้องเพิ่มคำสั่งปิดระบบทั้งหมด' }
-                ],
-                repairOptions: { conditions, actions },
+                choices: {
+                    bugTargetChoices: [
+                        { id: 'missing', label: 'ขาดคำสั่ง' },
+                        { id: 'condition', label: 'เงื่อนไขผิด' },
+                        { id: 'action', label: 'คำสั่งผิด' }
+                    ],
+                    fixChoices: [
+                        { id: 'fan', label: 'เปิดพัดลม' },
+                        { id: 'light', label: 'เปิดหลอดไฟ' },
+                        { id: 'shutdown', label: 'ปิดระบบ' }
+                    ]
+                },
+                answer: {
+                    bugTarget: 'missing',
+                    fixChoice: 'shutdown'
+                },
+                feedback: {
+                    correct: 'ถูกต้อง! อากาศพอดีแล้ว ไม่ต้องเปิดอะไรเพิ่ม ให้ปิดระบบเพื่อประหยัดไฟ',
+                    wrongTarget: 'ลองดูอีกครั้ง เงื่อนไขและคำสั่งที่มีอยู่ถูกแล้ว แต่ดูเหมือนจะขาดอะไรบางอย่าง',
+                    wrongFix: 'ยังไม่ถูก อากาศไม่ร้อนและไม่หนาว ไม่ต้องเปิดอะไรเพิ่ม',
+                    afterFix: 'ระบบเดิมมีแค่กรณีร้อนและหนาว แต่ไม่มีกรณีปกติ พออากาศ 25°C ระบบไม่รู้จะทำอะไร พอเพิ่ม else ปิดระบบ ก็ทำงานครบทุกกรณี'
+                },
                 hints: [
-                    '25°C ไม่มากกว่า 35°C และไม่ต่ำกว่า 15°C',
-                    'เมื่อไม่เข้าเงื่อนไขใดเลย ระบบต้องรู้ว่าจะทำอะไรต่อ',
-                    'เพิ่ม Else -> ปิดระบบทั้งหมด'
-                ],
-                huntFeedback: 'ยังไม่ใช่จุดหลัก เงื่อนไขร้อนและหนาวถูกแล้ว แต่กรณีปกติไม่มีทางไป',
-                repairFeedback: 'ระบบยังไม่มี Else สำหรับกรณีปกติ',
-                success: 'เพิ่ม Else สำเร็จ ระบบไม่ค้างเมื่ออุณหภูมิปกติ',
-                explain: 'บั๊กนี้เป็น Missing Else Bug เพราะเมื่อ 25°C ไม่เข้าเงื่อนไขร้อนหรือหนาว ระบบต้องมี Else เพื่อกำหนดผลลัพธ์ปกติ'
+                    'ถ้าอากาศไม่ร้อนและไม่หนาว ระบบควรทำอะไร?',
+                    'ดูเหมือนจะขาดคำสั่งสำหรับกรณีปกติ',
+                    'ถ้าอากาศพอดี ให้ปิดระบบเพื่อประหยัดไฟ'
+                ]
             }
         ]
     };
 
     function boot() {
-        window.FarmMissions.smartFarmDebugger(config);
+        window.FarmMissions.smartFarmDebuggerLite(config);
     }
 
-    if (window.FarmMissions?.smartFarmDebugger) {
+    if (window.FarmMissions?.smartFarmDebuggerLite) {
         boot();
     } else {
-        const helper = document.createElement('script');
-        helper.src = '../assets/js/logic_game/debug_drag_drop.js';
-        document.head.appendChild(helper);
         const script = document.createElement('script');
-        script.src = '../assets/js/logic_game/smart_farm_debugger.js';
+        script.src = '../assets/js/logic_game/smart_farm_debugger_lite.js';
         script.onload = boot;
         document.head.appendChild(script);
     }

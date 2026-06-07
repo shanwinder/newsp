@@ -14,6 +14,7 @@ $context = session_context();
 $error = '';
 $work = null;
 $workData = null;
+$projectType = '';
 
 if ($work_id <= 0) {
     $error = 'ไม่พบรหัสผลงานที่ต้องการเล่น';
@@ -48,7 +49,9 @@ if ($work_id <= 0) {
         $error = 'ไม่พบโจทย์นี้ หรือคุณไม่มีสิทธิ์เข้าถึงผลงานนี้';
     } else {
         $decoded = json_decode($work['work_data'], true);
-        if (!is_array($decoded) || ($decoded['project_type'] ?? '') !== 'smart_farm_debug_lite_challenge') {
+        $projectType = $decoded['project_type'] ?? '';
+        $allowedTypes = ['smart_farm_debug_lite_challenge', 'smart_farm_debug_mode', 'smart_farm_debug_challenge'];
+        if (!is_array($decoded) || !in_array($projectType, $allowedTypes, true)) {
             $error = 'ผลงานนี้ไม่ใช่โจทย์ซ่อมกฎฟาร์ม';
         } elseif (empty($decoded['tested'])) {
             $error = 'โจทย์นี้ยังไม่ผ่านการทดลองเล่นจากผู้ออกแบบ';
@@ -57,6 +60,9 @@ if ($work_id <= 0) {
         }
     }
 }
+
+$isDebugMode = ($projectType === 'smart_farm_debug_mode');
+$isLite = ($projectType === 'smart_farm_debug_lite_challenge');
 
 $ownerName = '';
 if ($work) {
@@ -77,7 +83,12 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/smart_farm_debugger_lite.css">
+    <?php if ($isDebugMode): ?>
+        <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
+        <link rel="stylesheet" href="../assets/css/smart_farm_debugger.css">
+    <?php else: ?>
+        <link rel="stylesheet" href="../assets/css/smart_farm_debugger_lite.css">
+    <?php endif; ?>
     <style>
         body { font-family: 'Kanit', sans-serif; background:#fff7ed; color:#2f1f12; min-height:100vh; }
         .play-header { background:#d97706; color:#fff; padding:28px 0 24px; }
@@ -109,8 +120,13 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                 <div class="col-lg-8">
                     <div class="play-panel p-3 h-100">
                         <div class="d-flex flex-wrap gap-2 mb-2">
-                            <span class="badge text-bg-warning rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['themeLabel'] ?? 'ฟาร์ม'); ?></span>
-                            <span class="badge text-bg-light text-secondary border rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['bugTarget'] ?? 'หาจุดผิด'); ?></span>
+                            <?php if ($isDebugMode): ?>
+                                <span class="badge text-bg-danger rounded-pill px-3 py-2">โหมดซ่อมกฎ</span>
+                                <span class="badge text-bg-light text-secondary border rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['logic_type'] ?? 'condition'); ?></span>
+                            <?php else: ?>
+                                <span class="badge text-bg-warning rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['themeLabel'] ?? 'ฟาร์ม'); ?></span>
+                                <span class="badge text-bg-light text-secondary border rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['bugTarget'] ?? 'หาจุดผิด'); ?></span>
+                            <?php endif; ?>
                         </div>
                         <h3 class="fw-bold mb-1"><?php echo htmlspecialchars($workData['title'] ?? 'โจทย์ซ่อมกฎฟาร์ม'); ?></h3>
                         <h5 class="fw-bold text-warning-emphasis mb-2">ผลงานของ: <?php echo htmlspecialchars($ownerName); ?></h5>
@@ -119,7 +135,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                         <?php elseif (($work['mode'] ?? '') === 'group'): ?>
                             <div class="small text-muted mb-2">สมาชิกทีม: <?php echo htmlspecialchars($work['member_names'] ?? '-'); ?></div>
                         <?php endif; ?>
-                        <div class="text-secondary"><?php echo htmlspecialchars($workData['problemText'] ?? ''); ?></div>
+                        <div class="text-secondary"><?php echo htmlspecialchars($workData['problemText'] ?? $workData['problem'] ?? $workData['mission'] ?? ''); ?></div>
                     </div>
                 </div>
                 <div class="col-lg-4">
@@ -134,13 +150,21 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
         <?php endif; ?>
     </div>
 
-    <script src="../assets/js/logic_game/debug_challenge_preview.js"></script>
-    <script src="../assets/js/logic_game/smart_farm_debugger_lite.js"></script>
+    <?php if ($isDebugMode): ?>
+        <script src="../assets/js/logic_game/conveyor_logic_base.js"></script>
+        <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
+        <script src="../assets/js/logic_game/conveyor_debug_mode.js"></script>
+    <?php else: ?>
+        <script src="../assets/js/logic_game/debug_challenge_preview.js"></script>
+        <script src="../assets/js/logic_game/smart_farm_debugger_lite.js"></script>
+    <?php endif; ?>
     <?php if (!$error): ?>
     <script>
         const WORK_ID = <?php echo intval($work_id); ?>;
         const WORK_DATA = <?php echo json_encode($workData, JSON_UNESCAPED_UNICODE); ?>;
+        const IS_DEBUG_MODE = <?php echo $isDebugMode ? 'true' : 'false'; ?>;
         window.STAGE_ID = 12;
+        window.GAME_ID = 4;
         window.sendResult = function (stageId, score, duration, attempts, detail) {
             fetch('../api/log_debug_work_play.php', {
                 method: 'POST',
@@ -151,7 +175,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                     score,
                     duration,
                     attempts,
-                    bug_type: WORK_DATA.bugTarget || '',
+                    bug_type: IS_DEBUG_MODE ? (WORK_DATA.bug_type || '') : (WORK_DATA.bugTarget || ''),
                     detail: detail || null
                 })
             }).catch(() => {});
@@ -160,7 +184,41 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
         const inner = document.createElement('div');
         inner.id = 'game-container';
         mount.appendChild(inner);
-        window.FarmMissions.smartFarmDebuggerLite(window.DebugChallengePreview.workDataToConfig(WORK_DATA));
+
+        if (IS_DEBUG_MODE) {
+            // Conveyor Debug Mode engine
+            const gameConfig = {
+                title: WORK_DATA.title || 'โจทย์ซ่อมกฎฟาร์มของเพื่อน',
+                subtitle: 'สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่',
+                levels: [{
+                    levelId: 'friend-debug',
+                    title: WORK_DATA.title || 'ซ่อมกฎฟาร์ม',
+                    theme: WORK_DATA.theme || 'farm',
+                    lessonType: WORK_DATA.logic_type || 'if_else',
+                    lessonTypeLabel: WORK_DATA.logic_type === 'if' ? 'If' : (WORK_DATA.logic_type === 'if_else_if_else' ? 'If / Else If / Else' : 'If / Else'),
+                    bugType: WORK_DATA.bug_type || 'wrong_action',
+                    debugGoal: WORK_DATA.mission || WORK_DATA.problem || 'ตรวจจุดผิดและซ่อมกฎ',
+                    intro: WORK_DATA.problem || 'กดทดสอบกฎเดิมเพื่อดูอาการผิดปกติ',
+                    brokenLogic: WORK_DATA.broken_rules || [],
+                    expectedLogic: WORK_DATA.fixed_rules || [],
+                    conditions: WORK_DATA.conditions || [],
+                    actions: WORK_DATA.actions || [],
+                    machines: WORK_DATA.machines || [],
+                    itemQueue: WORK_DATA.items || [],
+                    allowReorder: WORK_DATA.logic_type === 'if_else_if_else',
+                    suspiciousBlocks: WORK_DATA.suspicious_blocks || [],
+                    debugReport: WORK_DATA.debug_report || {},
+                    defaultBehavior: WORK_DATA.default_behavior || WORK_DATA.defaultBehavior || null,
+                    logicType: WORK_DATA.logic_type || 'if_else',
+                    mode: WORK_DATA.mode || null,
+                    toolboxDecoys: WORK_DATA.toolbox_decoys || WORK_DATA.toolboxDecoys || null
+                }]
+            };
+            window.FarmMissions.conveyorDebugMode(gameConfig);
+        } else {
+            // Lite engine (original)
+            window.FarmMissions.smartFarmDebuggerLite(window.DebugChallengePreview.workDataToConfig(WORK_DATA));
+        }
     </script>
     <?php endif; ?>
 </body>

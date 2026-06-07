@@ -21,25 +21,29 @@ $game_meta = [
         'lesson_no' => 'บทที่ 1',
         'title' => 'ตรรกะคัดแยก',
         'icon' => 'bi-diagram-3-fill',
-        'theme' => 'success'
+        'theme' => 'success',
+        'modal_title' => 'เงื่อนไขของโจทย์'
     ],
     2 => [
         'lesson_no' => 'บทที่ 2',
         'title' => 'เส้นทางเดินรถไถ',
         'icon' => 'bi-signpost-2-fill',
-        'theme' => 'primary'
+        'theme' => 'primary',
+        'modal_title' => 'ภารกิจเส้นทางรถไถ'
     ],
     3 => [
         'lesson_no' => 'บทที่ 3',
         'title' => 'Smart Farm Manager',
         'icon' => 'bi-diagram-3',
-        'theme' => 'info'
+        'theme' => 'info',
+        'modal_title' => 'กติกาด่านสายพาน'
     ],
     4 => [
         'lesson_no' => 'บทที่ 4',
         'title' => 'ตรวจสอบและแก้ไขข้อผิดพลาด',
         'icon' => 'bi-wrench-adjustable',
-        'theme' => 'danger'
+        'theme' => 'danger',
+        'modal_title' => 'รายละเอียดโจทย์ซ่อมกฎ'
     ]
 ];
 $current_game = $game_meta[$game_id] ?? $game_meta[1];
@@ -211,6 +215,44 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             font-size: 0.85rem;
             margin-top: 10px;
         }
+
+        /* 🟢 Debug Mode preview card */
+        .debug-preview-card {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 14px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .debug-preview-card .debug-title {
+            font-weight: 800;
+            color: #9a3412;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .debug-preview-card .debug-field {
+            margin-bottom: 6px;
+            font-size: 16px;
+            color: #451a03;
+        }
+        .debug-preview-card .debug-field strong {
+            color: #c2410c;
+        }
+
+        /* 🟢 Fallback card */
+        .fallback-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 24px;
+            color: #94a3b8;
+        }
     </style>
 </head>
 
@@ -281,7 +323,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         
                         <div class="row align-items-start">
                             <div class="col-md-8">
-                                <h5 class="fw-bold text-success mb-2">📜 กติกาและเงื่อนไขของด่าน:</h5>
+                                <h5 class="fw-bold text-success mb-2" id="modal-section-title">📜 กติกาและเงื่อนไขของด่าน:</h5>
                                 <p id="modal-desc" class="text-dark fs-5 mb-3" style="white-space: pre-wrap; line-height: 1.6;"></p>
                                 
                                 <div id="modal-feedback-area"></div>
@@ -311,6 +353,324 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             'fert_green_square': 100, 'fert_red_round': 100, 'fert_red_square': 100
         };
 
+        // ========================================
+        // 🟢 BUG TYPE LABELS (Thai translations)
+        // ========================================
+        const BUG_TYPE_LABELS = {
+            wrong_condition: 'เงื่อนไขผิด',
+            wrong_action: 'คำสั่งผิด',
+            too_broad_condition: 'เงื่อนไขกว้างเกินไป',
+            too_narrow_condition: 'เงื่อนไขแคบเกินไป',
+            wrong_else_action: 'คำสั่งกรณีอื่นผิด',
+            wrong_order: 'ลำดับกฎผิด',
+            boundary_error: 'ขอบเขตตัวเลขผิด',
+            missing_condition: 'ขาดเงื่อนไข',
+            missing_action: 'ขาดคำสั่ง',
+            extra_rule: 'มีกฎเกินจำเป็น',
+            action: 'คำสั่ง',
+            order: 'ลำดับเงื่อนไข',
+            broad_condition: 'เงื่อนไขกว้างเกินไป',
+            repeat_count: 'จำนวนรอบ'
+        };
+
+        function bugTypeLabel(type) {
+            return BUG_TYPE_LABELS[type] || type || 'บั๊กของกฎระบบ';
+        }
+
+        // ========================================
+        // 🟢 SHOWCASE RENDERERS - แยกตาม game_id
+        // ========================================
+
+        // --- DEFAULT / FALLBACK ---
+        const DefaultShowcaseRenderer = {
+            getSummary(data) { return null; },
+            renderBadges(summary) { return ''; },
+            renderPreview(stage, data, bgType) {
+                stage.classList.remove('bg-grid-pattern');
+                stage.style.background = '#f1f5f9';
+                stage.innerHTML = `
+                    <div class="fallback-preview">
+                        <i class="bi bi-file-earmark-x display-4"></i>
+                        <div class="mt-2 fw-bold">ไม่สามารถแสดงตัวอย่างผลงานนี้ได้</div>
+                        <div class="small">ข้อมูลชิ้นงานอาจเป็นรูปแบบเก่าหรือไม่สมบูรณ์</div>
+                    </div>
+                `;
+            },
+            renderModal(work, data) { return ''; },
+            getPlayUrl(work, data) { return null; },
+            getPlayButtonHTML(work, data) { return ''; },
+            getModalTitle() { return '📜 กติกาและเงื่อนไขของด่าน:'; }
+        };
+
+        // --- บทที่ 1: Logic Sorting ---
+        const LogicShowcaseRenderer = {
+            getSummary(data) { return null; },
+            renderBadges(summary) { return ''; },
+            renderPreview(stage, data, bgType) {
+                // Chapter 1 uses array layout (objects on canvas)
+                if (Array.isArray(data)) {
+                    renderLogicArrayPreview(stage, data, bgType);
+                } else {
+                    renderStructuredPreview(stage, data);
+                }
+            },
+            renderModal(work, data) { return ''; },
+            getPlayUrl(work, data) { return null; },
+            getPlayButtonHTML(work, data) { return ''; },
+            getModalTitle() { return '📜 เงื่อนไขของโจทย์:'; }
+        };
+
+        // --- บทที่ 2: Tractor Route ---
+        const TractorRouteShowcaseRenderer = {
+            getSummary(data) {
+                if (!data || data.project_type !== 'tractor_route') return null;
+                const missionLabels = { target: 'ไปถึงจุดหมาย', obstacle: 'หลบสิ่งกีดขวาง', harvest: 'เก็บเกี่ยวผลผลิต' };
+                return {
+                    kind: 'tractor_route',
+                    mission: missionLabels[data.mission_type] || 'เส้นทางรถไถ',
+                    commandCount: Array.isArray(data.commands) ? data.commands.length : 0,
+                    obstacleCount: Array.isArray(data.obstacles) ? data.obstacles.length : 0,
+                    cropCount: Array.isArray(data.crops) ? data.crops.length : 0,
+                    validated: !!data.validated
+                };
+            },
+            renderBadges(summary) {
+                if (!summary) return '';
+                return `
+                    <div class="project-summary small mt-2">
+                        <span class="badge text-bg-primary rounded-pill">${summary.mission}</span>
+                        <span class="badge text-bg-light border rounded-pill">วิธีตัวอย่าง ${summary.commandCount}</span>
+                        <span class="badge text-bg-light border rounded-pill">อุปสรรค ${summary.obstacleCount}</span>
+                        ${summary.cropCount > 0 ? `<span class="badge text-bg-light border rounded-pill">ผลผลิต ${summary.cropCount}</span>` : ''}
+                        <span class="badge ${summary.validated ? 'text-bg-success' : 'text-bg-danger'} rounded-pill">
+                            ${summary.validated ? 'ทดสอบผ่าน' : 'ยังไม่ผ่าน'}
+                        </span>
+                    </div>
+                `;
+            },
+            renderPreview(stage, data) {
+                renderTractorRoutePreview(stage, data);
+            },
+            renderModal(work, data) {
+                const summary = this.getSummary(data);
+                if (!summary) return '';
+                return `
+                    <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
+                        <strong>${GAME_META.lesson_no}: ${GAME_META.title}</strong><br>
+                        ประเภทภารกิจ: ${summary.mission} |
+                        วิธีตัวอย่าง ${summary.commandCount} |
+                        อุปสรรค ${summary.obstacleCount} |
+                        ผลผลิต ${summary.cropCount} |
+                        ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
+                    </div>
+                `;
+            },
+            getPlayUrl(work, data) {
+                const summary = this.getSummary(data);
+                return summary?.validated ? `play_student_work.php?work_id=${work.id}` : null;
+            },
+            getPlayButtonHTML(work, data) {
+                const url = this.getPlayUrl(work, data);
+                if (url) {
+                    return `<a href="${url}" class="btn btn-primary btn-sm rounded-pill fw-bold mt-2 align-self-start"><i class="bi bi-play-fill"></i> ลองเล่นโจทย์นี้</a>`;
+                }
+                const summary = this.getSummary(data);
+                if (summary) {
+                    return `<span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">ยังไม่พร้อมให้เล่น</span>`;
+                }
+                return '';
+            },
+            getModalTitle() { return '📜 ภารกิจเส้นทางรถไถ:'; }
+        };
+
+        // --- บทที่ 3: Smart Farm Mini Game ---
+        const SmartFarmShowcaseRenderer = {
+            getSummary(data) {
+                if (!data || data.project_type !== 'smart_farm_mini_game') return null;
+                const raw = window.SmartFarmBuilderPreview?.getSummary(data);
+                return raw ? { ...raw, kind: 'smart_farm' } : null;
+            },
+            renderBadges(summary) {
+                return window.SmartFarmBuilderPreview?.renderBadges(summary) || '';
+            },
+            renderPreview(stage, data) {
+                if (data.project_type === 'smart_farm_mini_game' && window.SmartFarmBuilderPreview?.renderSummary(stage, data)) {
+                    return;
+                }
+                renderStructuredPreview(stage, data);
+            },
+            renderModal(work, data) {
+                const summary = this.getSummary(data);
+                if (!summary) return '';
+                return `
+                    <div class="alert alert-success py-2 small mb-3 border-0 shadow-sm rounded-3">
+                        <strong>${escapeHtml(summary.title)}</strong><br>
+                        ${escapeHtml(summary.logic)} |
+                        วัตถุ ${summary.itemCount} |
+                        ตัวหลอก ${summary.decoyCount} |
+                        ${summary.tested ? `ทดสอบแล้ว ${Math.round(summary.accuracy * 100)}%` : 'ยังไม่พร้อมให้เล่น'}
+                    </div>
+                `;
+            },
+            getPlayUrl(work, data) {
+                const summary = this.getSummary(data);
+                return summary?.tested ? `play_smart_farm_work.php?work_id=${work.id}` : null;
+            },
+            getPlayButtonHTML(work, data) {
+                const url = this.getPlayUrl(work, data);
+                if (url) {
+                    return `<a href="${url}" class="btn btn-success btn-sm rounded-pill fw-bold mt-2 align-self-start"><i class="bi bi-play-fill"></i> เล่นด่านของเพื่อน</a>`;
+                }
+                if (this.getSummary(data)) {
+                    return `<span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">ยังไม่พร้อมให้เล่น</span>`;
+                }
+                return '';
+            },
+            getModalTitle() { return '📜 กติกาด่านสายพาน:'; }
+        };
+
+        // --- บทที่ 4: Debug Mode (ใหม่ + Lite เก่า + Debug Challenge เก่า) ---
+        const DebugModeShowcaseRenderer = {
+            getSummary(data) {
+                if (!data) return null;
+                const pt = data.project_type || '';
+                // Debug Mode (conveyor-based)
+                if (pt === 'smart_farm_debug_mode') {
+                    return {
+                        kind: 'debug_mode',
+                        title: data.title || 'โจทย์ซ่อมกฎฟาร์ม',
+                        bugType: bugTypeLabel(data.bug_type),
+                        logicType: data.logic_type || 'if_else',
+                        problem: data.problem || data.mission || '',
+                        tested: !!data.tested,
+                        testResult: data.test_result || null,
+                        isLegacy: false
+                    };
+                }
+                // Lite challenge
+                if (pt === 'smart_farm_debug_lite_challenge') {
+                    return {
+                        kind: 'debug_lite',
+                        title: data.title || 'โจทย์ซ่อมกฎฟาร์ม',
+                        system: data.themeLabel || data.theme || 'ฟาร์ม',
+                        bugType: bugTypeLabel(data.bugTarget) || 'หาจุดผิด',
+                        symptom: data.problemText || '',
+                        tested: !!data.tested,
+                        isLegacy: false
+                    };
+                }
+                // Old debug challenge (legacy)
+                if (pt === 'smart_farm_debug_challenge') {
+                    return {
+                        kind: 'debug_challenge_legacy',
+                        title: data.title || 'โจทย์ซ่อมกฎฟาร์ม',
+                        system: data.system_theme || 'ระบบฟาร์ม',
+                        bugType: bugTypeLabel(data.bug_type) || 'ซ่อมกฎ',
+                        symptom: data.symptom || '',
+                        tested: false,
+                        isLegacy: true
+                    };
+                }
+                return null;
+            },
+            renderBadges(summary) {
+                if (!summary) return '';
+                let badges = `
+                    <div class="project-summary small mt-2">
+                        <span class="badge text-bg-warning rounded-pill">${escapeHtml(summary.bugType)}</span>
+                `;
+                if (summary.system) {
+                    badges += `<span class="badge text-bg-light border rounded-pill">${escapeHtml(summary.system)}</span>`;
+                }
+                if (summary.tested) {
+                    badges += `<span class="badge text-bg-success rounded-pill">ทดสอบแล้ว</span>`;
+                }
+                if (summary.isLegacy) {
+                    badges += `<span class="badge text-bg-secondary rounded-pill">รูปแบบเก่า</span>`;
+                }
+                badges += '</div>';
+                return badges;
+            },
+            renderPreview(stage, data) {
+                const summary = this.getSummary(data);
+                stage.classList.remove('bg-grid-pattern');
+                stage.style.backgroundImage = '';
+                stage.style.background = '#fff7ed';
+                stage.style.padding = '0';
+                stage.style.overflow = 'hidden';
+
+                if (!summary) {
+                    stage.innerHTML = `
+                        <div class="fallback-preview">
+                            <i class="bi bi-wrench-adjustable display-4 text-warning"></i>
+                            <div class="mt-2 fw-bold text-secondary">ผลงานนี้ใช้รูปแบบข้อมูลที่ระบบยังไม่รองรับ</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                stage.innerHTML = `
+                    <div class="debug-preview-card">
+                        <div class="debug-title">${escapeHtml(summary.title)}</div>
+                        <div class="debug-field"><strong>ประเภทจุดผิด:</strong> ${escapeHtml(summary.bugType)}</div>
+                        ${summary.problem ? `<div class="debug-field"><strong>อาการ:</strong> ${escapeHtml(summary.problem)}</div>` : ''}
+                        ${summary.symptom ? `<div class="debug-field"><strong>อาการ:</strong> ${escapeHtml(summary.symptom)}</div>` : ''}
+                        ${summary.system ? `<div class="debug-field"><strong>ฉาก:</strong> ${escapeHtml(summary.system)}</div>` : ''}
+                        ${summary.logicType ? `<div class="debug-field"><strong>ตรรกะ:</strong> ${escapeHtml(summary.logicType)}</div>` : ''}
+                        <div class="debug-field"><strong>สถานะ:</strong> ${summary.tested ? '✅ ทดสอบแล้ว' : '⏳ ยังไม่ทดสอบ'}</div>
+                        ${summary.isLegacy ? '<div class="debug-field text-secondary"><small>📦 รูปแบบเก่า</small></div>' : ''}
+                    </div>
+                `;
+            },
+            renderModal(work, data) {
+                const summary = this.getSummary(data);
+                if (!summary) return '';
+                return `
+                    <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
+                        <strong>${escapeHtml(summary.title)}</strong><br>
+                        ${escapeHtml(summary.bugType)}
+                        ${summary.system ? ` | ${escapeHtml(summary.system)}` : ''}
+                        ${summary.tested ? ' | ทดสอบแล้ว' : ''}
+                        ${summary.isLegacy ? ' | รูปแบบเก่า' : ''}
+                    </div>
+                `;
+            },
+            getPlayUrl(work, data) {
+                const summary = this.getSummary(data);
+                if (!summary || !summary.tested) return null;
+                if (summary.isLegacy) return null; // Legacy works may not be playable
+                return `play_debug_work.php?work_id=${work.id}`;
+            },
+            getPlayButtonHTML(work, data) {
+                const summary = this.getSummary(data);
+                if (!summary) return '';
+                const url = this.getPlayUrl(work, data);
+                if (url) {
+                    return `<a href="${url}" class="btn btn-warning btn-sm rounded-pill fw-bold mt-2 align-self-start"><i class="bi bi-wrench-adjustable"></i> เล่นโจทย์ซ่อมกฎของเพื่อน</a>`;
+                }
+                if (summary.isLegacy) {
+                    return `<span class="badge text-bg-secondary rounded-pill mt-2 align-self-start">ผลงานรุ่นเก่า อาจเล่นไม่ได้</span>`;
+                }
+                return `<span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">ยังไม่พร้อมให้เล่น</span>`;
+            },
+            getModalTitle() { return '📜 รายละเอียดโจทย์ซ่อมกฎ:'; }
+        };
+
+        // --- Renderer Registry ---
+        const ShowcaseRenderers = {
+            1: LogicShowcaseRenderer,
+            2: TractorRouteShowcaseRenderer,
+            3: SmartFarmShowcaseRenderer,
+            4: DebugModeShowcaseRenderer
+        };
+
+        function getRenderer(gameId) {
+            return ShowcaseRenderers[gameId] || DefaultShowcaseRenderer;
+        }
+
+        // ========================================
+        // 🟢 STRUCTURED LABELS (for legacy data)
+        // ========================================
         const STRUCTURED_LABELS = {
             map: 'แผนที่หรือฉากที่ออกแบบ',
             commands: 'ลำดับคำสั่งตัวอย่าง',
@@ -326,7 +686,6 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             bug_targets: 'จุดที่เป็นจุดผิด',
             fix_explanation: 'วิธีแก้และเหตุผล',
             playtest_note: 'ผลการทดลองเล่นโจทย์',
-            // Lite version fields
             theme: 'ธีมฟาร์ม',
             problemText: 'อาการเสีย',
             bugTarget: 'จุดผิด',
@@ -334,6 +693,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
         };
 
         let worksList = {}; 
+        let lastDataHash = ''; // 🟢 สำหรับเทียบว่าข้อมูลเปลี่ยนหรือยัง
 
         function parseWorkData(jsonData) {
             try {
@@ -343,74 +703,21 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             }
         }
 
-        function getTractorRouteSummary(data) {
-            if (!data || data.project_type !== 'tractor_route') return null;
-
-            const missionLabels = {
-                target: 'ไปถึงจุดหมาย',
-                obstacle: 'หลบสิ่งกีดขวาง',
-                harvest: 'เก็บเกี่ยวผลผลิต'
-            };
-
-            return {
-                mission: missionLabels[data.mission_type] || 'เส้นทางรถไถ',
-                commandCount: Array.isArray(data.commands) ? data.commands.length : 0,
-                obstacleCount: Array.isArray(data.obstacles) ? data.obstacles.length : 0,
-                cropCount: Array.isArray(data.crops) ? data.crops.length : 0,
-                validated: !!data.validated
-            };
-        }
-
-        function getSmartFarmSummary(data) {
-            return window.SmartFarmBuilderPreview?.getSummary(data) || null;
-        }
-
-        function getDebugChallengeSummary(data) {
-            if (!data) return null;
-            // Support both old and new Lite project types
-            if (data.project_type !== 'smart_farm_debug_challenge' && data.project_type !== 'smart_farm_debug_lite_challenge') return null;
-            const isLite = data.project_type === 'smart_farm_debug_lite_challenge';
-            return {
-                kind: 'debug_challenge',
-                title: data.title || 'โจทย์ซ่อมกฎฟาร์ม',
-                system: isLite ? (data.themeLabel || data.theme || 'ฟาร์ม') : (data.system_theme || 'ระบบฟาร์ม'),
-                bugType: isLite ? (data.bugTarget || 'หาจุดผิด') : (data.bug_type || 'ซ่อมกฎ'),
-                symptom: isLite ? (data.problemText || '') : (data.symptom || ''),
-                tested: isLite ? !!data.tested : false,
-                isLite
-            };
-        }
-
-        function renderProjectSummary(summary) {
-            if (!summary) return '';
-            if (summary.kind === 'smart_farm') {
-                return window.SmartFarmBuilderPreview.renderBadges(summary);
-            }
-            if (summary.kind === 'debug_challenge') {
-                return `
-                    <div class="project-summary small mt-2">
-                        <span class="badge text-bg-warning rounded-pill">${escapeHtml(summary.bugType)}</span>
-                        <span class="badge text-bg-light border rounded-pill">${escapeHtml(summary.system)}</span>
-                    </div>
-                `;
-            }
-            return `
-                <div class="project-summary small mt-2">
-                    <span class="badge text-bg-primary rounded-pill">${summary.mission}</span>
-                    <span class="badge text-bg-light border rounded-pill">วิธีตัวอย่าง ${summary.commandCount}</span>
-                    <span class="badge text-bg-light border rounded-pill">อุปสรรค ${summary.obstacleCount}</span>
-                    ${summary.cropCount > 0 ? `<span class="badge text-bg-light border rounded-pill">ผลผลิต ${summary.cropCount}</span>` : ''}
-                    <span class="badge ${summary.validated ? 'text-bg-success' : 'text-bg-danger'} rounded-pill">
-                        ${summary.validated ? 'ทดสอบผ่าน' : 'ยังไม่ผ่าน'}
-                    </span>
-                </div>
-            `;
-        }
-
+        // ========================================
+        // 🟢 MAIN SHOWCASE LOADER (ใช้ renderer ตาม game_id)
+        // ========================================
         function loadShowcase() {
             fetch(`../api/get_showcase.php?game_id=${GAME_ID}`)
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error('Network error');
+                    return res.json();
+                })
                 .then(data => {
+                    // 🟢 Smart refresh: ตรวจว่าข้อมูลเปลี่ยนจริงหรือไม่
+                    const newHash = JSON.stringify(data.map(w => w.id + ':' + w.status + ':' + (w.like_count || 0)));
+                    if (newHash === lastDataHash) return; // ข้อมูลไม่เปลี่ยน ไม่ต้อง render ใหม่
+                    lastDataHash = newHash;
+
                     const grid = document.getElementById('gallery-grid');
                     grid.innerHTML = '';
                     worksList = {}; 
@@ -428,6 +735,11 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
 
                     data.forEach(work => {
                         worksList[work.id] = work; 
+
+                        // 🟢 ใช้ game_id จาก API response (ไม่เดาจาก data)
+                        const workGameId = Number(work.game_id || GAME_ID);
+                        const renderer = getRenderer(workGameId);
+
                         const col = document.createElement('div');
                         col.className = 'col-md-6 col-lg-4 d-flex align-items-stretch';
 
@@ -452,45 +764,22 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                                 ${GAME_META.lesson_no}: ${GAME_META.title}
                             </div>
                         `;
+
+                        // 🟢 Parse work_data แล้วส่งให้ renderer ตาม game_id
                         const parsedWorkData = parseWorkData(work.work_data);
-                        const tractorSummary = getTractorRouteSummary(parsedWorkData);
-                        const smartSummaryRaw = getSmartFarmSummary(parsedWorkData);
-                        const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
-                        const debugSummary = getDebugChallengeSummary(parsedWorkData);
-                        const activeSummary = smartSummary || debugSummary || tractorSummary;
-                        const projectSummaryHTML = renderProjectSummary(activeSummary);
+                        let summaryHTML = '';
                         let playButtonHTML = '';
-                        if (smartSummary) {
-                            playButtonHTML = smartSummary.tested ? `
-                                <a href="play_smart_farm_work.php?work_id=${work.id}" class="btn btn-success btn-sm rounded-pill fw-bold mt-2 align-self-start">
-                                    <i class="bi bi-play-fill"></i> เล่นด่านของเพื่อน
-                                </a>
-                            ` : `
-                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
-                                    ยังไม่พร้อมให้เล่น
-                                </span>
-                            `;
-                        } else if (debugSummary) {
-                            playButtonHTML = debugSummary.tested ? `
-                                <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-sm rounded-pill fw-bold mt-2 align-self-start">
-                                    <i class="bi bi-wrench-adjustable"></i> เล่นโจทย์ซ่อมกฎของเพื่อน
-                                </a>
-                            ` : `
-                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
-                                    ยังไม่พร้อมให้เล่น
-                                </span>
-                            `;
-                        } else if (tractorSummary?.validated) {
-                            playButtonHTML = `
-                                <a href="play_student_work.php?work_id=${work.id}" class="btn btn-primary btn-sm rounded-pill fw-bold mt-2 align-self-start">
-                                    <i class="bi bi-play-fill"></i> ลองเล่นโจทย์นี้
-                                </a>
-                            `;
-                        } else if (tractorSummary) {
-                            playButtonHTML = `
-                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
-                                    ยังไม่พร้อมให้เล่น
-                                </span>
+
+                        if (parsedWorkData) {
+                            const summary = renderer.getSummary(parsedWorkData);
+                            summaryHTML = renderer.renderBadges(summary);
+                            playButtonHTML = renderer.getPlayButtonHTML(work, parsedWorkData);
+                        } else {
+                            // 🟢 Fallback: JSON parse ไม่ได้
+                            summaryHTML = `
+                                <div class="project-summary small mt-2">
+                                    <span class="badge text-bg-secondary rounded-pill">ข้อมูลไม่สมบูรณ์</span>
+                                </div>
                             `;
                         }
 
@@ -538,7 +827,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                                             <i class="bi bi-heart-fill"></i> <span class="like-count">${work.like_count}</span>
                                         </button>
                                     </div>
-                                    ${projectSummaryHTML}
+                                    ${summaryHTML}
                                     <div class="bg-light p-2 rounded flex-grow-1 border d-flex flex-column">
                                         <p class="text-secondary small mb-0" style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
                                             <strong>📜 คำอธิบาย:</strong><br>${escapeHtml(descText)}
@@ -551,17 +840,77 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         `;
 
                         grid.appendChild(col);
-                        renderMiniCanvas(work.work_data, `canvas-${work.id}`, work.bgType);
+
+                        // 🟢 Preview rendering ใช้ renderer ตาม game_id
+                        const container = document.getElementById(`canvas-${work.id}`);
+                        if (container && parsedWorkData) {
+                            const stage = document.createElement('div');
+                            stage.className = 'scalable-canvas';
+                            stage.style.width = '800px';
+                            stage.style.height = '480px';
+                            stage.style.position = 'absolute';
+                            stage.style.top = '0';
+                            stage.style.left = '0';
+                            stage.style.transformOrigin = 'top left';
+
+                            if (bgType === 'farm') {
+                                stage.style.backgroundImage = `url('${ASSET_PATH}bg_farm.webp')`;
+                                stage.style.backgroundSize = 'cover';
+                            } else if (bgType === 'barn') {
+                                stage.style.backgroundImage = `url('${ASSET_PATH}bg_barn.webp')`;
+                                stage.style.backgroundSize = 'cover';
+                            } else if (bgType === 'v_garden') {
+                                stage.style.backgroundImage = `url('${ASSET_PATH}bg_v_garden.webp')`;
+                                stage.style.backgroundSize = 'cover';
+                            } else {
+                                stage.classList.add('bg-grid-pattern');
+                            }
+
+                            renderer.renderPreview(stage, parsedWorkData, bgType);
+                            container.appendChild(stage);
+                        } else if (container) {
+                            // 🟢 Fallback preview for unparseable data
+                            const stage = document.createElement('div');
+                            stage.className = 'scalable-canvas';
+                            stage.style.width = '800px';
+                            stage.style.height = '480px';
+                            stage.style.position = 'absolute';
+                            stage.style.top = '0';
+                            stage.style.left = '0';
+                            stage.style.transformOrigin = 'top left';
+                            DefaultShowcaseRenderer.renderPreview(stage, null, 'grid');
+                            container.appendChild(stage);
+                        }
                     });
                     
                     setTimeout(resizeCanvases, 100);
+                })
+                .catch(err => {
+                    // 🟢 Error handling: ไม่ล้าง gallery เดิมเมื่อ fetch ล้มเหลว
+                    console.warn('โหลดผลงานใหม่ไม่สำเร็จ:', err);
+                    const grid = document.getElementById('gallery-grid');
+                    // ถ้าไม่มีข้อมูลเลย (ครั้งแรก) แสดง error
+                    if (Object.keys(worksList).length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-12 text-center py-5 text-muted">
+                                <i class="bi bi-wifi-off display-1 opacity-25"></i>
+                                <h4 class="mt-3 fw-bold">ยังโหลดผลงานใหม่ไม่ได้</h4>
+                                <p>กรุณาลองอีกครั้ง หรือรีเฟรชหน้า</p>
+                            </div>
+                        `;
+                    }
                 });
         }
 
-        // 🖥️ ฟังก์ชันเปิด Presentation Mode
+        // ========================================
+        // 🟢 PRESENTATION MODE (ใช้ renderer ตาม game_id)
+        // ========================================
         function openPresentation(workId) {
             const work = worksList[workId];
             if(!work) return;
+
+            const workGameId = Number(work.game_id || GAME_ID);
+            const renderer = getRenderer(workGameId);
 
             let modalTitleStr = work.mode === 'group' ? `กลุ่มที่ ${work.group_number}` : escapeHtml(work.student_name);
             document.getElementById('modal-title-text').innerHTML = `
@@ -571,6 +920,9 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                 </div>
             `;
             
+            // 🟢 หัวข้อ modal เฉพาะบท
+            document.getElementById('modal-section-title').textContent = renderer.getModalTitle();
+
             let membersHtml = '';
             if (work.mode === 'group') {
                 membersHtml = `
@@ -582,56 +934,32 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             document.getElementById('modal-members-area').innerHTML = membersHtml;
 
             const parsedModalData = parseWorkData(work.work_data);
-            const summary = getTractorRouteSummary(parsedModalData);
-            const smartSummaryRaw = getSmartFarmSummary(parsedModalData);
-            const smartSummary = smartSummaryRaw ? { ...smartSummaryRaw, kind: 'smart_farm' } : null;
-            const debugSummary = getDebugChallengeSummary(parsedModalData);
-            const modalSummaryHTML = smartSummary ? `
-                <div class="alert alert-success py-2 small mb-3 border-0 shadow-sm rounded-3">
-                    <strong>${escapeHtml(smartSummary.title)}</strong><br>
-                    ${escapeHtml(smartSummary.logic)} |
-                    วัตถุ ${smartSummary.itemCount} |
-                    ตัวหลอก ${smartSummary.decoyCount} |
-                    ${smartSummary.tested ? `ทดสอบแล้ว ${Math.round(smartSummary.accuracy * 100)}%` : 'ยังไม่พร้อมให้เล่น'}
-                </div>
-            ` : (debugSummary ? `
-                <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
-                    <strong>${escapeHtml(debugSummary.title)}</strong><br>
-                    ${escapeHtml(debugSummary.system)} |
-                    ${escapeHtml(debugSummary.bugType)}
-                </div>
-            ` : (summary ? `
-                <div class="alert alert-primary py-2 small mb-3 border-0 shadow-sm rounded-3">
-                    <strong>${GAME_META.lesson_no}: ${GAME_META.title}</strong><br>
-                    ประเภทภารกิจ: ${summary.mission} |
-                    วิธีตัวอย่าง ${summary.commandCount} |
-                    อุปสรรค ${summary.obstacleCount} |
-                    ผลผลิต ${summary.cropCount} |
-                    ${summary.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}
-                </div>
-            ` : ''));
+            
+            // 🟢 Modal summary ใช้ renderer
+            const modalSummaryHTML = parsedModalData ? renderer.renderModal(work, parsedModalData) : '';
             document.getElementById('modal-project-summary').innerHTML = modalSummaryHTML;
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
             document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
+            
+            // 🟢 ปุ่มเล่นใน modal ใช้ renderer
             const modalActionArea = document.getElementById('modal-action-area');
-            if (modalActionArea) {
-                modalActionArea.innerHTML = smartSummary?.tested ? `
-                    <a href="play_smart_farm_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
-                        <i class="bi bi-controller"></i> เล่นด่านของเพื่อน
-                    </a>
-                    <div class="small text-muted mt-2">เล่นด่านสายพานตรรกะที่เพื่อนออกแบบ</div>
-                ` : (debugSummary?.tested ? `
-                    <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-lg rounded-pill fw-bold shadow-sm mt-3">
-                        <i class="bi bi-wrench-adjustable"></i> เล่นโจทย์ซ่อมกฎของเพื่อน
-                    </a>
-                    <div class="small text-muted mt-2">สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่</div>
-                ` : (summary?.validated ? `
-                    <a href="play_student_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
-                        <i class="bi bi-controller"></i> ลองเล่นโจทย์นี้
-                    </a>
-                    <div class="small text-muted mt-2">ลองแก้โจทย์ของเพื่อนด้วยวิธีของคุณเอง</div>
-                ` : '');
+            if (modalActionArea && parsedModalData) {
+                const playUrl = renderer.getPlayUrl(work, parsedModalData);
+                if (playUrl) {
+                    const summary = renderer.getSummary(parsedModalData);
+                    const isDebug = (workGameId === 4);
+                    modalActionArea.innerHTML = `
+                        <a href="${playUrl}" class="btn ${isDebug ? 'btn-warning' : 'btn-success'} btn-lg rounded-pill fw-bold shadow-sm mt-3">
+                            <i class="bi ${isDebug ? 'bi-wrench-adjustable' : 'bi-controller'}"></i> ${isDebug ? 'เล่นโจทย์ซ่อมกฎของเพื่อน' : 'เล่นด่านของเพื่อน'}
+                        </a>
+                        <div class="small text-muted mt-2">${isDebug ? 'สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่' : 'ลองแก้โจทย์ของเพื่อนด้วยวิธีของคุณเอง'}</div>
+                    `;
+                } else {
+                    modalActionArea.innerHTML = '';
+                }
+            } else if (modalActionArea) {
+                modalActionArea.innerHTML = '';
             }
             
             // 🟢 แสดงคอมเมนต์คุณครูในหน้าจอใหญ่ด้วย
@@ -645,7 +973,35 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             }
             document.getElementById('modal-feedback-area').innerHTML = feedbackModalHtml;
 
-            renderMiniCanvas(work.work_data, 'modal-canvas-content', work.bgType);
+            // 🟢 Modal preview ใช้ renderer
+            const modalContainer = document.getElementById('modal-canvas-content');
+            modalContainer.innerHTML = '';
+            if (parsedModalData) {
+                const stage = document.createElement('div');
+                stage.className = 'scalable-canvas';
+                stage.style.width = '800px';
+                stage.style.height = '480px';
+                stage.style.position = 'absolute';
+                stage.style.top = '0';
+                stage.style.left = '0';
+                stage.style.transformOrigin = 'top left';
+
+                if (work.bgType === 'farm') {
+                    stage.style.backgroundImage = `url('${ASSET_PATH}bg_farm.webp')`;
+                    stage.style.backgroundSize = 'cover';
+                } else if (work.bgType === 'barn') {
+                    stage.style.backgroundImage = `url('${ASSET_PATH}bg_barn.webp')`;
+                    stage.style.backgroundSize = 'cover';
+                } else if (work.bgType === 'v_garden') {
+                    stage.style.backgroundImage = `url('${ASSET_PATH}bg_v_garden.webp')`;
+                    stage.style.backgroundSize = 'cover';
+                } else {
+                    stage.classList.add('bg-grid-pattern');
+                }
+
+                renderer.renderPreview(stage, parsedModalData, work.bgType);
+                modalContainer.appendChild(stage);
+            }
 
             const presentationModal = new bootstrap.Modal(document.getElementById('presentationModal'));
             presentationModal.show();
@@ -655,20 +1011,12 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             resizeCanvases();
         });
 
-        function renderMiniCanvas(jsonData, targetId, bgType) {
-            const container = document.getElementById(targetId);
-            if (!container) return;
-            container.innerHTML = ''; 
+        // ========================================
+        // 🟢 PREVIEW HELPER FUNCTIONS
+        // ========================================
 
-            const stage = document.createElement('div');
-            stage.className = 'scalable-canvas';
-            stage.style.width = '800px';
-            stage.style.height = '480px';
-            stage.style.position = 'absolute';
-            stage.style.top = '0';
-            stage.style.left = '0';
-            stage.style.transformOrigin = 'top left'; 
-
+        // Logic Chapter 1: Array layout preview
+        function renderLogicArrayPreview(stage, items, bgType) {
             if (bgType === 'farm') {
                 stage.style.backgroundImage = `url('${ASSET_PATH}bg_farm.webp')`;
                 stage.style.backgroundSize = 'cover';
@@ -679,65 +1027,46 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                 stage.style.backgroundImage = `url('${ASSET_PATH}bg_v_garden.webp')`;
                 stage.style.backgroundSize = 'cover';
             } else {
-                stage.classList.add('bg-grid-pattern'); 
+                stage.classList.add('bg-grid-pattern');
             }
 
-            try {
-                const items = JSON.parse(jsonData);
-                if (!Array.isArray(items)) {
-                    if (items.project_type === 'tractor_route') {
-                        renderTractorRoutePreview(stage, items);
-                        container.appendChild(stage);
-                        return;
-                    }
-                    if (items.project_type === 'smart_farm_mini_game' && window.SmartFarmBuilderPreview?.renderSummary(stage, items)) {
-                        container.appendChild(stage);
-                        return;
-                    }
-                    renderStructuredPreview(stage, items);
-                    container.appendChild(stage);
-                    return;
+            items.forEach((obj) => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'absolute';
+                wrapper.style.left = obj.x + 'px';
+                wrapper.style.top = obj.y + 'px';
+
+                const targetSize = ITEM_SIZES[obj.type] || 60;
+
+                const img = document.createElement('img');
+                img.src = ASSET_PATH + obj.type + '.webp';
+                img.style.width = targetSize + 'px';
+                img.style.position = 'absolute';
+                img.style.transform = 'translate(-50%, -50%)'; 
+                img.style.filter = 'drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3))';
+                wrapper.appendChild(img);
+
+                if(obj.role && obj.role !== 'decor') {
+                    const badge = document.createElement('div');
+                    badge.innerText = obj.role === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก';
+                    badge.style.backgroundColor = obj.role === 'target' ? '#27ae60' : '#e74c3c';
+                    badge.style.color = 'white';
+                    badge.style.position = 'absolute';
+                    badge.style.whiteSpace = 'nowrap';
+                    badge.style.padding = '4px 10px';
+                    badge.style.borderRadius = '12px';
+                    badge.style.fontSize = '14px';
+                    badge.style.fontWeight = 'bold';
+                    badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+                    badge.style.transform = `translate(-50%, calc(-50% - ${(targetSize/2) + 15}px))`;
+                    wrapper.appendChild(badge);
                 }
-                items.forEach((obj) => {
-                    const wrapper = document.createElement('div');
-                    wrapper.style.position = 'absolute';
-                    wrapper.style.left = obj.x + 'px';
-                    wrapper.style.top = obj.y + 'px';
 
-                    const targetSize = ITEM_SIZES[obj.type] || 60;
-
-                    const img = document.createElement('img');
-                    img.src = ASSET_PATH + obj.type + '.webp';
-                    img.style.width = targetSize + 'px';
-                    img.style.position = 'absolute';
-                    img.style.transform = 'translate(-50%, -50%)'; 
-                    img.style.filter = 'drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3))';
-                    wrapper.appendChild(img);
-
-                    if(obj.role && obj.role !== 'decor') {
-                        const badge = document.createElement('div');
-                        badge.innerText = obj.role === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก';
-                        badge.style.backgroundColor = obj.role === 'target' ? '#27ae60' : '#e74c3c';
-                        badge.style.color = 'white';
-                        badge.style.position = 'absolute';
-                        badge.style.whiteSpace = 'nowrap';
-                        badge.style.padding = '4px 10px';
-                        badge.style.borderRadius = '12px';
-                        badge.style.fontSize = '14px';
-                        badge.style.fontWeight = 'bold';
-                        badge.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
-                        badge.style.transform = `translate(-50%, calc(-50% - ${(targetSize/2) + 15}px))`;
-                        wrapper.appendChild(badge);
-                    }
-
-                    stage.appendChild(wrapper);
-                });
-            } catch (e) {
-                console.error("Error parsing layout data", e);
-            }
-            container.appendChild(stage);
+                stage.appendChild(wrapper);
+            });
         }
 
+        // Tractor Route preview
         function buildRoutePath(data) {
             const dirs = {
                 UP: { dc: 0, dr: -1, icon: '⬆️' },
@@ -852,15 +1181,21 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             return '';
         }
 
+        // Structured preview (for legacy/fallback data)
         function renderStructuredPreview(stage, data) {
             stage.classList.remove('bg-grid-pattern');
             stage.style.background = '#f8fafc';
             stage.style.padding = '28px';
             stage.style.overflow = 'hidden';
+            
+            let titleText = 'ชิ้นงานแก้ปัญหา';
+            if (data.project_type === 'smart_farm_debug_challenge') titleText = 'โจทย์ซ่อมกฎฟาร์ม';
+            if (data.project_type === 'smart_farm_debug_mode') titleText = 'โจทย์ซ่อมกฎฟาร์ม (โหมดใหม่)';
+
             stage.innerHTML = `
                 <div style="height:100%; display:flex; align-items:center; justify-content:center;">
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:18px; padding:24px; width:90%; max-height:88%; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,.08);">
-                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์ซ่อมกฎฟาร์ม' : 'ชิ้นงานแก้ปัญหา'}</div>
+                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${titleText}</div>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).slice(0, 3).map(key => `
                             <div style="margin-bottom:12px;">
                                 <div style="font-weight:700; color:#64748b; font-size:16px;">${STRUCTURED_LABELS[key]}</div>
@@ -872,6 +1207,9 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             `;
         }
 
+        // ========================================
+        // 🟢 UTILITY FUNCTIONS
+        // ========================================
         function escapeHtml(text) {
             return String(text || '').replace(/[&<>"']/g, function (char) {
                 return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char];
@@ -906,7 +1244,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                 .then(data => { if (!data.success) btn.classList.toggle('liked'); else countSpan.innerText = data.likes; });
         }
 
-function timeAgo(dateString) {
+        function timeAgo(dateString) {
             if (!dateString) return "เมื่อสักครู่";
             
             // 🟢 แก้ปัญหา NaN: เปลี่ยนขีดกลาง (-) ให้เป็นทับ (/) เพื่อให้ Safari และมือถืออ่านออก
@@ -930,8 +1268,8 @@ function timeAgo(dateString) {
             return Math.floor(hours / 24) + " วันที่แล้ว";
         }
 
-// ==========================================
-        // 🟢 ระบบ Auto-Refresh ฉบับรองรับ Tablet & PC
+        // ==========================================
+        // 🟢 ระบบ Auto-Refresh ฉบับปรับปรุง
         // ==========================================
         let isInteracting = false;
         let interactionTimer;
@@ -940,10 +1278,10 @@ function timeAgo(dateString) {
         function resetInteraction() {
             isInteracting = true;
             clearTimeout(interactionTimer);
-            // ถ้านิ่งไปเกิน 3 วินาที ให้ถือว่าเลิกใช้งานแล้ว (อนุญาตให้รีเฟรชได้)
+            // ถ้านิ่งไปเกิน 5 วินาที ให้ถือว่าเลิกใช้งานแล้ว (อนุญาตให้รีเฟรชได้)
             interactionTimer = setTimeout(() => {
                 isInteracting = false;
-            }, 3000);
+            }, 5000);
         }
 
         // ดักจับทั้งเมาส์, การสัมผัสจอ (Touch) และการเลื่อนจอ (Scroll)
@@ -951,16 +1289,16 @@ function timeAgo(dateString) {
         document.addEventListener('touchstart', resetInteraction, {passive: true});
         document.addEventListener('scroll', resetInteraction, {passive: true});
 
-        // สั่งรีเฟรชทุกๆ 10 วินาที 
+        // 🟢 ปรับเป็น 30 วินาที (จากเดิม 10 วินาที) เพื่อลดการรบกวนผู้ใช้
         setInterval(() => { 
-            // เช็คว่ามีกล่องพรีเซนต์งาน (Modal) เปิดค้างอยู่ไหม (Bootstrap จะใส่คลาสนี้ที่ body อัตโนมัติ)
+            // เช็คว่ามีกล่องพรีเซนต์งาน (Modal) เปิดค้างอยู่ไหม
             const isModalOpen = document.body.classList.contains('modal-open');
             
             // ถ้าไม่ได้เปิด Modal ค้างไว้ และไม่ได้กำลังถูหน้าจออยู่ -> โหลดผลงานใหม่!
             if (!isModalOpen && !isInteracting) {
                 loadShowcase(); 
             }
-        }, 10000); 
+        }, 30000); 
 
         // โหลดครั้งแรกตอนเปิดหน้าเว็บ
         loadShowcase();

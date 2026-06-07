@@ -132,7 +132,7 @@ function validate_smart_farm_debug_work($items) {
         respond_error('ข้อมูลชิ้นงานบทที่ 4 ไม่ถูกต้อง');
     }
 
-    $allowedProjectTypes = ['smart_farm_debug_challenge', 'smart_farm_debug_lite_challenge'];
+    $allowedProjectTypes = ['smart_farm_debug_challenge', 'smart_farm_debug_lite_challenge', 'smart_farm_debug_mode'];
     if (!in_array($items['project_type'] ?? '', $allowedProjectTypes, true)) {
         respond_error('บทที่ 4 ต้องส่งงานในรูปแบบ Smart Farm Debug Challenge เท่านั้น');
     }
@@ -142,8 +142,22 @@ function validate_smart_farm_debug_work($items) {
         'playtest_note' => 'กรุณาบันทึกผลการทดลองเล่นโจทย์'
     ];
 
+    // Debug Mode (conveyor-based) version
+    if (($items['project_type'] ?? '') === 'smart_farm_debug_mode') {
+        $requiredFields['logic_type'] = 'กรุณาระบุชนิดตรรกะ';
+        $requiredFields['bug_type'] = 'กรุณาระบุประเภทจุดผิด';
+        if (empty($items['broken_rules']) || !is_array($items['broken_rules'])) {
+            respond_error('กรุณาระบุกฎที่เสีย');
+        }
+        if (empty($items['fixed_rules']) || !is_array($items['fixed_rules'])) {
+            respond_error('กรุณาระบุกฎที่ซ่อมแล้ว');
+        }
+        if (empty($items['tested'])) {
+            respond_error('กรุณาทดลองเล่นโจทย์ให้ผ่านก่อนส่ง');
+        }
+    }
     // Lite version uses different fields
-    if (($items['project_type'] ?? '') === 'smart_farm_debug_lite_challenge') {
+    elseif (($items['project_type'] ?? '') === 'smart_farm_debug_lite_challenge') {
         $requiredFields['theme'] = 'กรุณาเลือกธีมฟาร์ม';
         $requiredFields['problemText'] = 'กรุณาเขียนอาการเสีย';
         $requiredFields['bugTarget'] = 'กรุณาระบุจุดผิด';

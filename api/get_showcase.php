@@ -10,7 +10,7 @@ $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1;
 $context = session_context();
 
 // 🟢 เพิ่ม w.feedback เพื่อดึงข้อเสนอแนะของครูออกมาด้วย
-$sql = "SELECT w.id, w.work_data, w.description, w.submitted_at, w.status, w.feedback,
+$sql = "SELECT w.id, w.game_id, w.work_data, w.description, w.submitted_at, w.status, w.feedback,
                u.mode, u.group_number, u.team_id,
                u.name as student_name, u.student_id,
                (SELECT GROUP_CONCAT(name SEPARATOR ', ') FROM users WHERE team_id = u.team_id AND classroom_id = u.classroom_id) as member_names,

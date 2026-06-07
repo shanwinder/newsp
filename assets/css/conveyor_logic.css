@@ -769,6 +769,89 @@
 .feedback-card.success .feedback-title { color: #166534; }
 .feedback-card.error .feedback-title { color: #991b1b; }
 
+.debug-report-card {
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #fff7ed;
+  padding: 14px;
+  box-shadow: inset 0 0 0 1px rgba(251, 146, 60, .12);
+}
+
+.debug-report-card h4 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: #9a3412;
+}
+
+.debug-report-card.is-empty {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.debug-report-body p {
+  margin: 0 0 10px;
+  color: #431407;
+}
+
+.debug-report-metric {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: #ffedd5;
+  color: #9a3412;
+  font-weight: 800;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+}
+
+.debug-wrong-list {
+  color: #7c2d12;
+  font-size: .92rem;
+  margin-bottom: 10px;
+}
+
+.debug-rule-compare {
+  display: grid;
+  gap: 6px;
+}
+
+.debug-rule-compare strong {
+  color: #7c2d12;
+}
+
+.debug-rule-compare pre {
+  margin: 0;
+  white-space: pre-wrap;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #fed7aa;
+  padding: 8px;
+  color: #431407;
+  font-family: inherit;
+  font-size: .9rem;
+}
+
+.drop-slot.debug-suspect {
+  border-color: #f97316;
+  background: #fff7ed;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, .18);
+  position: relative;
+}
+
+.debug-suspect-badge {
+  position: absolute;
+  right: 8px;
+  top: -13px;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  pointer-events: none;
+}
+
 .feedback-body {
   color: #334155;
   font-size: 14px;

@@ -70,11 +70,8 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../assets/css/game_common.css">
-    <?php if ($is_conveyor_condition_stage): ?>
+    <?php if ($is_conveyor_condition_stage || $is_debugger_stage): ?>
         <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
-    <?php endif; ?>
-    <?php if ($is_debugger_stage): ?>
-        <link rel="stylesheet" href="../assets/css/smart_farm_debugger_lite.css">
     <?php endif; ?>
 
     <style>
@@ -196,7 +193,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div class="col-md-3"></div>
         </div>
 
-        <div class="game-wrapper <?php echo $is_conveyor_condition_stage ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debugger-lite-wrapper' : ''; ?>">
+        <div class="game-wrapper <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debugger-lite-wrapper' : ''; ?>">
             <div id="game-container"></div>
         </div>
     </div>
@@ -241,12 +238,12 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <script src="../assets/js/game_audio.js"></script>
         <script src="../assets/js/game_ui_motion.js"></script>
     <?php endif; ?>
-    <?php if ($is_conveyor_condition_stage): ?>
+    <?php if ($is_conveyor_condition_stage || $is_debugger_stage): ?>
         <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
         <script src="../assets/js/logic_game/conveyor_logic_base.js"></script>
     <?php endif; ?>
     <?php if ($is_debugger_stage): ?>
-        <script src="../assets/js/logic_game/smart_farm_debugger_lite.js"></script>
+        <script src="../assets/js/logic_game/conveyor_debug_mode.js"></script>
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 

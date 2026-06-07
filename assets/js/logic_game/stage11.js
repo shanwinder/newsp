@@ -1,310 +1,107 @@
-// Stage 11: ซ่อมโรงเรือนอัจฉริยะ — Smart Farm Debugger Lite
+// Stage 11: IF / ELSE farm condition missions
 (function () {
     const config = {
-        title: 'ด่าน 11: โรงเรือนอัจฉริยะรวน',
-        subtitle: 'ฝึกหาบั๊กขั้นสูง — ลำดับผิด ตัวเลขผิด และขาดคำสั่ง',
+        title: 'ด่าน 11: ภารกิจ IF / ELSE ฟาร์มอัจฉริยะ',
+        subtitle: 'ฝึกเลือกสองทาง ถ้าใช่ทำอย่างหนึ่ง มิฉะนั้นทำอีกอย่าง',
         levels: [
-            // LEVEL 11-1
             {
-                levelId: '11-1',
-                title: 'ฝนตกแต่สปริงเกอร์ยังเปิด',
-                theme: 'greenhouse_repair',
-                sceneType: 'farm_repair',
-                bugType: 'condition_order',
-                problemText: 'ฝนตกแล้ว แต่สปริงเกอร์ยังเปิด แปลงผักน้ำท่วม',
-                missionText: 'ซ่อมลำดับเงื่อนไขให้ปิดสปริงเกอร์เมื่อฝนตก',
-                simulation: {
-                    type: 'greenhouse_sensor',
-                    broken: {
-                        caption: 'ฝนตกพร้อมสปริงเกอร์เปิด น้ำเริ่มท่วมแปลง',
-                        weather: '🌧',
-                        sprinkler: '💦',
-                        fan: '◌',
-                        panel: '!'
-                    },
-                    fixed: {
-                        caption: 'ระบบตรวจฝนก่อน สปริงเกอร์จึงปิดทันที',
-                        weather: '🌧',
-                        sprinkler: 'ปิด',
-                        fan: '◌',
-                        panel: '✓'
-                    }
-                },
-                objects: [
-                    {
-                        id: 'rain_cloud',
-                        label: 'เมฆฝน',
-                        fallbackIcon: '🌧️',
-                        asset: {
-                            key: 'rain_cloud',
-                            path: '../assets/img/debug/weather/rain_cloud.png',
-                            width: 96, height: 96,
-                            description: 'เมฆฝนตกหนัก'
-                        },
-                        anchor: 'rain'
-                    },
-                    {
-                        id: 'sprinkler',
-                        label: 'สปริงเกอร์',
-                        fallbackIcon: '💦',
-                        asset: {
-                            key: 'sprinkler',
-                            path: '../assets/img/debug/machine/sprinkler.png',
-                            width: 96, height: 96,
-                            description: 'สปริงเกอร์รดน้ำอัตโนมัติ'
-                        },
-                        anchor: 'sprinkler'
-                    },
-                    {
-                        id: 'flooded_crop',
-                        label: 'แปลงผักน้ำท่วม',
-                        fallbackIcon: '🥬',
-                        asset: {
-                            key: 'flooded_crop',
-                            path: '../assets/img/debug/vegetable/flooded_crop.png',
-                            width: 96, height: 96,
-                            description: 'แปลงผักที่ถูกน้ำท่วม'
-                        },
-                        anchor: 'cropBed'
-                    }
+                id: '11-1',
+                stageId: 11,
+                title: 'ดินแห้งให้รดน้ำ มิฉะนั้นให้ปิดน้ำ',
+                concept: 'IF / ELSE',
+                mission: 'ช่วยระบบรดน้ำแยกกรณีดินแห้งกับดินชื้นให้ถูกต้อง',
+                problem: 'ดินชื้นแล้ว แต่ระบบยังเปิดน้ำ ทำให้น้ำเริ่มท่วมแปลงผัก',
+                buggyRule: 'ถ้า ดินแห้ง → เปิดน้ำ\nมิฉะนั้น → เปิดน้ำ',
+                correctRule: 'ถ้า ดินแห้ง → เปิดน้ำ\nมิฉะนั้น → ปิดน้ำ',
+                question: 'เมื่อดินไม่แห้งแล้ว ควรให้ระบบทำอะไร',
+                choices: [
+                    { id: 'A', text: 'ถ้า ดินแห้ง → เปิดน้ำ / มิฉะนั้น → ปิดน้ำ', correct: true, feedback: 'ถูกต้อง! ถ้าดินไม่แห้ง ระบบควรปิดน้ำ' },
+                    { id: 'B', text: 'ถ้า ดินแห้ง → เปิดน้ำ / มิฉะนั้น → เปิดน้ำ', correct: false, feedback: 'ลองดูว่าเมื่อดินไม่แห้งแล้ว ระบบควรเปิดน้ำต่อหรือไม่' },
+                    { id: 'C', text: 'ถ้า ดินแห้ง → ปิดน้ำ / มิฉะนั้น → เปิดน้ำ', correct: false, feedback: 'ยังกลับทางอยู่ ดินแห้งควรได้น้ำ แต่ดินชื้นควรปิดน้ำ' }
                 ],
-                additionalBlocks: [
-                    { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'if' },
-                    { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'else_if' }
+                farmCells: [
+                    { key: 'soil', label: 'ดินชื้น', icon: 'moist_soil', state: 'normal' },
+                    { key: 'water', label: 'สปริงเกอร์เปิด', icon: 'water_on', state: 'error' },
+                    { key: 'crop', label: 'น้ำเริ่มท่วม', icon: 'crop_wilted', state: 'warning' }
                 ],
-                correctBlock: {
-                    additionalBlocks: [
-                        { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'if' },
-                        { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'else_if' }
-                    ]
-                },
-                questionText: 'ควรดูอะไรก่อน?',
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'order', label: 'ลำดับเงื่อนไข' },
-                        { id: 'action', label: 'คำสั่ง' }
-                    ],
-                    fixChoices: [
-                        { id: 'dry_first', label: 'ดูดินแห้งก่อน' },
-                        { id: 'rain_first', label: 'ดูฝนตกก่อน' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'order',
-                    fixChoice: 'rain_first'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! ถ้าฝนตก ต้องหยุดรดน้ำก่อน ไม่อย่างนั้นน้ำจะท่วมแปลง',
-                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งไม่ได้ผิด แต่ลำดับการเช็คอาจไม่ถูก',
-                    wrongFix: 'ยังไม่ถูก ถ้าดูดินแห้งก่อน ฝนตกก็จะไม่ถูกเช็ค',
-                    afterFix: 'ระบบเดิมเช็คดินแห้งก่อน ทำให้เปิดสปริงเกอร์ทั้งที่ฝนตก พอสลับลำดับให้ดูฝนก่อน ก็จะปิดสปริงเกอร์ได้ทัน'
-                },
+                fixedCells: [
+                    { key: 'soil', label: 'ดินชื้น', icon: 'moist_soil', state: 'normal' },
+                    { key: 'water', label: 'สปริงเกอร์ปิด', icon: 'water_off', state: 'success' },
+                    { key: 'crop', label: 'แปลงปกติ', icon: 'crop_ok', state: 'success' }
+                ],
+                resultText: 'ระบบปิดน้ำเมื่อดินชื้น แปลงผักกลับมาปลอดภัย',
                 hints: [
-                    'ลองดูว่าระบบเช็คอะไรก่อน',
-                    'ฝนตกแล้วน้ำท่วม ควรเช็คฝนก่อน',
-                    'เปลี่ยนลำดับให้ดูฝนตกก่อนดินแห้ง'
-                ]
+                    'ดูว่าดินตอนนี้แห้งหรือชื้น',
+                    'ELSE คือกรณีที่ไม่ใช่ดินแห้ง',
+                    'ถ้าดินชื้น ระบบควรปิดน้ำ'
+                ],
+                knowledge: 'ELSE ใช้บอกว่าถ้าไม่เข้าเงื่อนไขแรก ให้ทำอะไรต่อ'
             },
-            // LEVEL 11-2
             {
-                levelId: '11-2',
-                title: 'โรงเรือนร้อนแต่พัดลมไม่เปิด',
-                theme: 'greenhouse_repair',
-                sceneType: 'farm_repair',
-                bugType: 'numeric_condition',
-                problemText: 'อุณหภูมิ 38°C แต่พัดลมไม่เปิด',
-                missionText: 'แก้ตัวเลขเงื่อนไขให้พัดลมเปิดได้ทัน',
-                simulation: {
-                    type: 'greenhouse_sensor',
-                    broken: {
-                        caption: 'อุณหภูมิ 38°C แต่พัดลมยังนิ่ง ต้นไม้เริ่มเหี่ยว',
-                        weather: '🌡',
-                        sprinkler: 'ปิด',
-                        fan: '◌',
-                        panel: '38°'
-                    },
-                    fixed: {
-                        caption: 'ตั้งเงื่อนไขใหม่ พัดลมเปิดเมื่่ออุณหภูมิเกิน 35°C',
-                        weather: '🌡',
-                        sprinkler: 'ปิด',
-                        fan: '🌀',
-                        panel: '✓'
-                    }
-                },
-                objects: [
-                    {
-                        id: 'thermometer',
-                        label: 'เทอร์โมมิเตอร์',
-                        fallbackIcon: '🌡️',
-                        asset: {
-                            key: 'thermometer',
-                            path: '../assets/img/debug/sensor/thermometer.png',
-                            width: 64, height: 96,
-                            description: 'เทอร์โมมิเตอร์วัดอุณหภูมิ'
-                        },
-                        anchor: 'thermometer'
-                    },
-                    {
-                        id: 'fan',
-                        label: 'พัดลมระบายอากาศ',
-                        fallbackIcon: '🌀',
-                        asset: {
-                            key: 'fan',
-                            path: '../assets/img/debug/machine/fan.png',
-                            width: 96, height: 96,
-                            description: 'พัดลมระบายอากาศในโรงเรือน'
-                        },
-                        anchor: 'fan'
-                    },
-                    {
-                        id: 'greenhouse',
-                        label: 'โรงเรือน',
-                        fallbackIcon: '🏠',
-                        asset: {
-                            key: 'greenhouse',
-                            path: '../assets/img/debug/building/greenhouse.png',
-                            width: 128, height: 128,
-                            description: 'โรงเรือนปลูกผัก'
-                        },
-                        anchor: 'greenhouse'
-                    }
+                id: '11-2',
+                stageId: 11,
+                title: 'ฝนตกให้ปิดน้ำ มิฉะนั้นให้ตรวจดิน',
+                concept: 'IF / ELSE',
+                mission: 'ช่วยระบบรดน้ำให้หยุดทำงานเมื่อฝนตก',
+                problem: 'ฝนตก แต่ระบบยังเปิดสปริงเกอร์',
+                buggyRule: 'ถ้า ฝนตก → เปิดน้ำ\nมิฉะนั้น → ตรวจความชื้นดิน',
+                correctRule: 'ถ้า ฝนตก → ปิดน้ำ\nมิฉะนั้น → ตรวจความชื้นดิน',
+                question: 'เมื่อฝนตก ระบบควรเปิดหรือปิดน้ำ',
+                choices: [
+                    { id: 'A', text: 'ถ้า ฝนตก → ปิดน้ำ / มิฉะนั้น → ตรวจความชื้นดิน', correct: true, feedback: 'ถูกต้อง! เมื่อฝนตก ระบบควรปิดน้ำก่อน' },
+                    { id: 'B', text: 'ถ้า ฝนตก → เปิดน้ำ / มิฉะนั้น → ตรวจความชื้นดิน', correct: false, feedback: 'ลองคิดดูว่าเมื่อฝนตก ยังจำเป็นต้องเปิดน้ำอีกหรือไม่' },
+                    { id: 'C', text: 'ถ้า ฝนตก → เปิดพัดลม / มิฉะนั้น → ปิดประตู', correct: false, feedback: 'ยังไม่เกี่ยวกับพัดลมหรือประตู ด่านนี้คือระบบน้ำ' }
                 ],
-                buggyBlock: {
-                    condition: 'อุณหภูมิสูงกว่า 50°C',
-                    action: 'เปิดพัดลม',
-                    type: 'if'
-                },
-                correctBlock: {
-                    condition: 'อุณหภูมิสูงกว่า 35°C',
-                    action: 'เปิดพัดลม',
-                    type: 'if'
-                },
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'condition', label: 'เงื่อนไข (ตัวเลข)' },
-                        { id: 'action', label: 'คำสั่ง' }
-                    ],
-                    fixChoices: [
-                        { id: '50', label: 'มากกว่า 50°C' },
-                        { id: '35', label: 'มากกว่า 35°C' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'condition',
-                    fixChoice: '35'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! 38°C ร้อนเกินแล้ว ระบบควรเปิดพัดลมตั้งแต่เกิน 35°C',
-                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งเปิดพัดลมถูกแล้ว แต่ตัวเลขเงื่อนไขอาจสูงเกินไป',
-                    wrongFix: 'ยังไม่ถูก 50°C สูงเกินไป ผักจะเหี่ยวก่อนถึง 50°C',
-                    afterFix: 'เงื่อนไขเดิมตั้งไว้ 50°C ซึ่งสูงเกินไป ผักทนไม่ได้ขนาดนั้น พอเปลี่ยนเป็น 35°C พัดลมก็เปิดทันเวลา'
-                },
+                farmCells: [
+                    { key: 'rain', label: 'ฝนตก', icon: 'rain', state: 'warning' },
+                    { key: 'water', label: 'สปริงเกอร์เปิด', icon: 'water_on', state: 'error' },
+                    { key: 'crop', label: 'น้ำมากเกินไป', icon: 'crop_wilted', state: 'warning' }
+                ],
+                fixedCells: [
+                    { key: 'rain', label: 'ฝนตก', icon: 'rain', state: 'normal' },
+                    { key: 'water', label: 'สปริงเกอร์ปิด', icon: 'water_off', state: 'success' },
+                    { key: 'crop', label: 'ปลอดภัย', icon: 'crop_ok', state: 'success' }
+                ],
+                resultText: 'ฝนตกอยู่ ระบบจึงปิดสปริงเกอร์และรอให้ตรวจดินในกรณีอื่น',
                 hints: [
-                    'อุณหภูมิ 38°C เกินเท่าไหร่?',
-                    'ตัวเลขในเงื่อนไขสูงเกินจริง',
-                    'เปลี่ยนจาก 50°C เป็น 35°C'
-                ]
+                    'ฝนตกทำให้แปลงได้รับน้ำอยู่แล้ว',
+                    'บั๊กอยู่ที่คำสั่งหลังเงื่อนไขฝนตก',
+                    'เมื่อฝนตก ควรปิดน้ำ'
+                ],
+                knowledge: 'IF / ELSE ช่วยให้ระบบเลือกทำงานได้ตามสถานการณ์'
             },
-            // LEVEL 11-3
             {
-                levelId: '11-3',
-                title: 'อากาศปกติแต่ระบบค้าง',
-                theme: 'greenhouse_repair',
-                sceneType: 'farm_repair',
-                bugType: 'missing_else',
-                problemText: 'อุณหภูมิ 25°C ระบบไม่รู้ว่าจะทำอะไร',
-                missionText: 'เพิ่มคำสั่งสำหรับกรณีที่อากาศปกติ',
-                simulation: {
-                    type: 'greenhouse_sensor',
-                    broken: {
-                        caption: 'อากาศปกติ แต่แผงควบคุมขึ้นเครื่องหมายคำถาม',
-                        weather: '25°',
-                        sprinkler: 'ปิด',
-                        fan: '◌',
-                        panel: '?'
-                    },
-                    fixed: {
-                        caption: 'เพิ่มกรณีอื่นแล้ว ระบบปิดอุปกรณ์และแสดงไฟเขียว',
-                        weather: '25°',
-                        sprinkler: 'ปิด',
-                        fan: '◌',
-                        panel: '✓'
-                    }
-                },
-                objects: [
-                    {
-                        id: 'thermometer',
-                        label: 'เทอร์โมมิเตอร์',
-                        fallbackIcon: '🌡️',
-                        asset: {
-                            key: 'thermometer',
-                            path: '../assets/img/debug/sensor/thermometer.png',
-                            width: 64, height: 96,
-                            description: 'เทอร์โมมิเตอร์วัดอุณหภูมิ'
-                        },
-                        anchor: 'thermometer'
-                    },
-                    {
-                        id: 'control_panel',
-                        label: 'แผงควบคุม',
-                        fallbackIcon: '🎛️',
-                        asset: {
-                            key: 'control_panel',
-                            path: '../assets/img/debug/machine/control_panel.png',
-                            width: 96, height: 96,
-                            description: 'แผงควบคุมระบบโรงเรือน'
-                        },
-                        anchor: 'controlPanel'
-                    },
-                    {
-                        id: 'greenhouse',
-                        label: 'โรงเรือน',
-                        fallbackIcon: '🏠',
-                        asset: {
-                            key: 'greenhouse',
-                            path: '../assets/img/debug/building/greenhouse.png',
-                            width: 128, height: 128,
-                            description: 'โรงเรือนปลูกผัก'
-                        },
-                        anchor: 'greenhouse'
-                    }
+                id: '11-3',
+                stageId: 11,
+                title: 'ประตูคอกไก่กลางวันกลางคืน',
+                concept: 'IF / ELSE',
+                mission: 'ช่วยระบบประตูคอกไก่เปิดตอนกลางวันและปิดตอนกลางคืน',
+                problem: 'ตอนกลางคืน แต่ประตูคอกไก่ยังเปิดอยู่',
+                buggyRule: 'ถ้า กลางวัน → เปิดประตู\nมิฉะนั้น → เปิดประตู',
+                correctRule: 'ถ้า กลางวัน → เปิดประตู\nมิฉะนั้น → ปิดประตู',
+                question: 'ถ้าไม่ใช่กลางวัน ประตูควรเป็นอย่างไร',
+                choices: [
+                    { id: 'A', text: 'ถ้า กลางวัน → เปิดประตู / มิฉะนั้น → ปิดประตู', correct: true, feedback: 'ถูกต้อง! ตอนกลางคืนควรปิดประตูคอกไก่' },
+                    { id: 'B', text: 'ถ้า กลางวัน → เปิดประตู / มิฉะนั้น → เปิดประตู', correct: false, feedback: 'ลองดูว่าตอนนี้เป็นกลางวันหรือกลางคืน' },
+                    { id: 'C', text: 'ถ้า กลางคืน → เปิดประตู / มิฉะนั้น → ปิดประตู', correct: false, feedback: 'ยังไม่ปลอดภัย กลางคืนไม่ควรเปิดประตู' }
                 ],
-                additionalBlocks: [
-                    { condition: 'ร้อนมาก', action: 'เปิดพัดลม', type: 'if' },
-                    { condition: 'หนาวมาก', action: 'เปิดหลอดไฟ', type: 'else_if' }
+                farmCells: [
+                    { key: 'time', label: 'กลางคืน', emoji: '🌙', state: 'warning' },
+                    { key: 'door', label: 'ประตูเปิด', icon: 'door_open', state: 'error' },
+                    { key: 'chicken', label: 'ไก่เสี่ยงออกคอก', icon: 'chicken', state: 'warning' }
                 ],
-                missingBlock: {
-                    condition: 'กรณีอื่น',
-                    action: 'ปิดระบบ',
-                    type: 'else'
-                },
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'missing', label: 'ขาดคำสั่ง' },
-                        { id: 'condition', label: 'เงื่อนไขผิด' },
-                        { id: 'action', label: 'คำสั่งผิด' }
-                    ],
-                    fixChoices: [
-                        { id: 'fan', label: 'เปิดพัดลม' },
-                        { id: 'light', label: 'เปิดหลอดไฟ' },
-                        { id: 'shutdown', label: 'ปิดระบบ' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'missing',
-                    fixChoice: 'shutdown'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! อากาศพอดีแล้ว ไม่ต้องเปิดอะไรเพิ่ม ให้ปิดระบบเพื่อประหยัดไฟ',
-                    wrongTarget: 'ลองดูอีกครั้ง เงื่อนไขและคำสั่งที่มีอยู่ถูกแล้ว แต่ดูเหมือนจะขาดอะไรบางอย่าง',
-                    wrongFix: 'ยังไม่ถูก อากาศไม่ร้อนและไม่หนาว ไม่ต้องเปิดอะไรเพิ่ม',
-                    afterFix: 'ระบบเดิมมีแค่กรณีร้อนและหนาว แต่ไม่มีกรณีปกติ พออากาศ 25°C ระบบไม่รู้จะทำอะไร พอเพิ่ม else ปิดระบบ ก็ทำงานครบทุกกรณี'
-                },
+                fixedCells: [
+                    { key: 'time', label: 'กลางคืน', emoji: '🌙', state: 'normal' },
+                    { key: 'door', label: 'ประตูปิด', icon: 'door_closed', state: 'success' },
+                    { key: 'chicken', label: 'ไก่ปลอดภัย', icon: 'chicken', state: 'success' }
+                ],
+                resultText: 'ระบบปิดประตูตอนกลางคืน ไก่อยู่ในคอกอย่างปลอดภัย',
                 hints: [
-                    'ถ้าอากาศไม่ร้อนและไม่หนาว ระบบควรทำอะไร?',
-                    'ดูเหมือนจะขาดคำสั่งสำหรับกรณีปกติ',
-                    'ถ้าอากาศพอดี ให้ปิดระบบเพื่อประหยัดไฟ'
-                ]
+                    'ตอนนี้เป็นกลางวันหรือกลางคืน',
+                    'ELSE คือกรณีที่ไม่ใช่กลางวัน',
+                    'กลางคืนควรปิดประตูคอกไก่'
+                ],
+                knowledge: 'ELSE คือทางเลือกเมื่อไม่ใช่กรณีแรก'
             }
         ]
     };
@@ -313,7 +110,7 @@
         window.FarmMissions.smartFarmDebuggerLite(config);
     }
 
-    if (window.FarmMissions?.smartFarmDebuggerLite) {
+    if (window.FarmMissions && window.FarmMissions.smartFarmDebuggerLite) {
         boot();
     } else {
         const script = document.createElement('script');

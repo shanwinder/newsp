@@ -1,205 +1,107 @@
-// Stage 10: แปลงผักหลงทาง — Smart Farm Debugger Lite
+// Stage 10: IF farm condition missions
 (function () {
     const config = {
-        title: 'ด่าน 10: แปลงผักหลงทาง',
-        subtitle: 'ช่วยฟาร์มบอทแก้ลำดับคำสั่ง ทิศทาง และคำสั่งที่หายไป',
+        title: 'ด่าน 10: ภารกิจ IF ฟาร์มพื้นฐาน',
+        subtitle: 'ฝึกแก้เงื่อนไขแบบ ถ้า...แล้ว...',
         levels: [
             {
-                levelId: '10-1',
-                title: 'รดน้ำผิดที่',
-                theme: 'robot_crop_path',
-                sceneType: 'farm_repair',
-                bugType: 'order',
-                problemText: 'หุ่นยนต์รดน้ำก่อนเดินถึงแปลงผัก พื้นเปียกแต่ผักยังแห้ง',
-                missionText: 'ดูอาการ แล้วซ่อมลำดับคำสั่งให้รดน้ำหลังถึงแปลงผัก',
-                simulation: {
-                    type: 'robot_path',
-                    broken: {
-                        caption: 'ฟาร์มบอทรดน้ำลงพื้นว่างก่อนถึงแปลงผัก',
-                        effect: '💧'
-                    },
-                    fixed: {
-                        caption: 'ฟาร์มบอทเดินถึงแปลงผักแล้วค่อยรดน้ำ พืชโตขึ้น',
-                        effect: '💧'
-                    }
-                },
-                objects: [
-                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
-                    { id: 'dry_crop', label: 'แปลงผักแห้ง', fallbackIcon: '🥬', anchor: 'cropBed3' },
-                    { id: 'water_drop', label: 'น้ำตกผิดที่', fallbackIcon: '💧', anchor: 'cropBed' }
+                id: '10-1',
+                stageId: 10,
+                title: 'ดินแห้งต้องรดน้ำ',
+                concept: 'IF',
+                mission: 'ช่วยระบบรดน้ำแปลงผักให้ทำงานถูกต้อง',
+                problem: 'ดินแห้ง แต่ระบบไม่เปิดน้ำ',
+                buggyRule: 'ถ้า ดินชื้น → เปิดน้ำ',
+                correctRule: 'ถ้า ดินแห้ง → เปิดน้ำ',
+                question: 'ควรแก้เงื่อนไขอย่างไร',
+                choices: [
+                    { id: 'A', text: 'ถ้า ดินแห้ง → เปิดน้ำ', correct: true, feedback: 'ถูกต้อง! เมื่อดินแห้ง ระบบต้องเปิดน้ำ' },
+                    { id: 'B', text: 'ถ้า ฝนตก → เปิดน้ำ', correct: false, feedback: 'ลองดูอีกครั้ง ตอนนี้ปัญหาคือดินแห้ง ไม่ใช่ฝนตก' },
+                    { id: 'C', text: 'ถ้า ดินชื้น → ปิดน้ำ', correct: false, feedback: 'ยังไม่ถูก เพราะตอนนี้ดินแห้งและต้องการน้ำ' }
                 ],
-                buggyBlock: {
-                    additionalBlocks: [
-                        { condition: 'เริ่มงาน', action: 'รดน้ำ', type: 'if' },
-                        { condition: 'หลังจากนั้น', action: 'เดินถึงแปลงผัก', type: 'else_if' }
-                    ]
-                },
-                correctBlock: {
-                    additionalBlocks: [
-                        { condition: 'เริ่มงาน', action: 'เดินถึงแปลงผัก', type: 'if' },
-                        { condition: 'หลังจากนั้น', action: 'รดน้ำ', type: 'else_if' }
-                    ]
-                },
-                questionText: 'อะไรทำให้ผักยังแห้ง?',
-                fixQuestionText: 'ควรจัดคำสั่งใหม่อย่างไร?',
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'order', label: 'ลำดับคำสั่ง' },
-                        { id: 'direction', label: 'ทิศทางเดิน' },
-                        { id: 'missing_step', label: 'คำสั่งหาย' }
-                    ],
-                    fixChoices: [
-                        { id: 'water_first', label: 'รดน้ำก่อนเดิน' },
-                        { id: 'water_after_arrive', label: 'เดินถึงแปลงแล้วรดน้ำ' },
-                        { id: 'skip_water', label: 'ข้ามคำสั่งรดน้ำ' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'order',
-                    fixChoice: 'water_after_arrive'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! ต้องเดินถึงแปลงผักก่อน แล้วค่อยรดน้ำ',
-                    wrongTarget: 'ยังไม่ใช่จุดนี้ ลองดูว่าหุ่นยนต์ทำอะไรก่อนถึงแปลงผัก',
-                    wrongFix: 'ยังไม่ถูกนะ ถ้ารดน้ำก่อนเดิน น้ำจะตกลงพื้นว่าง',
-                    afterFix: 'เมื่อสลับลำดับให้เดินถึงแปลงก่อน หุ่นยนต์จึงรดน้ำถูกจุดและผักกลับมาสดชื่น'
-                },
+                farmCells: [
+                    { key: 'soil', label: 'ดินแห้ง', icon: 'dry_soil', state: 'warning' },
+                    { key: 'crop', label: 'ผักเหี่ยว', icon: 'crop_wilted', state: 'warning' },
+                    { key: 'water', label: 'น้ำปิด', icon: 'water_off', state: 'error' }
+                ],
+                fixedCells: [
+                    { key: 'soil', label: 'ดินแห้ง', icon: 'dry_soil', state: 'normal' },
+                    { key: 'crop', label: 'ผักสดชื่น', icon: 'crop_ok', state: 'success' },
+                    { key: 'water', label: 'น้ำเปิด', icon: 'water_on', state: 'success' }
+                ],
+                resultText: 'ระบบเปิดน้ำให้แปลงผัก ผักกลับมาสดชื่น',
                 hints: [
-                    'ผักยังแห้ง เพราะน้ำไม่ได้ตกที่แปลงผัก',
-                    'สังเกตคำสั่งแรกของหุ่นยนต์',
-                    'ย้ายคำสั่งรดน้ำไปหลังเดินถึงแปลงผัก'
-                ]
+                    'ลองดูว่าในฟาร์มตอนนี้ ดินแห้งหรือดินชื้น',
+                    'เงื่อนไขที่ผิดอยู่ตรงคำว่า “ดินชื้น”',
+                    'ถ้าดินแห้ง ระบบควรเปิดน้ำ'
+                ],
+                knowledge: 'เงื่อนไข IF ต้องตรงกับสถานการณ์จริง'
             },
             {
-                levelId: '10-2',
-                title: 'เลี้ยวผิดทาง',
-                theme: 'robot_crop_path',
-                sceneType: 'farm_repair',
-                bugType: 'direction',
-                problemText: 'หุ่นยนต์เลี้ยวผิดทางแล้วชนรั้ว ไปไม่ถึงแปลงผัก',
-                missionText: 'ซ่อมคำสั่งทิศทางให้ฟาร์มบอทเดินผ่านทางที่ถูก',
-                simulation: {
-                    type: 'robot_path',
-                    broken: {
-                        caption: 'ฟาร์มบอทเลี้ยวผิดและชนรั้วก่อนถึงแปลง',
-                        obstacle: true,
-                        effect: '!'
-                    },
-                    fixed: {
-                        caption: 'เปลี่ยนทิศทางแล้ว ฟาร์มบอทเดินผ่านทางถูกต้อง',
-                        obstacle: false,
-                        effect: '✓'
-                    }
-                },
-                objects: [
-                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
-                    { id: 'fence', label: 'รั้ว', fallbackIcon: '▥', anchor: 'fence' },
-                    { id: 'crop_goal', label: 'แปลงเป้าหมาย', fallbackIcon: '🥬', anchor: 'cropBed3' }
+                id: '10-2',
+                stageId: 10,
+                title: 'แดดแรงต้องเปิดสแลน',
+                concept: 'IF',
+                mission: 'ช่วยระบบบังแดดให้ป้องกันผักจากแดดแรง',
+                problem: 'แดดแรงมาก ผักเริ่มเหี่ยว แต่ระบบไม่เปิดสแลนบังแดด',
+                buggyRule: 'ถ้า ฝนตก → เปิดสแลน',
+                correctRule: 'ถ้า แดดแรง → เปิดสแลน',
+                question: 'เงื่อนไขใดควรใช้เปิดสแลน',
+                choices: [
+                    { id: 'A', text: 'ถ้า แดดแรง → เปิดสแลน', correct: true, feedback: 'ถูกต้อง! เมื่อแดดแรง ระบบควรกางสแลนบังแดด' },
+                    { id: 'B', text: 'ถ้า ฝนตก → เปิดสแลน', correct: false, feedback: 'ลองดูว่าอะไรทำให้ผักเหี่ยวในด่านนี้' },
+                    { id: 'C', text: 'ถ้า กลางคืน → เปิดสแลน', correct: false, feedback: 'ยังไม่ใช่ ตอนนี้ปัญหาเกิดจากแดดแรง' }
                 ],
-                buggyBlock: {
-                    condition: 'ถึงทางแยก',
-                    action: 'เลี้ยวซ้าย',
-                    type: 'if'
-                },
-                correctBlock: {
-                    condition: 'ถึงทางแยก',
-                    action: 'เลี้ยวขวา',
-                    type: 'if'
-                },
-                questionText: 'จุดไหนทำให้หุ่นยนต์ชนรั้ว?',
-                fixQuestionText: 'ควรเปลี่ยนคำสั่งเป็นอะไร?',
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'order', label: 'ลำดับคำสั่ง' },
-                        { id: 'direction', label: 'ทิศทางเดิน' },
-                        { id: 'missing_step', label: 'คำสั่งหาย' }
-                    ],
-                    fixChoices: [
-                        { id: 'turn_left', label: 'เลี้ยวซ้าย' },
-                        { id: 'turn_right', label: 'เลี้ยวขวา' },
-                        { id: 'water_now', label: 'รดน้ำทันที' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'direction',
-                    fixChoice: 'turn_right'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! ทางนี้ต้องเลี้ยวขวา หุ่นยนต์จึงไม่ชนรั้ว',
-                    wrongTarget: 'ลองดูทิศทางตอนถึงทางแยก หุ่นยนต์ไม่ได้ขาดคำสั่ง',
-                    wrongFix: 'ยังไม่ถูก ถ้าเลี้ยวซ้ายเหมือนเดิมก็ยังชนรั้ว',
-                    afterFix: 'เมื่อเปลี่ยนคำสั่งเป็นเลี้ยวขวา หุ่นยนต์เดินไปถึงแปลงผักได้'
-                },
+                farmCells: [
+                    { key: 'weather', label: 'แดดแรง', icon: 'sun', state: 'warning' },
+                    { key: 'crop', label: 'ผักเหี่ยว', icon: 'crop_wilted', state: 'warning' },
+                    { key: 'shade', label: 'ยังไม่กาง', icon: 'shade_off', state: 'error' }
+                ],
+                fixedCells: [
+                    { key: 'weather', label: 'แดดแรง', icon: 'sun', state: 'normal' },
+                    { key: 'crop', label: 'ผักเริ่มฟื้น', icon: 'crop_ok', state: 'success' },
+                    { key: 'shade', label: 'กางบังแดด', icon: 'shade_on', state: 'success' }
+                ],
+                resultText: 'สแลนกางขึ้น บังแดดให้ผักและลดอาการเหี่ยว',
                 hints: [
-                    'หุ่นยนต์ไปผิดทางตรงทางแยก',
-                    'บั๊กนี้อยู่ที่คำสั่งทิศทาง',
-                    'ลองเปลี่ยนเลี้ยวซ้ายเป็นเลี้ยวขวา'
-                ]
+                    'ดูสภาพอากาศก่อนว่าเป็นฝนหรือแดด',
+                    'บั๊กอยู่ที่เงื่อนไข “ฝนตก”',
+                    'ถ้าแดดแรง ระบบควรเปิดสแลน'
+                ],
+                knowledge: 'ต้องอ่านสถานการณ์ก่อนเลือกเงื่อนไข'
             },
             {
-                levelId: '10-3',
-                title: 'รดน้ำไม่ครบ',
-                theme: 'robot_crop_path',
-                sceneType: 'farm_repair',
-                bugType: 'missing_step',
-                problemText: 'มีแปลงผัก 3 แปลง แต่หุ่นยนต์รดน้ำแค่ 2 แปลง แปลงสุดท้ายยังเหี่ยว',
-                missionText: 'เพิ่มคำสั่งหรือจำนวนรอบให้รดน้ำครบทั้ง 3 แปลง',
-                simulation: {
-                    type: 'robot_path',
-                    broken: {
-                        caption: 'หุ่นยนต์หยุดหลังรดน้ำ 2 แปลง แปลงสุดท้ายยังเหี่ยว',
-                        effect: '💧'
-                    },
-                    fixed: {
-                        caption: 'ปรับจำนวนรอบเป็น 3 แล้ว ทุกแปลงได้รับน้ำครบ',
-                        effect: '💧'
-                    }
-                },
-                objects: [
-                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
-                    { id: 'crop_1', label: 'แปลง 1', fallbackIcon: '🥬', anchor: 'cropBed' },
-                    { id: 'crop_2', label: 'แปลง 2', fallbackIcon: '🥬', anchor: 'cropBed2' },
-                    { id: 'crop_3', label: 'แปลง 3', fallbackIcon: '🥀', anchor: 'cropBed3' }
+                id: '10-3',
+                stageId: 10,
+                title: 'ผลไม้สุกต้องเก็บ',
+                concept: 'IF',
+                mission: 'ช่วยหุ่นยนต์เก็บมะม่วงเมื่อผลไม้สุกแล้ว',
+                problem: 'มะม่วงสุกแล้ว แต่หุ่นยนต์เก็บผลไม้ไม่ทำงาน',
+                buggyRule: 'ถ้า ผลไม้ดิบ → เก็บผลไม้',
+                correctRule: 'ถ้า ผลไม้สุก → เก็บผลไม้',
+                question: 'ควรเปลี่ยนเงื่อนไขให้ตรวจอะไร',
+                choices: [
+                    { id: 'A', text: 'ถ้า ผลไม้สุก → เก็บผลไม้', correct: true, feedback: 'ถูกต้อง! ผลไม้สุกแล้วจึงควรเก็บลงตะกร้า' },
+                    { id: 'B', text: 'ถ้า ผลไม้ดิบ → เก็บผลไม้', correct: false, feedback: 'ลองดูว่ามะม่วงในต้นเป็นผลไม้สุกหรือผลไม้ดิบ' },
+                    { id: 'C', text: 'ถ้า ฝนตก → เก็บผลไม้', correct: false, feedback: 'ยังไม่ถูก ด่านนี้ไม่ได้เกี่ยวกับฝนตก' }
                 ],
-                buggyBlock: {
-                    condition: 'ทำซ้ำ 2 ครั้ง',
-                    action: 'เดินไปแปลงถัดไปและรดน้ำ',
-                    type: 'if'
-                },
-                correctBlock: {
-                    condition: 'ทำซ้ำ 3 ครั้ง',
-                    action: 'เดินไปแปลงถัดไปและรดน้ำ',
-                    type: 'if'
-                },
-                questionText: 'ทำไมแปลงสุดท้ายยังเหี่ยว?',
-                fixQuestionText: 'ควรแก้จำนวนรอบเป็นอะไร?',
-                choices: {
-                    bugTargetChoices: [
-                        { id: 'order', label: 'ลำดับคำสั่ง' },
-                        { id: 'direction', label: 'ทิศทางเดิน' },
-                        { id: 'missing_step', label: 'จำนวนรอบไม่ครบ' }
-                    ],
-                    fixChoices: [
-                        { id: 'repeat_1', label: 'ทำซ้ำ 1 ครั้ง' },
-                        { id: 'repeat_2', label: 'ทำซ้ำ 2 ครั้ง' },
-                        { id: 'repeat_3', label: 'ทำซ้ำ 3 ครั้ง' }
-                    ]
-                },
-                answer: {
-                    bugTarget: 'missing_step',
-                    fixChoice: 'repeat_3'
-                },
-                feedback: {
-                    correct: 'ถูกต้อง! มี 3 แปลง จึงต้องรดน้ำ 3 ครั้ง',
-                    wrongTarget: 'ลองนับจำนวนแปลงกับจำนวนครั้งที่หุ่นยนต์รดน้ำ',
-                    wrongFix: 'ยังไม่ครบนะ แปลงผักมีทั้งหมด 3 แปลง',
-                    afterFix: 'เมื่อเปลี่ยนจำนวนรอบเป็น 3 หุ่นยนต์จึงรดน้ำครบทุกแปลง'
-                },
+                farmCells: [
+                    { key: 'tree', label: 'มีมะม่วงสุก', icon: 'mango_tree', state: 'warning' },
+                    { key: 'robot', label: 'ไม่ทำงาน', icon: 'robot_idle', state: 'error' },
+                    { key: 'basket', label: 'ว่างเปล่า', icon: 'basket_empty', state: 'warning' }
+                ],
+                fixedCells: [
+                    { key: 'tree', label: 'มะม่วงถูกเก็บ', icon: 'mango_tree', state: 'success' },
+                    { key: 'robot', label: 'ทำงาน', icon: 'robot_work', state: 'success' },
+                    { key: 'basket', label: 'มีมะม่วง', icon: 'basket_full', state: 'success' }
+                ],
+                resultText: 'หุ่นยนต์เก็บผลไม้สุกลงตะกร้าเรียบร้อย',
                 hints: [
-                    'ลองนับแปลงผักทั้งหมด',
-                    'หุ่นยนต์ทำซ้ำน้อยกว่าจำนวนแปลง',
-                    'เปลี่ยนทำซ้ำ 2 ครั้งเป็น 3 ครั้ง'
-                ]
+                    'ดูว่าผลไม้บนต้นพร้อมเก็บหรือยัง',
+                    'เงื่อนไขเดิมตรวจ “ผลไม้ดิบ”',
+                    'เมื่อผลไม้สุก ระบบควรสั่งเก็บผลไม้'
+                ],
+                knowledge: 'IF ใช้ตรวจเงื่อนไขก่อนสั่งให้ระบบทำงาน'
             }
         ]
     };
@@ -208,7 +110,7 @@
         window.FarmMissions.smartFarmDebuggerLite(config);
     }
 
-    if (window.FarmMissions?.smartFarmDebuggerLite) {
+    if (window.FarmMissions && window.FarmMissions.smartFarmDebuggerLite) {
         boot();
     } else {
         const script = document.createElement('script');

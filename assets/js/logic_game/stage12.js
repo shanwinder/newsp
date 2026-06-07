@@ -1,327 +1,284 @@
-// Stage 12: ศูนย์ซ่อมฟาร์มฉุกเฉิน — Smart Farm Debugger Lite
+// Stage 12: เครื่องคัดผลไม้เจอบั๊ก — Smart Farm Debugger Lite
 (function () {
     const config = {
-        title: 'ด่าน 12: ศูนย์ซ่อมฟาร์มฉุกเฉิน',
-        subtitle: 'ฝึกซ่อมฟาร์มจากแผนที่ — เลือกจุดที่เสียแล้วซ่อมให้ถูก',
+        title: 'ด่าน 12: เครื่องคัดผลไม้เจอบั๊ก',
+        subtitle: 'ซ่อมจำนวนรอบ เงื่อนไขคัดแยก และจุดเสียหลายจุดก่อนส่งตลาด',
         levels: [
-            // LEVEL 12-1
             {
                 levelId: '12-1',
-                title: 'ไฟแดงที่แปลงผัก',
-                theme: 'farm_emergency',
-                sceneType: 'farm_map',
-                problemText: 'มีไฟแดง 2 จุดในฟาร์ม แต่เสียจริงแค่ 1 จุด',
-                missionText: 'แตะจุดที่เสียจริง แล้วซ่อมให้ถูก',
-                mapPoints: [
-                    {
-                        id: 'veggie_washer',
-                        label: 'เครื่องล้างผัก',
-                        icon: '🚿',
-                        x: 30,
-                        y: 50,
-                        isBroken: true,
-                        isDecoy: false,
-                        subLevel: {
-                            problemText: 'แครอทเปื้อนโคลนหลุดผ่านเครื่องล้าง',
-                            buggyBlock: {
-                                condition: 'แครอทเปื้อนโคลน',
-                                action: 'ปล่อยผ่าน',
-                                type: 'if'
-                            },
-                            correctBlock: {
-                                condition: 'แครอทเปื้อนโคลน',
-                                action: 'ส่งเข้าเครื่องล้าง',
-                                type: 'if'
-                            },
-                            choices: {
-                                bugTargetChoices: [
-                                    { id: 'condition', label: 'เงื่อนไข' },
-                                    { id: 'action', label: 'คำสั่ง' }
-                                ],
-                                fixChoices: [
-                                    { id: 'pass', label: 'ปล่อยผ่าน' },
-                                    { id: 'wash', label: 'ส่งเข้าเครื่องล้าง' }
-                                ]
-                            },
-                            answer: {
-                                bugTarget: 'action',
-                                fixChoice: 'wash'
-                            },
-                            feedback: {
-                                correct: 'ซ่อมสำเร็จ! แครอทเลอะถูกส่งเข้าเครื่องล้างแล้ว',
-                                wrongTarget: 'ลองดูอีกครั้ง',
-                                wrongFix: 'ยังไม่ถูก ลองเลือกใหม่'
-                            },
-                            hints: [
-                                'ดูว่าแครอทเลอะไปไหน',
-                                'บั๊กอยู่ที่คำสั่ง',
-                                'ควรส่งเข้าเครื่องล้าง'
-                            ]
-                        }
+                title: 'เก็บมะม่วงไม่ครบ',
+                theme: 'fruit_sorting',
+                sceneType: 'farm_repair',
+                bugType: 'repeat_count',
+                problemText: 'ใบสั่งต้องการมะม่วง 3 ลูก แต่เครื่องหยิบลงลังแค่ 2 ลูก',
+                missionText: 'ซ่อมจำนวนรอบให้เครื่องหยิบมะม่วงครบตามใบสั่ง',
+                simulation: {
+                    type: 'conveyor_sorting',
+                    broken: {
+                        caption: 'ลังมีมะม่วงแค่ 2 ลูก ยังไม่ครบใบสั่ง',
+                        fruitOne: '🥭',
+                        fruitTwo: '🥭',
+                        fruitThree: ' ',
+                        crate: '2/3'
                     },
-                    {
-                        id: 'noisy_washer',
-                        label: 'เครื่องล้างเสียงดัง',
-                        icon: '🔊',
-                        x: 70,
-                        y: 50,
-                        isBroken: false,
-                        isDecoy: true,
-                        decoyMessage: 'เครื่องล้างมีเสียงดัง แต่ยังทำงานปกติ ไม่ใช่จุดที่ต้องซ่อม'
+                    fixed: {
+                        caption: 'เปลี่ยนทำซ้ำเป็น 3 ครั้ง ลังจึงมีมะม่วงครบ',
+                        fruitOne: '🥭',
+                        fruitTwo: '🥭',
+                        fruitThree: '🥭',
+                        crate: '3/3'
                     }
+                },
+                objects: [
+                    { id: 'conveyor', label: 'สายพาน', fallbackIcon: '▰', anchor: 'conveyor' },
+                    { id: 'mango_crate', label: 'ลังมะม่วง', fallbackIcon: '▤', anchor: 'crate' },
+                    { id: 'status_light', label: 'ไฟสถานะ', fallbackIcon: '🔴', anchor: 'statusLight' }
+                ],
+                buggyBlock: {
+                    condition: 'ทำซ้ำ 2 ครั้ง',
+                    action: 'หยิบมะม่วงลงลัง',
+                    type: 'if'
+                },
+                correctBlock: {
+                    condition: 'ทำซ้ำ 3 ครั้ง',
+                    action: 'หยิบมะม่วงลงลัง',
+                    type: 'if'
+                },
+                questionText: 'จุดไหนทำให้มะม่วงไม่ครบ?',
+                fixQuestionText: 'ควรเปลี่ยนจำนวนรอบเป็นอะไร?',
+                choices: {
+                    bugTargetChoices: [
+                        { id: 'repeat_count', label: 'จำนวนรอบ' },
+                        { id: 'broad_condition', label: 'เงื่อนไขคัดสี' },
+                        { id: 'multi_bug', label: 'หลายจุด' }
+                    ],
+                    fixChoices: [
+                        { id: 'repeat_2', label: 'ทำซ้ำ 2 ครั้ง' },
+                        { id: 'repeat_3', label: 'ทำซ้ำ 3 ครั้ง' },
+                        { id: 'sort_red', label: 'คัดเฉพาะสีแดง' }
+                    ]
+                },
+                answer: {
+                    bugTarget: 'repeat_count',
+                    fixChoice: 'repeat_3'
+                },
+                feedback: {
+                    correct: 'ถูกต้อง! ใบสั่งต้องการ 3 ลูก จึงต้องทำซ้ำ 3 ครั้ง',
+                    wrongTarget: 'ลองนับจำนวนที่เครื่องหยิบกับจำนวนในใบสั่ง',
+                    wrongFix: 'ยังไม่ครบ ใบสั่งต้องการมะม่วง 3 ลูก',
+                    afterFix: 'เมื่อเปลี่ยนจำนวนรอบเป็น 3 เครื่องจึงหยิบมะม่วงครบตามใบสั่ง'
+                },
+                hints: [
+                    'ใบสั่งต้องการกี่ลูก?',
+                    'เครื่องหยิบมะม่วงน้อยกว่าที่ต้องการ',
+                    'เปลี่ยนทำซ้ำ 2 ครั้งเป็น 3 ครั้ง'
                 ]
             },
-            // LEVEL 12-2
             {
                 levelId: '12-2',
-                title: 'โรงเรือนกับแปลงผักรวนพร้อมกัน',
-                theme: 'farm_emergency',
-                sceneType: 'farm_map',
-                problemText: 'ระบบรวน 2 จุด ทั้งโรงเรือนและแปลงผัก',
-                missionText: 'แตะจุดที่มีปัญหา แล้วซ่อมทีละจุด',
-                mapPoints: [
-                    {
-                        id: 'sprinkler_system',
-                        label: 'ระบบสปริงเกอร์',
-                        icon: '💦',
-                        x: 25,
-                        y: 45,
-                        isBroken: true,
-                        isDecoy: false,
-                        subLevel: {
-                            problemText: 'ฝนตกแล้ว แต่สปริงเกอร์ยังเปิด แปลงผักน้ำท่วม',
-                            additionalBlocks: [
-                                { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'if' },
-                                { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'else_if' }
-                            ],
-                            correctBlock: {
-                                additionalBlocks: [
-                                    { condition: 'ฝนตก', action: 'ปิดสปริงเกอร์', type: 'if' },
-                                    { condition: 'ดินแห้ง', action: 'เปิดสปริงเกอร์', type: 'else_if' }
-                                ]
-                            },
-                            questionText: 'ควรดูอะไรก่อน?',
-                            choices: {
-                                bugTargetChoices: [
-                                    { id: 'order', label: 'ลำดับเงื่อนไข' },
-                                    { id: 'action', label: 'คำสั่ง' }
-                                ],
-                                fixChoices: [
-                                    { id: 'dry_first', label: 'ดูดินแห้งก่อน' },
-                                    { id: 'rain_first', label: 'ดูฝนตกก่อน' }
-                                ]
-                            },
-                            answer: {
-                                bugTarget: 'order',
-                                fixChoice: 'rain_first'
-                            },
-                            feedback: {
-                                correct: 'ซ่อมสำเร็จ! ตอนนี้ระบบเช็คฝนตกก่อน สปริงเกอร์จะปิดทัน',
-                                wrongTarget: 'ลองดูอีกครั้ง คำสั่งไม่ได้ผิด แต่ลำดับอาจไม่ถูก',
-                                wrongFix: 'ยังไม่ถูก ควรดูฝนก่อนดินแห้ง'
-                            },
-                            hints: [
-                                'ระบบเช็คอะไรก่อน?',
-                                'ฝนตกแต่สปริงเกอร์ยังเปิด',
-                                'สลับลำดับให้ดูฝนตกก่อน'
-                            ]
-                        }
+                title: 'คัดผลไม้ผิดสี',
+                theme: 'fruit_sorting',
+                sceneType: 'farm_repair',
+                bugType: 'broad_condition',
+                problemText: 'เครื่องส่งมะเขือเทศสีเขียวเข้าลังเดียวกับสีแดง',
+                missionText: 'ซ่อมเงื่อนไขให้รับเฉพาะผลไม้สีแดงเข้าลัง',
+                simulation: {
+                    type: 'conveyor_sorting',
+                    broken: {
+                        caption: 'สีเขียวหลุดเข้าลังเดียวกับสีแดง เพราะเงื่อนไขกว้างเกินไป',
+                        fruitOne: '🍅',
+                        fruitTwo: '🟢',
+                        fruitThree: '🍅',
+                        crate: 'ปน'
                     },
-                    {
-                        id: 'inspection_station',
-                        label: 'สถานีตรวจศัตรูพืช',
-                        icon: '🔬',
-                        x: 70,
-                        y: 55,
-                        isBroken: true,
-                        isDecoy: false,
-                        subLevel: {
-                            problemText: 'ผักกาดมีหนอนหลุดผ่านโต๊ะตรวจ',
-                            buggyBlock: {
-                                condition: 'ผักกาดใบแหว่ง',
-                                action: 'ส่งไปโต๊ะตรวจ',
-                                type: 'if'
-                            },
-                            correctBlock: {
-                                condition: 'ผักกาดมีหนอน',
-                                action: 'ส่งไปโต๊ะตรวจ',
-                                type: 'if'
-                            },
-                            choices: {
-                                bugTargetChoices: [
-                                    { id: 'condition', label: 'เงื่อนไข' },
-                                    { id: 'action', label: 'คำสั่ง' }
-                                ],
-                                fixChoices: [
-                                    { id: 'torn_leaf', label: 'ผักกาดใบแหว่ง' },
-                                    { id: 'has_worm', label: 'ผักกาดมีหนอน' }
-                                ]
-                            },
-                            answer: {
-                                bugTarget: 'condition',
-                                fixChoice: 'has_worm'
-                            },
-                            feedback: {
-                                correct: 'ซ่อมสำเร็จ! ตอนนี้ระบบจับผักกาดที่มีหนอนได้ถูกแล้ว',
-                                wrongTarget: 'ลองดูอีกครั้ง คำสั่งถูกแล้ว แต่เงื่อนไขจับผักผิดชนิด',
-                                wrongFix: 'ยังไม่ถูก ต้องจับผักที่มีหนอน ไม่ใช่ใบแหว่ง'
-                            },
-                            hints: [
-                                'ผักกาดชนิดไหนหลุดผ่าน?',
-                                'บั๊กอยู่ที่เงื่อนไข',
-                                'ควรจับ "ผักกาดมีหนอน"'
-                            ]
-                        }
+                    fixed: {
+                        caption: 'ตรวจสีแดงเท่านั้น สีเขียวจึงถูกปล่อยผ่าน',
+                        fruitOne: '🍅',
+                        fruitTwo: '🟢',
+                        fruitThree: '🍅',
+                        crate: 'แดง'
                     }
+                },
+                objects: [
+                    { id: 'scanner', label: 'เครื่องสแกนสี', fallbackIcon: '🔎', anchor: 'conveyor' },
+                    { id: 'red_crate', label: 'ลังสีแดง', fallbackIcon: '▤', anchor: 'crate' },
+                    { id: 'status_light', label: 'ไฟสถานะ', fallbackIcon: '🔴', anchor: 'statusLight' }
+                ],
+                buggyBlock: {
+                    condition: 'ถ้าเป็นมะเขือเทศ',
+                    action: 'ใส่ลังสีแดง',
+                    type: 'if'
+                },
+                correctBlock: {
+                    condition: 'ถ้าเป็นมะเขือเทศสีแดง',
+                    action: 'ใส่ลังสีแดง',
+                    type: 'if'
+                },
+                questionText: 'ทำไมสีเขียวถึงเข้าลังสีแดง?',
+                fixQuestionText: 'ควรเปลี่ยนเงื่อนไขเป็นอะไร?',
+                choices: {
+                    bugTargetChoices: [
+                        { id: 'repeat_count', label: 'จำนวนรอบ' },
+                        { id: 'broad_condition', label: 'เงื่อนไขกว้างเกินไป' },
+                        { id: 'multi_bug', label: 'หลายจุด' }
+                    ],
+                    fixChoices: [
+                        { id: 'any_tomato', label: 'ถ้าเป็นมะเขือเทศ' },
+                        { id: 'red_tomato', label: 'ถ้าเป็นมะเขือเทศสีแดง' },
+                        { id: 'green_tomato', label: 'ถ้าเป็นมะเขือเทศสีเขียว' }
+                    ]
+                },
+                answer: {
+                    bugTarget: 'broad_condition',
+                    fixChoice: 'red_tomato'
+                },
+                feedback: {
+                    correct: 'ถูกต้อง! ต้องตรวจสีแดงก่อนใส่ลังสีแดง',
+                    wrongTarget: 'ลองดูว่าเงื่อนไขแยกสีชัดพอหรือยัง',
+                    wrongFix: 'ยังไม่ถูก ถ้าไม่ระบุสีแดง สีเขียวก็ยังเข้าลังได้',
+                    afterFix: 'เมื่อเพิ่มคำว่าสีแดงในเงื่อนไข เครื่องจะส่งเฉพาะสีแดงเข้าลัง ส่วนสีเขียวปล่อยผ่าน'
+                },
+                hints: [
+                    'ผลไม้ที่เข้าผิดต่างจากผลไม้ที่ถูกตรงไหน?',
+                    'เงื่อนไขเดิมกว้างเกินไป',
+                    'ระบุให้ชัดว่าเป็นมะเขือเทศสีแดง'
                 ]
             },
-            // LEVEL 12-3
             {
                 levelId: '12-3',
-                title: 'ฟาร์มต้องพร้อมก่อนส่งผลผลิต',
-                theme: 'farm_emergency',
+                title: 'ส่งผลผลิตก่อนระบบพร้อม',
+                theme: 'fruit_sorting_map',
                 sceneType: 'farm_map',
-                problemText: 'ฟาร์มมีระบบรวน 3 จุด ต้องซ่อมให้ครบก่อนส่งผลผลิต',
-                missionText: 'ช่วยซ่อมฟาร์มให้พร้อมส่งผลผลิต แตะจุดที่มีปัญหา แล้วเลือกวิธีซ่อม',
+                bugType: 'multi_bug',
+                problemText: 'ระบบคัดผลไม้มีบั๊ก 3 จุด ต้องซ่อมครบก่อนรถส่งผลผลิตออกจากฟาร์ม',
+                missionText: 'แตะจุดไฟแดง ซ่อมทีละจุด และระวังจุดหลอกที่ยังทำงานปกติ',
                 mapPoints: [
                     {
-                        id: 'carrot_sorter',
-                        label: 'เครื่องคัดแครอท',
-                        icon: '🥕',
-                        x: 20,
-                        y: 40,
+                        id: 'mango_counter',
+                        label: 'ตัวนับมะม่วง',
+                        icon: '🥭',
+                        x: 22,
+                        y: 46,
                         isBroken: true,
                         isDecoy: false,
                         subLevel: {
-                            problemText: 'แครอทมีตำหนิถูกส่งเข้าเครื่องล้าง ทั้งที่ไม่ได้เปื้อนโคลน',
-                            buggyBlock: {
-                                condition: 'แครอทมีตำหนิ',
-                                action: 'ส่งเข้าเครื่องล้าง',
-                                type: 'if'
+                            title: 'ตัวนับมะม่วงหยุดเร็ว',
+                            bugType: 'repeat_count',
+                            problemText: 'ใบสั่งต้องการมะม่วง 3 ลูก แต่ตัวนับหยุดที่ 2',
+                            missionText: 'ซ่อมจำนวนรอบให้ครบ 3',
+                            simulation: {
+                                type: 'conveyor_sorting',
+                                broken: { caption: 'ตัวนับหยุดที่ 2/3', fruitOne: '🥭', fruitTwo: '🥭', fruitThree: ' ', crate: '2/3' },
+                                fixed: { caption: 'ตัวนับครบ 3/3', fruitOne: '🥭', fruitTwo: '🥭', fruitThree: '🥭', crate: '3/3' }
                             },
-                            correctBlock: {
-                                condition: 'แครอทเปื้อนโคลน',
-                                action: 'ส่งเข้าเครื่องล้าง',
-                                type: 'if'
-                            },
+                            buggyBlock: { condition: 'ทำซ้ำ 2 ครั้ง', action: 'หยิบมะม่วงลงลัง', type: 'if' },
+                            correctBlock: { condition: 'ทำซ้ำ 3 ครั้ง', action: 'หยิบมะม่วงลงลัง', type: 'if' },
                             choices: {
                                 bugTargetChoices: [
-                                    { id: 'condition', label: 'เงื่อนไข' },
-                                    { id: 'action', label: 'คำสั่ง' }
+                                    { id: 'repeat_count', label: 'จำนวนรอบ' },
+                                    { id: 'broad_condition', label: 'เงื่อนไขคัดสี' }
                                 ],
                                 fixChoices: [
-                                    { id: 'damaged', label: 'แครอทมีตำหนิ' },
-                                    { id: 'muddy', label: 'แครอทเปื้อนโคลน' }
+                                    { id: 'repeat_2', label: 'ทำซ้ำ 2 ครั้ง' },
+                                    { id: 'repeat_3', label: 'ทำซ้ำ 3 ครั้ง' }
                                 ]
                             },
-                            answer: {
-                                bugTarget: 'condition',
-                                fixChoice: 'muddy'
-                            },
+                            answer: { bugTarget: 'repeat_count', fixChoice: 'repeat_3' },
                             feedback: {
-                                correct: 'ซ่อมสำเร็จ! ตอนนี้ล้างเฉพาะแครอทเปื้อนโคลนแล้ว',
-                                wrongTarget: 'ลองดูอีกครั้ง คำสั่งล้างถูกแล้ว แต่เงื่อนไขจับผิดชนิด',
-                                wrongFix: 'ยังไม่ถูก ล้างเฉพาะแครอทเปื้อนโคลนนะ'
+                                correct: 'ซ่อมสำเร็จ! มะม่วงครบ 3 ลูกแล้ว',
+                                wrongTarget: 'ลองนับจำนวนรอบ',
+                                wrongFix: 'ยังไม่ครบ ต้องเป็น 3 ครั้ง'
                             },
-                            hints: [
-                                'แครอทชนิดไหนถูกส่งไปล้างผิด?',
-                                'บั๊กอยู่ที่เงื่อนไข',
-                                'ควรล้างเฉพาะ "แครอทเปื้อนโคลน"'
-                            ]
+                            hints: ['ดูตัวเลขในคำสั่งทำซ้ำ', 'ใบสั่งต้องการ 3 ลูก', 'แก้เป็นทำซ้ำ 3 ครั้ง']
                         }
                     },
                     {
-                        id: 'temp_control',
-                        label: 'ระบบควบคุมอุณหภูมิ',
-                        icon: '🌡️',
+                        id: 'color_scanner',
+                        label: 'สแกนสีผลไม้',
+                        icon: '🔎',
                         x: 50,
-                        y: 30,
+                        y: 38,
                         isBroken: true,
                         isDecoy: false,
                         subLevel: {
-                            problemText: 'อุณหภูมิ 38°C แต่พัดลมไม่เปิด เพราะเงื่อนไขตั้งไว้สูงเกิน',
-                            buggyBlock: {
-                                condition: 'อุณหภูมิสูงกว่า 50°C',
-                                action: 'เปิดพัดลม',
-                                type: 'if'
+                            title: 'สแกนสีไม่ละเอียด',
+                            bugType: 'broad_condition',
+                            problemText: 'สีเขียวหลุดเข้าลังสีแดง',
+                            missionText: 'ซ่อมเงื่อนไขให้ตรวจสีแดงเท่านั้น',
+                            simulation: {
+                                type: 'conveyor_sorting',
+                                broken: { caption: 'ผลไม้สีเขียวปนในลังสีแดง', fruitOne: '🍅', fruitTwo: '🟢', fruitThree: '🍅', crate: 'ปน' },
+                                fixed: { caption: 'สีแดงเข้าลัง สีเขียวผ่านไป', fruitOne: '🍅', fruitTwo: '🟢', fruitThree: '🍅', crate: 'แดง' }
                             },
-                            correctBlock: {
-                                condition: 'อุณหภูมิสูงกว่า 35°C',
-                                action: 'เปิดพัดลม',
-                                type: 'if'
-                            },
+                            buggyBlock: { condition: 'ถ้าเป็นมะเขือเทศ', action: 'ใส่ลังสีแดง', type: 'if' },
+                            correctBlock: { condition: 'ถ้าเป็นมะเขือเทศสีแดง', action: 'ใส่ลังสีแดง', type: 'if' },
                             choices: {
                                 bugTargetChoices: [
-                                    { id: 'condition', label: 'เงื่อนไข (ตัวเลข)' },
-                                    { id: 'action', label: 'คำสั่ง' }
+                                    { id: 'repeat_count', label: 'จำนวนรอบ' },
+                                    { id: 'broad_condition', label: 'เงื่อนไขกว้างเกินไป' }
                                 ],
                                 fixChoices: [
-                                    { id: '50', label: 'มากกว่า 50°C' },
-                                    { id: '35', label: 'มากกว่า 35°C' }
+                                    { id: 'any_tomato', label: 'ถ้าเป็นมะเขือเทศ' },
+                                    { id: 'red_tomato', label: 'ถ้าเป็นมะเขือเทศสีแดง' }
                                 ]
                             },
-                            answer: {
-                                bugTarget: 'condition',
-                                fixChoice: '35'
-                            },
+                            answer: { bugTarget: 'broad_condition', fixChoice: 'red_tomato' },
                             feedback: {
-                                correct: 'ซ่อมสำเร็จ! พัดลมจะเปิดเมื่ออุณหภูมิเกิน 35°C แล้ว',
-                                wrongTarget: 'ลองดูอีกครั้ง คำสั่งเปิดพัดลมถูกแล้ว แต่ตัวเลขอาจผิด',
-                                wrongFix: 'ยังไม่ถูก 50°C สูงเกินไป ผักจะเหี่ยวก่อน'
+                                correct: 'ซ่อมสำเร็จ! สีเขียวไม่เข้าลังแดงแล้ว',
+                                wrongTarget: 'ลองดูว่าเงื่อนไขกว้างเกินไปไหม',
+                                wrongFix: 'ต้องระบุสีแดงให้ชัด'
                             },
-                            hints: [
-                                '38°C ร้อนเกินเท่าไหร่?',
-                                'ตัวเลขในเงื่อนไขสูงเกินจริง',
-                                'เปลี่ยนจาก 50°C เป็น 35°C'
-                            ]
+                            hints: ['ผลไม้ผิดสีหลุดเข้าไป', 'เงื่อนไขควรระบุสี', 'เลือกมะเขือเทศสีแดง']
                         }
                     },
                     {
-                        id: 'climate_system',
-                        label: 'ระบบปรับอากาศ',
-                        icon: '🎛️',
-                        x: 80,
-                        y: 60,
+                        id: 'shipping_gate',
+                        label: 'ประตูส่งของ',
+                        icon: '🚚',
+                        x: 78,
+                        y: 58,
                         isBroken: true,
                         isDecoy: false,
                         subLevel: {
-                            problemText: 'อุณหภูมิ 25°C ระบบไม่รู้ว่าจะทำอะไร เพราะไม่มีคำสั่งสำหรับกรณีปกติ',
-                            additionalBlocks: [
-                                { condition: 'ร้อนมาก', action: 'เปิดพัดลม', type: 'if' },
-                                { condition: 'หนาวมาก', action: 'เปิดหลอดไฟ', type: 'else_if' }
-                            ],
-                            missingBlock: {
-                                condition: 'กรณีอื่น',
-                                action: 'ปิดระบบ',
-                                type: 'else'
+                            title: 'ประตูส่งของยังไม่พร้อม',
+                            bugType: 'multi_bug',
+                            problemText: 'รถส่งของออกก่อนตรวจว่าเครื่องคัดและลังผลไม้พร้อมแล้ว',
+                            missionText: 'ซ่อมเงื่อนไขให้ส่งของเมื่อทุกระบบพร้อม',
+                            simulation: {
+                                type: 'conveyor_sorting',
+                                broken: { caption: 'รถขยับทั้งที่ไฟสถานะยังแดง', fruitOne: '🥭', fruitTwo: '🍅', fruitThree: '🟢', crate: 'รอ', truck: true },
+                                fixed: { caption: 'ทุกจุดเป็นไฟเขียว รถจึงออกจากฟาร์ม', fruitOne: '🥭', fruitTwo: '🍅', fruitThree: '🥭', crate: 'พร้อม', truck: true }
                             },
+                            buggyBlock: { condition: 'ถ้ามีผลไม้อยู่ในลัง', action: 'ส่งรถออก', type: 'if' },
+                            correctBlock: { condition: 'ถ้ามะม่วงครบ และคัดสีถูก และประตูพร้อม', action: 'ส่งรถออก', type: 'if' },
                             choices: {
                                 bugTargetChoices: [
-                                    { id: 'missing', label: 'ขาดคำสั่ง' },
-                                    { id: 'condition', label: 'เงื่อนไขผิด' },
-                                    { id: 'action', label: 'คำสั่งผิด' }
+                                    { id: 'broad_condition', label: 'เงื่อนไขตรวจไม่ครบ' },
+                                    { id: 'repeat_count', label: 'จำนวนรอบ' }
                                 ],
                                 fixChoices: [
-                                    { id: 'fan', label: 'เปิดพัดลม' },
-                                    { id: 'light', label: 'เปิดหลอดไฟ' },
-                                    { id: 'shutdown', label: 'ปิดระบบ' }
+                                    { id: 'any_crate', label: 'มีผลไม้อยู่ในลัง' },
+                                    { id: 'all_ready', label: 'ทุกระบบพร้อมแล้ว' }
                                 ]
                             },
-                            answer: {
-                                bugTarget: 'missing',
-                                fixChoice: 'shutdown'
-                            },
+                            answer: { bugTarget: 'broad_condition', fixChoice: 'all_ready' },
                             feedback: {
-                                correct: 'ซ่อมสำเร็จ! ตอนนี้ระบบจะปิดเมื่ออากาศปกติ ประหยัดไฟ',
-                                wrongTarget: 'ลองดูอีกครั้ง เงื่อนไขและคำสั่งที่มีอยู่ถูกแล้ว แต่ดูเหมือนจะขาดอะไร',
-                                wrongFix: 'ยังไม่ถูก อากาศไม่ร้อนไม่หนาว ไม่ต้องเปิดอะไรเพิ่ม'
+                                correct: 'ซ่อมสำเร็จ! รถจะออกเมื่อทุกระบบพร้อมเท่านั้น',
+                                wrongTarget: 'ลองดูว่าเงื่อนไขตรวจครบทุกจุดหรือยัง',
+                                wrongFix: 'ยังเร็วไป ต้องรอทุกระบบพร้อมก่อน'
                             },
-                            hints: [
-                                'ถ้าอากาศไม่ร้อนไม่หนาว ระบบควรทำอะไร?',
-                                'ดูเหมือนจะขาดคำสั่งสำหรับกรณีปกติ',
-                                'อากาศพอดี ให้ปิดระบบเพื่อประหยัดไฟ'
-                            ]
+                            hints: ['มีผลไม้ในลังอย่างเดียวพอไหม?', 'ต้องตรวจหลายจุดก่อนส่ง', 'เลือกทุกระบบพร้อมแล้ว']
                         }
+                    },
+                    {
+                        id: 'clean_belt',
+                        label: 'สายพานสะอาด',
+                        icon: '✨',
+                        x: 62,
+                        y: 72,
+                        isBroken: false,
+                        isDecoy: true,
+                        decoyMessage: 'สายพานสะอาดและทำงานปกติ ไม่ใช่จุดที่ต้องซ่อม'
                     }
                 ]
             }

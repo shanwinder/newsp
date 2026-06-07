@@ -373,9 +373,11 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             return {
                 kind: 'debug_challenge',
                 title: data.title || 'โจทย์บั๊กฟาร์ม',
-                system: isLite ? (data.theme || 'ฟาร์ม') : (data.system_theme || 'ระบบฟาร์ม'),
+                system: isLite ? (data.themeLabel || data.theme || 'ฟาร์ม') : (data.system_theme || 'ระบบฟาร์ม'),
                 bugType: isLite ? (data.bugTarget || 'หาบั๊ก') : (data.bug_type || 'debugging'),
-                symptom: isLite ? (data.problemText || '') : (data.symptom || '')
+                symptom: isLite ? (data.problemText || '') : (data.symptom || ''),
+                tested: isLite ? !!data.tested : false,
+                isLite
             };
         }
 
@@ -462,6 +464,16 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                             playButtonHTML = smartSummary.tested ? `
                                 <a href="play_smart_farm_work.php?work_id=${work.id}" class="btn btn-success btn-sm rounded-pill fw-bold mt-2 align-self-start">
                                     <i class="bi bi-play-fill"></i> เล่นด่านของเพื่อน
+                                </a>
+                            ` : `
+                                <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
+                                    ยังไม่พร้อมให้เล่น
+                                </span>
+                            `;
+                        } else if (debugSummary) {
+                            playButtonHTML = debugSummary.tested ? `
+                                <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-sm rounded-pill fw-bold mt-2 align-self-start">
+                                    <i class="bi bi-bug-fill"></i> เล่นโจทย์บั๊กของเพื่อน
                                 </a>
                             ` : `
                                 <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
@@ -609,6 +621,11 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         <i class="bi bi-controller"></i> เล่นด่านของเพื่อน
                     </a>
                     <div class="small text-muted mt-2">เล่นด่านสายพานตรรกะที่เพื่อนออกแบบ</div>
+                ` : (debugSummary?.tested ? `
+                    <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-lg rounded-pill fw-bold shadow-sm mt-3">
+                        <i class="bi bi-bug-fill"></i> เล่นโจทย์บั๊กของเพื่อน
+                    </a>
+                    <div class="small text-muted mt-2">สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่</div>
                 ` : (summary?.validated ? `
                     <a href="play_student_work.php?work_id=${work.id}" class="btn btn-success btn-lg rounded-pill fw-bold shadow-sm mt-3">
                         <i class="bi bi-controller"></i> ลองเล่นโจทย์นี้

@@ -26,12 +26,20 @@
 
   var FARM_POINTS = {
     cropBed:         { x: 25, y: 60 },
+    cropBed2:        { x: 47, y: 62 },
+    cropBed3:        { x: 69, y: 62 },
     washer:          { x: 70, y: 55 },
     sprinkler:       { x: 50, y: 25 },
     greenhouse:      { x: 50, y: 55 },
     controlPanel:    { x: 82, y: 30 },
     warningSign:     { x: 78, y: 18 },
     inspectionTable: { x: 55, y: 70 },
+    robot:           { x: 18, y: 68 },
+    fence:           { x: 82, y: 60 },
+    crate:           { x: 78, y: 62 },
+    conveyor:        { x: 50, y: 58 },
+    deliveryTruck:   { x: 84, y: 74 },
+    statusLight:     { x: 82, y: 22 },
     fan:             { x: 65, y: 30 },
     heater:          { x: 35, y: 30 },
     thermometer:     { x: 15, y: 25 },
@@ -67,6 +75,13 @@
 
   function uid() {
     return 'dbg_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function normalizeBlocks(blockSource) {
+    if (!blockSource) return [];
+    if (Array.isArray(blockSource)) return blockSource;
+    if (Array.isArray(blockSource.additionalBlocks)) return blockSource.additionalBlocks;
+    return [blockSource];
   }
 
   /* ==========================================================
@@ -224,7 +239,7 @@
       objectsHtml += '<div class="debug-object' + extraClass + '" '
         + 'style="left:' + px + '%;top:' + py + '%" '
         + 'title="' + esc(obj.label) + '">'
-        + '<div class="debug-object-icon">' + esc(obj.fallbackIcon || '❓') + '</div>'
+        + '<div class="debug-object-icon">' + this._renderObjectVisual(obj) + '</div>'
         + '<div class="debug-object-label">' + esc(obj.label) + '</div>'
         + '</div>';
     }
@@ -236,8 +251,62 @@
 
     var html = '<div class="debug-farm-area">';
     html += '<div class="debug-farm-overlay' + overlayClass + '"></div>';
+    html += this._renderSimulationScene(lv);
     html += objectsHtml;
     html += warningHtml;
+    html += '</div>';
+    return html;
+  };
+
+  SmartFarmDebuggerLite.prototype._renderObjectVisual = function (obj) {
+    var fallback = esc(obj.fallbackIcon || '?');
+    if (!obj.asset || !obj.asset.path) {
+      return fallback;
+    }
+    var width = obj.asset.width ? 'width:' + clamp(parseInt(obj.asset.width, 10) || 72, 32, 160) + 'px;' : '';
+    var height = obj.asset.height ? 'height:' + clamp(parseInt(obj.asset.height, 10) || 72, 32, 160) + 'px;' : '';
+    return '<span class="debug-object-fallback">' + fallback + '</span>'
+      + '<img class="debug-object-img" src="' + esc(obj.asset.path) + '" alt="' + esc(obj.label || '') + '" '
+      + 'style="' + width + height + '" onerror="this.style.display=\'none\';this.previousElementSibling.style.display=\'inline-flex\';" '
+      + 'onload="this.previousElementSibling.style.display=\'none\';">';
+  };
+
+  SmartFarmDebuggerLite.prototype._renderSimulationScene = function (lv) {
+    var sim = lv.simulation || {};
+    var phaseKey = this.phase === 'test' ? 'fixed' : 'broken';
+    var state = sim[phaseKey] || {};
+    var type = sim.type || lv.sceneType || 'farm_repair';
+    var statusText = state.caption || (phaseKey === 'fixed' ? 'ระบบทำงานถูกต้องแล้ว' : 'ระบบกำลังทำงานผิด ลองสังเกตอาการ');
+    var cls = 'debug-sim-scene debug-sim-' + esc(type) + ' ' + (phaseKey === 'fixed' ? 'is-fixed' : 'is-broken');
+    var html = '<div class="' + cls + '" data-sim-type="' + esc(type) + '">';
+    html += '<div id="debug-phaser-scene" class="debug-phaser-scene" aria-hidden="true"></div>';
+    html += '<div class="debug-sim-track">';
+
+    if (type === 'robot_path') {
+      html += '<span class="debug-sim-actor robot">🤖</span>';
+      html += '<span class="debug-sim-tile tile-a">🥬</span><span class="debug-sim-tile tile-b">🥬</span><span class="debug-sim-tile tile-c">🥬</span>';
+      html += '<span class="debug-sim-effect water">' + esc(state.effect || '💧') + '</span>';
+      if (state.obstacle) html += '<span class="debug-sim-obstacle">▥</span>';
+    } else if (type === 'greenhouse_sensor') {
+      html += '<span class="debug-sim-actor greenhouse">⌂</span>';
+      html += '<span class="debug-sim-effect weather">' + esc(state.weather || '☀') + '</span>';
+      html += '<span class="debug-sim-effect sprinkler">' + esc(state.sprinkler || '💦') + '</span>';
+      html += '<span class="debug-sim-effect fan">' + esc(state.fan || '◌') + '</span>';
+      html += '<span class="debug-sim-effect panel">' + esc(state.panel || '?') + '</span>';
+    } else if (type === 'conveyor_sorting') {
+      html += '<span class="debug-sim-belt"></span>';
+      html += '<span class="debug-sim-actor fruit fruit-one">' + esc(state.fruitOne || '🥭') + '</span>';
+      html += '<span class="debug-sim-actor fruit fruit-two">' + esc(state.fruitTwo || '🥭') + '</span>';
+      html += '<span class="debug-sim-actor fruit fruit-three">' + esc(state.fruitThree || '🥭') + '</span>';
+      html += '<span class="debug-sim-crate">' + esc(state.crate || '▤') + '</span>';
+      if (state.truck) html += '<span class="debug-sim-truck">🚚</span>';
+    } else {
+      html += '<span class="debug-sim-actor robot">🤖</span>';
+      html += '<span class="debug-sim-effect panel">' + esc(state.panel || '!') + '</span>';
+    }
+
+    html += '</div>';
+    html += '<div class="debug-sim-caption">' + esc(statusText) + '</div>';
     html += '</div>';
     return html;
   };
@@ -329,25 +398,6 @@
     // Show the buggy block for observation
     html += this._renderBuggyBlockHtml(lv);
 
-    // Show additional blocks if present
-    if (lv.additionalBlocks && lv.additionalBlocks.length > 0) {
-      html += '<div class="debug-additional-blocks">';
-      for (var i = 0; i < lv.additionalBlocks.length; i++) {
-        html += '<div class="debug-additional-block">';
-        html += this._renderRuleRow(lv.additionalBlocks[i], false);
-        html += '</div>';
-      }
-      html += '</div>';
-    }
-
-    // Show missing block slot if present
-    if (lv.missingBlock) {
-      html += '<div class="debug-missing-block">';
-      html += '<div class="debug-missing-block-label">❓ ยังขาดบล็อกนี้</div>';
-      html += this._renderRuleRow(lv.missingBlock, false);
-      html += '</div>';
-    }
-
     return html;
   };
 
@@ -357,7 +407,7 @@
     var html = '';
 
     html += this._renderBuggyBlockHtml(lv);
-    html += '<div class="debug-question">จุดไหนน่าจะผิด?</div>';
+    html += '<div class="debug-question">' + esc(lv.questionText || 'จุดไหนน่าจะผิด?') + '</div>';
     html += this.renderChoices(lv.choices ? lv.choices.bugTargetChoices : [], 'identify');
 
     return html;
@@ -369,7 +419,7 @@
     var html = '';
 
     html += this._renderBuggyBlockHtml(lv);
-    html += '<div class="debug-question">ควรเปลี่ยนเป็นอะไร?</div>';
+    html += '<div class="debug-question">' + esc(lv.fixQuestionText || 'ควรเปลี่ยนเป็นอะไร?') + '</div>';
     html += this.renderChoices(lv.choices ? lv.choices.fixChoices : [], 'fix');
 
     return html;
@@ -384,7 +434,11 @@
     html += '<div class="debug-block-correct">';
     html += '<div class="debug-block-correct-title">✅ บล็อกที่ซ่อมแล้ว</div>';
     if (lv.correctBlock) {
-      html += this._renderRuleRow(lv.correctBlock, false);
+      html += this._renderRuleList(normalizeBlocks(lv.correctBlock), false);
+    }
+    if (!lv.correctBlock && lv.missingBlock) {
+      html += this._renderRuleList(normalizeBlocks(lv.additionalBlocks), false);
+      html += this._renderRuleRow(lv.missingBlock, false);
     }
     html += '</div>';
 
@@ -406,11 +460,32 @@
 
   /* --- buggy block HTML --- */
   SmartFarmDebuggerLite.prototype._renderBuggyBlockHtml = function (lv) {
-    if (!lv.buggyBlock) return '';
+    var blocks = [];
+    if (lv.buggyBlock) {
+      blocks = normalizeBlocks(lv.buggyBlock);
+    } else if (lv.additionalBlocks && lv.additionalBlocks.length > 0) {
+      blocks = normalizeBlocks(lv.additionalBlocks);
+    }
+    if (blocks.length === 0 && !lv.missingBlock) return '';
+
     var html = '<div class="debug-block-buggy">';
     html += '<div class="debug-block-buggy-title">🐛 บล็อกที่มีปัญหา</div>';
-    html += this._renderRuleRow(lv.buggyBlock, true);
+    html += this._renderRuleList(blocks, true);
+    if (lv.missingBlock) {
+      html += '<div class="debug-missing-block">';
+      html += '<div class="debug-missing-block-label">ยังขาดบล็อกนี้</div>';
+      html += this._renderRuleRow(lv.missingBlock, false);
+      html += '</div>';
+    }
     html += '</div>';
+    return html;
+  };
+
+  SmartFarmDebuggerLite.prototype._renderRuleList = function (blocks, isBuggy) {
+    var html = '';
+    for (var i = 0; i < blocks.length; i++) {
+      html += this._renderRuleRow(blocks[i], isBuggy);
+    }
     return html;
   };
 
@@ -729,7 +804,7 @@
 
     // Decoy point
     if (point.isDecoy) {
-      this.feedback = { type: 'warning', text: 'จุดนี้ไม่มีปัญหานะ ลองดูจุดอื่น' };
+      this.feedback = { type: 'warning', text: point.decoyMessage || 'จุดนี้ไม่มีปัญหานะ ลองดูจุดอื่น' };
       this.render();
       return;
     }
@@ -875,6 +950,15 @@
     var duration = Math.max(1, Math.floor((Date.now() - this.state.startedAt) / 1000));
     var stars = starsFromState(this.state);
     var totalAttempts = this.state.attempts;
+    var detail = {
+      game_id: 4,
+      stage_id: window.STAGE_ID || null,
+      level_ids: this.levels.map(function (level) { return level.levelId || ''; }),
+      bug_types: this.levels.map(function (level) { return level.bugType || ''; }),
+      wrong_targets: this.state.wrongTargets,
+      wrong_fixes: this.state.wrongFixes,
+      hints_used: this.state.hintsUsed
+    };
 
     // Build star display
     var starsHtml = '';
@@ -920,7 +1004,7 @@
     // Send result after delay
     window.setTimeout(function () {
       if (typeof window.sendResult === 'function') {
-        window.sendResult(window.STAGE_ID, stars, duration, totalAttempts);
+        window.sendResult(window.STAGE_ID, stars, duration, totalAttempts, detail);
       }
     }, 1800);
   };

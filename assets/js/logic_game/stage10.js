@@ -1,229 +1,204 @@
-// Stage 10: ซ่อมระบบผักสวนครัว — Smart Farm Debugger Lite
+// Stage 10: แปลงผักหลงทาง — Smart Farm Debugger Lite
 (function () {
     const config = {
-        title: 'ด่าน 10: ซ่อมระบบผักสวนครัว',
-        subtitle: 'ฝึกหาบั๊กพื้นฐาน — คำสั่งผิดและเงื่อนไขผิด',
+        title: 'ด่าน 10: แปลงผักหลงทาง',
+        subtitle: 'ช่วยฟาร์มบอทแก้ลำดับคำสั่ง ทิศทาง และคำสั่งที่หายไป',
         levels: [
-            // LEVEL 10-1
             {
                 levelId: '10-1',
-                title: 'แครอทเปื้อนโคลนไม่ถูกล้าง',
-                theme: 'vegetable_repair',
+                title: 'รดน้ำผิดที่',
+                theme: 'robot_crop_path',
                 sceneType: 'farm_repair',
-                problemText: 'แครอทเปื้อนโคลนหลุดผ่านไป',
-                missionText: 'ช่วยซ่อมระบบให้แครอทเปื้อนโคลนไปล้างน้ำ',
-                objects: [
-                    {
-                        id: 'dirty_carrot',
-                        label: 'แครอทเปื้อนโคลน',
-                        fallbackIcon: '🥕',
-                        asset: {
-                            key: 'dirty_carrot',
-                            path: '../assets/img/debug/vegetable/dirty_carrot.png',
-                            width: 96, height: 96,
-                            description: 'แครอทเปื้อนโคลนสำหรับด่านซ่อมเครื่องล้าง'
-                        },
-                        anchor: 'cropBed'
+                bugType: 'order',
+                problemText: 'หุ่นยนต์รดน้ำก่อนเดินถึงแปลงผัก พื้นเปียกแต่ผักยังแห้ง',
+                missionText: 'ดูอาการ แล้วซ่อมลำดับคำสั่งให้รดน้ำหลังถึงแปลงผัก',
+                simulation: {
+                    type: 'robot_path',
+                    broken: {
+                        caption: 'ฟาร์มบอทรดน้ำลงพื้นว่างก่อนถึงแปลงผัก',
+                        effect: '💧'
                     },
-                    {
-                        id: 'washer',
-                        label: 'เครื่องล้างผัก',
-                        fallbackIcon: '🚿',
-                        asset: {
-                            key: 'washer',
-                            path: '../assets/img/debug/machine/washer.png',
-                            width: 128, height: 128,
-                            description: 'เครื่องล้างผักในฟาร์ม'
-                        },
-                        anchor: 'washer'
-                    },
-                    {
-                        id: 'warning_sign',
-                        label: 'ป้ายเตือน',
-                        fallbackIcon: '⚠️',
-                        asset: {
-                            key: 'warning_sign',
-                            path: '../assets/img/debug/ui/warning_sign.png',
-                            width: 64, height: 64,
-                            description: 'ป้ายเตือนแสดงจุดที่มีปัญหา'
-                        },
-                        anchor: 'warningSign'
+                    fixed: {
+                        caption: 'ฟาร์มบอทเดินถึงแปลงผักแล้วค่อยรดน้ำ พืชโตขึ้น',
+                        effect: '💧'
                     }
+                },
+                objects: [
+                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
+                    { id: 'dry_crop', label: 'แปลงผักแห้ง', fallbackIcon: '🥬', anchor: 'cropBed3' },
+                    { id: 'water_drop', label: 'น้ำตกผิดที่', fallbackIcon: '💧', anchor: 'cropBed' }
                 ],
                 buggyBlock: {
-                    condition: 'แครอทเปื้อนโคลน',
-                    action: 'ปล่อยผ่าน',
-                    type: 'if'
+                    additionalBlocks: [
+                        { condition: 'เริ่มงาน', action: 'รดน้ำ', type: 'if' },
+                        { condition: 'หลังจากนั้น', action: 'เดินถึงแปลงผัก', type: 'else_if' }
+                    ]
                 },
                 correctBlock: {
-                    condition: 'แครอทเปื้อนโคลน',
-                    action: 'ส่งเข้าเครื่องล้าง',
-                    type: 'if'
+                    additionalBlocks: [
+                        { condition: 'เริ่มงาน', action: 'เดินถึงแปลงผัก', type: 'if' },
+                        { condition: 'หลังจากนั้น', action: 'รดน้ำ', type: 'else_if' }
+                    ]
                 },
+                questionText: 'อะไรทำให้ผักยังแห้ง?',
+                fixQuestionText: 'ควรจัดคำสั่งใหม่อย่างไร?',
                 choices: {
                     bugTargetChoices: [
-                        { id: 'condition', label: 'เงื่อนไข' },
-                        { id: 'action', label: 'คำสั่ง' }
+                        { id: 'order', label: 'ลำดับคำสั่ง' },
+                        { id: 'direction', label: 'ทิศทางเดิน' },
+                        { id: 'missing_step', label: 'คำสั่งหาย' }
                     ],
                     fixChoices: [
-                        { id: 'pass', label: 'ปล่อยผ่าน' },
-                        { id: 'wash', label: 'ส่งเข้าเครื่องล้าง' }
+                        { id: 'water_first', label: 'รดน้ำก่อนเดิน' },
+                        { id: 'water_after_arrive', label: 'เดินถึงแปลงแล้วรดน้ำ' },
+                        { id: 'skip_water', label: 'ข้ามคำสั่งรดน้ำ' }
                     ]
                 },
                 answer: {
-                    bugTarget: 'action',
-                    fixChoice: 'wash'
+                    bugTarget: 'order',
+                    fixChoice: 'water_after_arrive'
                 },
                 feedback: {
-                    correct: 'ถูกต้อง! แครอทเปื้อนโคลนต้องเข้าเครื่องล้าง',
-                    wrongTarget: 'ยังไม่ใช่จุดนี้ ลองดูว่าระบบสั่งให้แครอทไปไหน',
-                    wrongFix: 'ยังไม่ถูกนะ แครอทเลอะต้องถูกล้างก่อน',
-                    afterFix: 'แครอทเลอะต้องไปล้าง แต่ระบบปล่อยผ่านไป เมื่อเปลี่ยนเป็น "ส่งเข้าเครื่องล้าง" แครอทเปื้อนโคลนก็ถูกล้างแล้ว'
+                    correct: 'ถูกต้อง! ต้องเดินถึงแปลงผักก่อน แล้วค่อยรดน้ำ',
+                    wrongTarget: 'ยังไม่ใช่จุดนี้ ลองดูว่าหุ่นยนต์ทำอะไรก่อนถึงแปลงผัก',
+                    wrongFix: 'ยังไม่ถูกนะ ถ้ารดน้ำก่อนเดิน น้ำจะตกลงพื้นว่าง',
+                    afterFix: 'เมื่อสลับลำดับให้เดินถึงแปลงก่อน หุ่นยนต์จึงรดน้ำถูกจุดและผักกลับมาสดชื่น'
                 },
                 hints: [
-                    'ลองดูว่าแครอทเปื้อนโคลนถูกส่งไปไหน',
-                    'บั๊กนี้น่าจะอยู่ที่คำสั่ง ไม่ใช่เงื่อนไข',
-                    'แครอทเปื้อนโคลนควรถูกส่งเข้าเครื่องล้าง'
+                    'ผักยังแห้ง เพราะน้ำไม่ได้ตกที่แปลงผัก',
+                    'สังเกตคำสั่งแรกของหุ่นยนต์',
+                    'ย้ายคำสั่งรดน้ำไปหลังเดินถึงแปลงผัก'
                 ]
             },
-            // LEVEL 10-2
             {
                 levelId: '10-2',
-                title: 'ผักกาดมีหนอนหลุดผ่าน',
-                theme: 'vegetable_repair',
+                title: 'เลี้ยวผิดทาง',
+                theme: 'robot_crop_path',
                 sceneType: 'farm_repair',
-                problemText: 'ผักกาดมีหนอนหลุดผ่านโต๊ะตรวจ',
-                missionText: 'ซ่อมระบบให้จับผักกาดที่มีหนอนได้ถูก',
-                objects: [
-                    {
-                        id: 'cabbage_worm',
-                        label: 'ผักกาดมีหนอน',
-                        fallbackIcon: '🥬',
-                        asset: {
-                            key: 'cabbage_worm',
-                            path: '../assets/img/debug/vegetable/cabbage_worm.png',
-                            width: 96, height: 96,
-                            description: 'ผักกาดที่มีหนอนเจาะ'
-                        },
-                        anchor: 'cropBed'
+                bugType: 'direction',
+                problemText: 'หุ่นยนต์เลี้ยวผิดทางแล้วชนรั้ว ไปไม่ถึงแปลงผัก',
+                missionText: 'ซ่อมคำสั่งทิศทางให้ฟาร์มบอทเดินผ่านทางที่ถูก',
+                simulation: {
+                    type: 'robot_path',
+                    broken: {
+                        caption: 'ฟาร์มบอทเลี้ยวผิดและชนรั้วก่อนถึงแปลง',
+                        obstacle: true,
+                        effect: '!'
                     },
-                    {
-                        id: 'inspection_table',
-                        label: 'โต๊ะตรวจศัตรูพืช',
-                        fallbackIcon: '🔬',
-                        asset: {
-                            key: 'inspection_table',
-                            path: '../assets/img/debug/machine/inspection_table.png',
-                            width: 128, height: 128,
-                            description: 'โต๊ะตรวจหาศัตรูพืช'
-                        },
-                        anchor: 'inspectionTable'
+                    fixed: {
+                        caption: 'เปลี่ยนทิศทางแล้ว ฟาร์มบอทเดินผ่านทางถูกต้อง',
+                        obstacle: false,
+                        effect: '✓'
                     }
+                },
+                objects: [
+                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
+                    { id: 'fence', label: 'รั้ว', fallbackIcon: '▥', anchor: 'fence' },
+                    { id: 'crop_goal', label: 'แปลงเป้าหมาย', fallbackIcon: '🥬', anchor: 'cropBed3' }
                 ],
                 buggyBlock: {
-                    condition: 'ผักกาดใบแหว่ง',
-                    action: 'ส่งไปโต๊ะตรวจ',
+                    condition: 'ถึงทางแยก',
+                    action: 'เลี้ยวซ้าย',
                     type: 'if'
                 },
                 correctBlock: {
-                    condition: 'ผักกาดมีหนอน',
-                    action: 'ส่งไปโต๊ะตรวจ',
+                    condition: 'ถึงทางแยก',
+                    action: 'เลี้ยวขวา',
                     type: 'if'
                 },
+                questionText: 'จุดไหนทำให้หุ่นยนต์ชนรั้ว?',
+                fixQuestionText: 'ควรเปลี่ยนคำสั่งเป็นอะไร?',
                 choices: {
                     bugTargetChoices: [
-                        { id: 'condition', label: 'เงื่อนไข' },
-                        { id: 'action', label: 'คำสั่ง' }
+                        { id: 'order', label: 'ลำดับคำสั่ง' },
+                        { id: 'direction', label: 'ทิศทางเดิน' },
+                        { id: 'missing_step', label: 'คำสั่งหาย' }
                     ],
                     fixChoices: [
-                        { id: 'torn_leaf', label: 'ผักกาดใบแหว่ง' },
-                        { id: 'has_worm', label: 'ผักกาดมีหนอน' }
+                        { id: 'turn_left', label: 'เลี้ยวซ้าย' },
+                        { id: 'turn_right', label: 'เลี้ยวขวา' },
+                        { id: 'water_now', label: 'รดน้ำทันที' }
                     ]
                 },
                 answer: {
-                    bugTarget: 'condition',
-                    fixChoice: 'has_worm'
+                    bugTarget: 'direction',
+                    fixChoice: 'turn_right'
                 },
                 feedback: {
-                    correct: 'ถูกต้อง! ต้องจับผักที่มีหนอน ไม่ใช่ผักใบแหว่งทุกใบ',
-                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งส่งไปโต๊ะตรวจถูกแล้ว แต่เงื่อนไขเลือกผักผิดชนิด',
-                    wrongFix: 'ยังไม่ถูก ต้องจับผักที่มีหนอนจริง ๆ ไม่ใช่ใบแหว่งอย่างเดียว',
-                    afterFix: 'ต้องจับผักที่มีหนอน ไม่ใช่ผักใบแหว่งทุกใบ เพราะใบแหว่งอาจไม่มีหนอนก็ได้'
+                    correct: 'ถูกต้อง! ทางนี้ต้องเลี้ยวขวา หุ่นยนต์จึงไม่ชนรั้ว',
+                    wrongTarget: 'ลองดูทิศทางตอนถึงทางแยก หุ่นยนต์ไม่ได้ขาดคำสั่ง',
+                    wrongFix: 'ยังไม่ถูก ถ้าเลี้ยวซ้ายเหมือนเดิมก็ยังชนรั้ว',
+                    afterFix: 'เมื่อเปลี่ยนคำสั่งเป็นเลี้ยวขวา หุ่นยนต์เดินไปถึงแปลงผักได้'
                 },
                 hints: [
-                    'ลองดูว่าผักกาดชนิดไหนหลุดผ่านไป',
-                    'บั๊กนี้อยู่ที่เงื่อนไข ไม่ใช่คำสั่ง',
-                    'ควรจับ "ผักกาดมีหนอน" ไม่ใช่ "ผักกาดใบแหว่ง"'
+                    'หุ่นยนต์ไปผิดทางตรงทางแยก',
+                    'บั๊กนี้อยู่ที่คำสั่งทิศทาง',
+                    'ลองเปลี่ยนเลี้ยวซ้ายเป็นเลี้ยวขวา'
                 ]
             },
-            // LEVEL 10-3
             {
                 levelId: '10-3',
-                title: 'แครอทมีตำหนิถูกส่งไปล้าง',
-                theme: 'vegetable_repair',
+                title: 'รดน้ำไม่ครบ',
+                theme: 'robot_crop_path',
                 sceneType: 'farm_repair',
-                problemText: 'แครอทมีตำหนิถูกส่งเข้าเครื่องล้าง ทั้งที่ไม่ได้เปื้อนโคลน',
-                missionText: 'ซ่อมเงื่อนไขให้ล้างเฉพาะแครอทที่เปื้อนโคลน',
-                objects: [
-                    {
-                        id: 'damaged_carrot',
-                        label: 'แครอทมีตำหนิ',
-                        fallbackIcon: '🥕',
-                        asset: {
-                            key: 'damaged_carrot',
-                            path: '../assets/img/debug/vegetable/damaged_carrot.png',
-                            width: 96, height: 96,
-                            description: 'แครอทที่มีตำหนิแต่ไม่เปื้อนโคลน'
-                        },
-                        anchor: 'cropBed'
+                bugType: 'missing_step',
+                problemText: 'มีแปลงผัก 3 แปลง แต่หุ่นยนต์รดน้ำแค่ 2 แปลง แปลงสุดท้ายยังเหี่ยว',
+                missionText: 'เพิ่มคำสั่งหรือจำนวนรอบให้รดน้ำครบทั้ง 3 แปลง',
+                simulation: {
+                    type: 'robot_path',
+                    broken: {
+                        caption: 'หุ่นยนต์หยุดหลังรดน้ำ 2 แปลง แปลงสุดท้ายยังเหี่ยว',
+                        effect: '💧'
                     },
-                    {
-                        id: 'washer',
-                        label: 'เครื่องล้างผัก',
-                        fallbackIcon: '🚿',
-                        asset: {
-                            key: 'washer',
-                            path: '../assets/img/debug/machine/washer.png',
-                            width: 128, height: 128,
-                            description: 'เครื่องล้างผักในฟาร์ม'
-                        },
-                        anchor: 'washer'
+                    fixed: {
+                        caption: 'ปรับจำนวนรอบเป็น 3 แล้ว ทุกแปลงได้รับน้ำครบ',
+                        effect: '💧'
                     }
+                },
+                objects: [
+                    { id: 'robot', label: 'ฟาร์มบอท', fallbackIcon: '🤖', anchor: 'robot' },
+                    { id: 'crop_1', label: 'แปลง 1', fallbackIcon: '🥬', anchor: 'cropBed' },
+                    { id: 'crop_2', label: 'แปลง 2', fallbackIcon: '🥬', anchor: 'cropBed2' },
+                    { id: 'crop_3', label: 'แปลง 3', fallbackIcon: '🥀', anchor: 'cropBed3' }
                 ],
                 buggyBlock: {
-                    condition: 'แครอทมีตำหนิ',
-                    action: 'ส่งเข้าเครื่องล้าง',
+                    condition: 'ทำซ้ำ 2 ครั้ง',
+                    action: 'เดินไปแปลงถัดไปและรดน้ำ',
                     type: 'if'
                 },
                 correctBlock: {
-                    condition: 'แครอทเปื้อนโคลน',
-                    action: 'ส่งเข้าเครื่องล้าง',
+                    condition: 'ทำซ้ำ 3 ครั้ง',
+                    action: 'เดินไปแปลงถัดไปและรดน้ำ',
                     type: 'if'
                 },
+                questionText: 'ทำไมแปลงสุดท้ายยังเหี่ยว?',
+                fixQuestionText: 'ควรแก้จำนวนรอบเป็นอะไร?',
                 choices: {
                     bugTargetChoices: [
-                        { id: 'condition', label: 'เงื่อนไข' },
-                        { id: 'action', label: 'คำสั่ง' }
+                        { id: 'order', label: 'ลำดับคำสั่ง' },
+                        { id: 'direction', label: 'ทิศทางเดิน' },
+                        { id: 'missing_step', label: 'จำนวนรอบไม่ครบ' }
                     ],
                     fixChoices: [
-                        { id: 'damaged', label: 'แครอทมีตำหนิ' },
-                        { id: 'muddy', label: 'แครอทเปื้อนโคลน' }
+                        { id: 'repeat_1', label: 'ทำซ้ำ 1 ครั้ง' },
+                        { id: 'repeat_2', label: 'ทำซ้ำ 2 ครั้ง' },
+                        { id: 'repeat_3', label: 'ทำซ้ำ 3 ครั้ง' }
                     ]
                 },
                 answer: {
-                    bugTarget: 'condition',
-                    fixChoice: 'muddy'
+                    bugTarget: 'missing_step',
+                    fixChoice: 'repeat_3'
                 },
                 feedback: {
-                    correct: 'ถูกต้อง! ด่านนี้ล้างเฉพาะแครอทเปื้อนโคลนเท่านั้น',
-                    wrongTarget: 'ลองดูอีกครั้ง คำสั่งล้างถูกแล้ว แต่เงื่อนไขจับแครอทผิดชนิด',
-                    wrongFix: 'ยังไม่ถูก มีตำหนิไม่ใช่เปื้อนโคลน ล้างเฉพาะแครอทเปื้อนโคลนนะ',
-                    afterFix: 'มีตำหนิไม่ใช่เปื้อนโคลน ด่านนี้ล้างเฉพาะแครอทเปื้อนโคลนเท่านั้น ถ้าไม่เข้าเงื่อนไข ให้ปล่อยผ่าน'
+                    correct: 'ถูกต้อง! มี 3 แปลง จึงต้องรดน้ำ 3 ครั้ง',
+                    wrongTarget: 'ลองนับจำนวนแปลงกับจำนวนครั้งที่หุ่นยนต์รดน้ำ',
+                    wrongFix: 'ยังไม่ครบนะ แปลงผักมีทั้งหมด 3 แปลง',
+                    afterFix: 'เมื่อเปลี่ยนจำนวนรอบเป็น 3 หุ่นยนต์จึงรดน้ำครบทุกแปลง'
                 },
                 hints: [
-                    'ลองดูว่าแครอทชนิดไหนถูกส่งไปล้างผิด',
-                    'บั๊กนี้อยู่ที่เงื่อนไข ไม่ใช่คำสั่ง',
-                    'ควรล้างเฉพาะ "แครอทเปื้อนโคลน" ไม่ใช่ "แครอทมีตำหนิ"'
+                    'ลองนับแปลงผักทั้งหมด',
+                    'หุ่นยนต์ทำซ้ำน้อยกว่าจำนวนแปลง',
+                    'เปลี่ยนทำซ้ำ 2 ครั้งเป็น 3 ครั้ง'
                 ]
             }
         ]

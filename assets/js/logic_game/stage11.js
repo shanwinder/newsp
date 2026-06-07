@@ -1,7 +1,7 @@
 // Stage 11: ซ่อมโรงเรือนอัจฉริยะ — Smart Farm Debugger Lite
 (function () {
     const config = {
-        title: 'ด่าน 11: ซ่อมโรงเรือนอัจฉริยะ',
+        title: 'ด่าน 11: โรงเรือนอัจฉริยะรวน',
         subtitle: 'ฝึกหาบั๊กขั้นสูง — ลำดับผิด ตัวเลขผิด และขาดคำสั่ง',
         levels: [
             // LEVEL 11-1
@@ -10,8 +10,26 @@
                 title: 'ฝนตกแต่สปริงเกอร์ยังเปิด',
                 theme: 'greenhouse_repair',
                 sceneType: 'farm_repair',
+                bugType: 'condition_order',
                 problemText: 'ฝนตกแล้ว แต่สปริงเกอร์ยังเปิด แปลงผักน้ำท่วม',
                 missionText: 'ซ่อมลำดับเงื่อนไขให้ปิดสปริงเกอร์เมื่อฝนตก',
+                simulation: {
+                    type: 'greenhouse_sensor',
+                    broken: {
+                        caption: 'ฝนตกพร้อมสปริงเกอร์เปิด น้ำเริ่มท่วมแปลง',
+                        weather: '🌧',
+                        sprinkler: '💦',
+                        fan: '◌',
+                        panel: '!'
+                    },
+                    fixed: {
+                        caption: 'ระบบตรวจฝนก่อน สปริงเกอร์จึงปิดทันที',
+                        weather: '🌧',
+                        sprinkler: 'ปิด',
+                        fan: '◌',
+                        panel: '✓'
+                    }
+                },
                 objects: [
                     {
                         id: 'rain_cloud',
@@ -93,8 +111,26 @@
                 title: 'โรงเรือนร้อนแต่พัดลมไม่เปิด',
                 theme: 'greenhouse_repair',
                 sceneType: 'farm_repair',
+                bugType: 'numeric_condition',
                 problemText: 'อุณหภูมิ 38°C แต่พัดลมไม่เปิด',
                 missionText: 'แก้ตัวเลขเงื่อนไขให้พัดลมเปิดได้ทัน',
+                simulation: {
+                    type: 'greenhouse_sensor',
+                    broken: {
+                        caption: 'อุณหภูมิ 38°C แต่พัดลมยังนิ่ง ต้นไม้เริ่มเหี่ยว',
+                        weather: '🌡',
+                        sprinkler: 'ปิด',
+                        fan: '◌',
+                        panel: '38°'
+                    },
+                    fixed: {
+                        caption: 'ตั้งเงื่อนไขใหม่ พัดลมเปิดเมื่่ออุณหภูมิเกิน 35°C',
+                        weather: '🌡',
+                        sprinkler: 'ปิด',
+                        fan: '🌀',
+                        panel: '✓'
+                    }
+                },
                 objects: [
                     {
                         id: 'thermometer',
@@ -175,8 +211,26 @@
                 title: 'อากาศปกติแต่ระบบค้าง',
                 theme: 'greenhouse_repair',
                 sceneType: 'farm_repair',
+                bugType: 'missing_else',
                 problemText: 'อุณหภูมิ 25°C ระบบไม่รู้ว่าจะทำอะไร',
                 missionText: 'เพิ่มคำสั่งสำหรับกรณีที่อากาศปกติ',
+                simulation: {
+                    type: 'greenhouse_sensor',
+                    broken: {
+                        caption: 'อากาศปกติ แต่แผงควบคุมขึ้นเครื่องหมายคำถาม',
+                        weather: '25°',
+                        sprinkler: 'ปิด',
+                        fan: '◌',
+                        panel: '?'
+                    },
+                    fixed: {
+                        caption: 'เพิ่มกรณีอื่นแล้ว ระบบปิดอุปกรณ์และแสดงไฟเขียว',
+                        weather: '25°',
+                        sprinkler: 'ปิด',
+                        fan: '◌',
+                        panel: '✓'
+                    }
+                },
                 objects: [
                     {
                         id: 'thermometer',

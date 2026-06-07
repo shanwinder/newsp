@@ -148,6 +148,7 @@ function validate_smart_farm_debug_work($items) {
         $requiredFields['problemText'] = 'กรุณาเขียนอาการเสีย';
         $requiredFields['bugTarget'] = 'กรุณาระบุจุดผิด';
         $requiredFields['correctFix'] = 'กรุณาเขียนวิธีซ่อม';
+        $requiredFields['symptomId'] = 'กรุณาเลือกอาการเสีย';
     } else {
         $requiredFields['system_theme'] = 'กรุณาเลือกระบบฟาร์ม';
         $requiredFields['bug_type'] = 'กรุณาระบุประเภทบั๊ก';
@@ -161,6 +162,21 @@ function validate_smart_farm_debug_work($items) {
     foreach ($requiredFields as $field => $message) {
         if (trim($items[$field] ?? '') === '') {
             respond_error($message);
+        }
+    }
+
+    if (($items['project_type'] ?? '') === 'smart_farm_debug_lite_challenge') {
+        if (($items['builder_version'] ?? '') !== '2.0') {
+            respond_error('กรุณาใช้ตัวสร้างโจทย์บั๊กฟาร์มเวอร์ชันล่าสุด');
+        }
+        if (empty($items['tested'])) {
+            respond_error('กรุณาทดลองเล่นโจทย์ให้ผ่านก่อนส่ง');
+        }
+        if (!is_array($items['bugTargetChoices'] ?? null) || count($items['bugTargetChoices']) < 2) {
+            respond_error('ตัวเลือกจุดผิดของโจทย์ไม่ครบ');
+        }
+        if (!is_array($items['fixChoices'] ?? null) || count($items['fixChoices']) < 2) {
+            respond_error('ตัวเลือกวิธีซ่อมของโจทย์ไม่ครบ');
         }
     }
 }

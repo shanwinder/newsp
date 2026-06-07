@@ -26,6 +26,7 @@ $score = intval($input['score']); // จำนวนดาว (0-3)
 // รองรับทั้งคีย์ duration และ time_taken เผื่อไว้
 $duration = intval($input['duration'] ?? $input['time_taken'] ?? 0); 
 $attempts = intval($input['attempts']); // จำนวนครั้งที่ลองผิด
+$extra_detail = is_array($input['detail'] ?? null) ? $input['detail'] : null;
 $mode = $_SESSION['mode'] ?? 'solo';
 $context = session_context();
 
@@ -79,6 +80,9 @@ try {
         // 4.3 บันทึก Log การเล่น (ระบุด้วยว่าใครเป็นคนกดส่งข้อมูล)
         $is_submitter = ($member_id == $submitter_id) ? " (คนกดส่งงาน)" : "";
         $detail = "Mode: $mode, Role: $team_role{$is_submitter}, Score: $score, Time: $duration s, Attempts: $attempts";
+        if ($extra_detail) {
+            $detail .= ', Detail: ' . json_encode($extra_detail, JSON_UNESCAPED_UNICODE);
+        }
         
         $stmt_log->bind_param(
             "iissiiii",

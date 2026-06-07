@@ -205,7 +205,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         window.STAGE_ID = <?php echo $stage_id; ?>;
         window.GAME_ID = <?php echo $game_id; ?>;
 
-        window.sendResult = function(stageId, stars, duration, attempts) {
+        window.sendResult = function(stageId, stars, duration, attempts, detail) {
             fetch('../api/submit_score.php', {
                     method: 'POST',
                     headers: {
@@ -215,7 +215,8 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                         stage_id: stageId,
                         score: stars,
                         time_taken: duration,
-                        attempts: attempts
+                        attempts: attempts,
+                        detail: detail || null
                     })
                 })
                 .then(res => res.json())

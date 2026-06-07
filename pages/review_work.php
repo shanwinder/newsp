@@ -78,7 +78,7 @@ if (!$context) {
                     <option value="1">บทที่ 1: ตรรกะคัดแยก</option>
                     <option value="2">บทที่ 2: เส้นทางเดินรถไถ</option>
                     <option value="3">บทที่ 3: Smart Farm Manager</option>
-                    <option value="4">บทที่ 4: กู้วิกฤตฟาร์ม</option>
+                    <option value="4">บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด</option>
                 </select>
             </div>
 
@@ -179,13 +179,13 @@ if (!$context) {
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
-            title: 'ชื่อโจทย์บั๊ก',
+            title: 'ชื่อโจทย์ซ่อมกฎ',
             system_theme: 'ระบบฟาร์มที่เลือก',
-            bug_type: 'ประเภทบั๊ก',
+            bug_type: 'ประเภทจุดผิด',
             correct_rules: 'กฎที่ถูกต้อง',
-            buggy_rules: 'กฎที่ใส่บั๊ก',
+            buggy_rules: 'กฎที่ใส่จุดผิด',
             symptom: 'อาการที่ผู้เล่นจะเห็น',
-            bug_targets: 'จุดที่เป็นบั๊ก',
+            bug_targets: 'จุดที่เป็นจุดผิด',
             fix_explanation: 'วิธีแก้และเหตุผล',
             playtest_note: 'ผลการทดลองเล่นโจทย์'
         };
@@ -548,7 +548,7 @@ if (!$context) {
             stage.innerHTML = `
                 <div class="h-100 d-flex flex-column justify-content-center">
                     <div class="bg-white rounded-4 shadow-sm border p-4">
-                        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-journal-text"></i> ${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์บั๊กฟาร์มของนักเรียน' : 'ชิ้นงานสะท้อนการแก้ปัญหา'}</h4>
+                        <h4 class="fw-bold text-primary mb-3"><i class="bi bi-journal-text"></i> ${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์ซ่อมกฎฟาร์มของนักเรียน' : 'ชิ้นงานสะท้อนการแก้ปัญหา'}</h4>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).map(key => `
                             <div class="mb-3">
                                 <div class="small fw-bold text-secondary">${STRUCTURED_LABELS[key]}</div>

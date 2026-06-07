@@ -49,7 +49,7 @@ if ($work_id <= 0) {
     } else {
         $decoded = json_decode($work['work_data'], true);
         if (!is_array($decoded) || ($decoded['project_type'] ?? '') !== 'smart_farm_debug_lite_challenge') {
-            $error = 'ผลงานนี้ไม่ใช่โจทย์บั๊กฟาร์ม';
+            $error = 'ผลงานนี้ไม่ใช่โจทย์ซ่อมกฎฟาร์ม';
         } elseif (empty($decoded['tested'])) {
             $error = 'โจทย์นี้ยังไม่ผ่านการทดลองเล่นจากผู้ออกแบบ';
         } else {
@@ -72,7 +72,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>เล่นโจทย์บั๊กของเพื่อน - <?php echo htmlspecialchars($app['app_name']); ?></title>
+    <title>เล่นโจทย์ซ่อมกฎของเพื่อน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -91,8 +91,8 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
             <a href="showcase.php?game_id=4" class="btn btn-light btn-sm rounded-pill mb-3">
                 <i class="bi bi-arrow-left"></i> กลับลานโชว์ผลงาน
             </a>
-            <h1 class="fw-bold mb-1"><i class="bi bi-bug-fill me-2"></i> เล่นโจทย์บั๊กของเพื่อน</h1>
-            <p class="fs-5 opacity-75 mb-0">Farm Debug Quest: สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่</p>
+            <h1 class="fw-bold mb-1"><i class="bi bi-wrench-adjustable me-2"></i> เล่นโจทย์ซ่อมกฎของเพื่อน</h1>
+            <p class="fs-5 opacity-75 mb-0">ซ่อมกฎฟาร์มอัจฉริยะ: ทดสอบระบบ หาจุดผิด ซ่อม แล้วลองใหม่</p>
         </div>
     </div>
 
@@ -110,9 +110,9 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                     <div class="play-panel p-3 h-100">
                         <div class="d-flex flex-wrap gap-2 mb-2">
                             <span class="badge text-bg-warning rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['themeLabel'] ?? 'ฟาร์ม'); ?></span>
-                            <span class="badge text-bg-light text-secondary border rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['bugTarget'] ?? 'หาบั๊ก'); ?></span>
+                            <span class="badge text-bg-light text-secondary border rounded-pill px-3 py-2"><?php echo htmlspecialchars($workData['bugTarget'] ?? 'หาจุดผิด'); ?></span>
                         </div>
-                        <h3 class="fw-bold mb-1"><?php echo htmlspecialchars($workData['title'] ?? 'โจทย์บั๊กฟาร์ม'); ?></h3>
+                        <h3 class="fw-bold mb-1"><?php echo htmlspecialchars($workData['title'] ?? 'โจทย์ซ่อมกฎฟาร์ม'); ?></h3>
                         <h5 class="fw-bold text-warning-emphasis mb-2">ผลงานของ: <?php echo htmlspecialchars($ownerName); ?></h5>
                         <?php if ($isOwnWork): ?>
                             <div class="alert alert-info py-2 mb-2">คุณกำลังลองเล่นโจทย์ของตนเอง</div>

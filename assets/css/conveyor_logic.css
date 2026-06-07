@@ -156,7 +156,7 @@
 .side-panel {
   grid-area: side;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
   gap: 12px;
   align-self: stretch;
   min-width: 0;
@@ -432,7 +432,6 @@
   color: #334155;
   text-align: left;
   filter: grayscale(0.2);
-  cursor: pointer;
 }
 
 .tray-item.selected {
@@ -502,7 +501,6 @@
 .palette-group,
 .control-panel,
 .feedback-card,
-.item-inspector,
 .block-trash {
   padding: 10px;
   border: 1px solid #e2e8f0;
@@ -773,7 +771,7 @@
   border: 1px solid #fed7aa;
   border-radius: 8px;
   background: #fff7ed;
-  padding: 14px;
+  padding: 12px;
   box-shadow: inset 0 0 0 1px rgba(251, 146, 60, .12);
 }
 
@@ -789,26 +787,114 @@
   color: #64748b;
 }
 
-.debug-report-body p {
-  margin: 0 0 10px;
-  color: #431407;
+.debug-report-card.is-success {
+  background: #f0fdf4;
+  border-color: #86efac;
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, .14);
 }
 
-.debug-report-metric {
+.debug-report-card.is-success h4 {
+  color: #166534;
+}
+
+.debug-report-summary-button {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  min-height: 104px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.debug-report-summary-button:hover .debug-report-next-step {
+  color: #7c2d12;
+  text-decoration: underline;
+}
+
+.debug-report-button-title {
+  color: #9a3412;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.debug-report-button-main {
+  color: #431407;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.debug-detail-section p {
+  margin: 0;
+  color: #431407;
+  line-height: 1.45;
+}
+
+.debug-report-mini-stat,
+.debug-report-problem-type,
+.debug-report-next-step {
+  border-radius: 8px;
+  color: #7c2d12;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.debug-report-mini-stat {
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
+  width: fit-content;
   background: #ffedd5;
+  padding: 5px 9px;
+}
+
+.debug-report-problem-type {
+  display: grid;
+  gap: 2px;
+  padding: 7px 9px;
+  background: #ffffff;
+  border: 1px solid #fed7aa;
+}
+
+.debug-report-problem-type strong {
   color: #9a3412;
-  font-weight: 800;
-  padding: 6px 10px;
-  margin-bottom: 8px;
+}
+
+.debug-report-next-step {
+  color: #92400e;
+}
+
+.debug-report-card.is-success .debug-report-mini-stat {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.debug-report-card.is-success .debug-report-problem-type {
+  border-color: #bbf7d0;
+}
+
+.debug-detail-section {
+  display: grid;
+  gap: 5px;
+}
+
+.debug-detail-section strong {
+  color: #7c2d12;
 }
 
 .debug-wrong-list {
+  margin: 0;
+  padding-left: 18px;
   color: #7c2d12;
-  font-size: .92rem;
-  margin-bottom: 10px;
+  font-size: .9rem;
+}
+
+.debug-wrong-list li + li {
+  margin-top: 4px;
 }
 
 .debug-rule-compare {
@@ -830,6 +916,112 @@
   color: #431407;
   font-family: inherit;
   font-size: .9rem;
+}
+
+.debug-report-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3600;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(4px);
+}
+
+.debug-report-modal {
+  width: min(680px, 96vw);
+  max-height: min(760px, 92vh);
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 26px 90px rgba(15, 23, 42, 0.32);
+}
+
+.debug-report-modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 18px 14px;
+  background: #fff7ed;
+  border-bottom: 1px solid #fed7aa;
+}
+
+.debug-report-modal-kicker {
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.debug-report-modal h3 {
+  margin: 2px 0 0;
+  color: #431407;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.debug-report-modal-close {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #9a3412;
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.debug-report-modal-close:hover {
+  background: #ffedd5;
+}
+
+.debug-report-modal-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px 18px;
+  border-bottom: 1px solid #ffedd5;
+  background: #fffaf4;
+  color: #7c2d12;
+  font-weight: 800;
+}
+
+.debug-report-modal-body {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+  padding: 16px 18px;
+  overflow-y: auto;
+}
+
+.debug-report-modal-actions {
+  padding: 14px 18px 18px;
+  border-top: 1px solid #f1f5f9;
+  text-align: right;
+}
+
+.debug-report-modal-button {
+  min-height: 40px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #d97706;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.debug-report-modal-button:hover {
+  background: #b45309;
 }
 
 .drop-slot.debug-suspect {
@@ -856,74 +1048,6 @@
   color: #334155;
   font-size: 14px;
   line-height: 1.5;
-}
-
-.item-inspector {
-  max-height: 260px;
-  overflow-y: auto;
-  background: #ffffff;
-}
-
-.item-inspector h4 {
-  margin: 0 0 8px;
-  color: #18392b;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.inspector-content {
-  color: #475569;
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.inspector-title-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-  color: #172033;
-}
-
-.inspector-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: #f1f5f9;
-  font-size: 22px;
-}
-
-.inspector-props {
-  margin: 0 0 8px;
-  padding-left: 18px;
-}
-
-.inspector-props li + li {
-  margin-top: 3px;
-}
-
-.inspector-hint,
-.inspector-warning {
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  font-weight: 700;
-}
-
-.inspector-hint {
-  background: #ecfeff;
-  color: #155e75;
-}
-
-.inspector-warning {
-  background: #fff7ed;
-  color: #9a3412;
-}
-
-.item-inspector.has-decoy {
-  border-color: #fed7aa;
 }
 
 .result-overlay {
@@ -1069,8 +1193,8 @@
     min-height: 360px;
   }
 
-  .item-inspector {
-    max-height: none;
+  .debug-report-summary-button {
+    min-height: 98px;
   }
 }
 
@@ -1127,6 +1251,23 @@
 
   .tray-item {
     width: 104px;
+  }
+
+  .debug-report-modal {
+    width: min(96vw, 560px);
+    max-height: 90vh;
+  }
+
+  .debug-report-modal-head {
+    padding: 14px;
+  }
+
+  .debug-report-modal h3 {
+    font-size: 20px;
+  }
+
+  .debug-report-modal-body {
+    padding: 14px;
   }
 
   .machine {

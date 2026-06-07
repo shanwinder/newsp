@@ -50,14 +50,14 @@ if ($game_id === 1) {
     $is_under_construction = false;
 
 } else if ($game_id === 4) {
-    $game_title = "บทที่ 4: ช่างซ่อมระบบฟาร์มอัจฉริยะ";
+    $game_title = "บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด";
     $game_theme = "danger";
-    $mission_desc = "ระบบฟาร์มมีบั๊ก! ช่วยดูอาการ หาจุดผิด เลือกวิธีซ่อม แล้วลองใหม่ ให้ฟาร์มกลับมาทำงานถูกต้อง";
+    $mission_desc = "ฝึกตรวจสอบกฎที่ผิดพลาด ทดลองรันระบบ สังเกตผลลัพธ์ที่ผิด แล้วแก้ไขเงื่อนไขและคำสั่งให้ระบบฟาร์มทำงานถูกต้อง";
 
     $steps = [
-        ['icon' => 'bi-eye', 'title' => '1. ดูอาการเสีย', 'desc' => 'สังเกตว่าระบบฟาร์มทำอะไรผิดไป เช่น แครอทเลอะหลุดผ่าน หรือพัดลมไม่เปิด'],
-        ['icon' => 'bi-search', 'title' => '2. หาจุดผิดแล้วซ่อม', 'desc' => 'เลือกว่าบั๊กอยู่ที่เงื่อนไขหรือคำสั่ง แล้วเลือกวิธีซ่อมที่ถูกต้อง'],
-        ['icon' => 'bi-arrow-repeat', 'title' => '3. ลองใหม่', 'desc' => 'กดลองใหม่เพื่อดูว่าซ่อมถูกหรือยัง ถ้าถูกแล้วไปด่านต่อไปเลย!']
+        ['icon' => 'bi-play-circle', 'title' => '1. ทดสอบกฎเดิม', 'desc' => 'กดทดสอบก่อน แล้วสังเกตว่าผลผลิตชิ้นไหนไปผิดทาง'],
+        ['icon' => 'bi-search', 'title' => '2. หาจุดผิดแล้วซ่อม', 'desc' => 'ดูว่าจุดผิดอยู่ที่เงื่อนไข คำสั่ง ตัวเลข หรือลำดับกฎ'],
+        ['icon' => 'bi-arrow-repeat', 'title' => '3. ทดสอบหลังซ่อม', 'desc' => 'ลองใหม่เพื่อดูว่าระบบฟาร์มส่งผลผลิตถูกทางแล้วหรือยัง']
     ];
     $start_link = "../pages/game_select.php?game_id=4";
     $is_under_construction = false;
@@ -290,9 +290,9 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 </div>
                 <?php elseif ($game_id === 4): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #fed7aa; background-color: #fff7ed;">
-                    <div class="knowledge-title" style="background: #ea580c;"><i class="bi bi-bug-fill"></i> เกร็ดความรู้: การหาบั๊กและซ่อมระบบ</div>
-                    <p class="text-dark fw-bold mb-2 mt-2">บั๊ก (Bug) คือจุดผิดในระบบที่ทำให้ผลลัพธ์ออกมาไม่ถูกต้อง</p>
-                    <p class="text-secondary small mb-0">นักซ่อมระบบที่ดีจะดูอาการก่อน แล้วค่อยหาจุดผิด ไม่ใช่เดาสุ่ม เมื่อซ่อมแล้วต้องลองใหม่เพื่อยืนยันว่าระบบทำงานถูกต้อง</p>
+                    <div class="knowledge-title" style="background: #ea580c;"><i class="bi bi-wrench-adjustable"></i> เกร็ดความรู้: การหาจุดผิดและซ่อมระบบ</div>
+                    <p class="text-dark fw-bold mb-2 mt-2">จุดผิดคือส่วนของกฎที่ทำให้ผลลัพธ์ออกมาไม่ถูกต้อง</p>
+                    <p class="text-secondary small mb-0">นักซ่อมระบบที่ดีจะทดสอบกฎเดิม ดูผลที่ผิด แล้วค่อยซ่อมกฎ เมื่อซ่อมแล้วต้องทดสอบอีกครั้งเพื่อยืนยันว่าระบบทำงานถูกต้อง</p>
                 </div>
                 <?php endif; ?>
 
@@ -353,9 +353,9 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 <?php elseif ($game_id === 4): ?>
                 <h5 class="fw-bold text-danger mb-3"><i class="bi bi-wrench-adjustable"></i> วิธีซ่อมระบบฟาร์ม</h5>
                 <div class="row g-3 mb-5">
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ดูอาการก่อน</b><p class="small text-muted mb-0 mt-2">สังเกตว่าระบบทำอะไรผิด เช่น ผักเลอะหลุดผ่าน หรือน้ำท่วมแปลง</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #fd7e14 !important;"><b style="color: #d35400;">หาจุดผิดให้เจอ</b><p class="small text-muted mb-0 mt-2">บั๊กอาจอยู่ที่เงื่อนไข คำสั่ง ตัวเลข หรือลำดับ ลองดูทีละจุด</p></div></div>
-                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ซ่อมแล้วลองใหม่</b><p class="small text-muted mb-0 mt-2">เลือกวิธีซ่อมที่ถูก แล้วกดลองใหม่ ถ้าระบบกลับมาปกติแสดงว่าซ่อมถูกแล้ว</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #dc3545 !important;"><b class="text-danger fs-6">ทดสอบกฎเดิมก่อน</b><p class="small text-muted mb-0 mt-2">สังเกตว่าผลผลิตชิ้นไหนไปผิดทาง แล้วอ่านรายงานการทดสอบ</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #fd7e14 !important;"><b style="color: #d35400;">หาจุดผิดให้เจอ</b><p class="small text-muted mb-0 mt-2">จุดผิดอาจอยู่ที่เงื่อนไข คำสั่ง ตัวเลข หรือลำดับ ลองดูทีละจุด</p></div></div>
+                    <div class="col-md-4"><div class="p-3 border rounded shadow-sm bg-white h-100" style="border-left: 4px solid #198754 !important;"><b class="text-success fs-6">ซ่อมแล้วทดสอบอีกครั้ง</b><p class="small text-muted mb-0 mt-2">เลือกบล็อกที่ถูก แล้วกดทดสอบหลังซ่อม ถ้าผลผลิตถูกทางครบแสดงว่าสำเร็จ</p></div></div>
                 </div>
                 <?php endif; ?>
 

@@ -197,7 +197,7 @@ $result = $conn->query($sql);
                 'logic' => '🌾',       // บทที่ 1 คัดแยกผลผลิต
                 'algorithm' => '🚜',   // บทที่ 2 เส้นทางเดินรถไถ
                 'condition' => '🧩',   // บทที่ 3 Smart Farm Manager
-                'debugging' => '🕵️‍♂️'   // บทที่ 4 กู้วิกฤตฟาร์ม
+                'debugging' => '🛠️'     // บทที่ 4 ตรวจสอบและแก้ไขข้อผิดพลาด
             ];
 
             if ($result->num_rows > 0):

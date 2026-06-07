@@ -37,8 +37,8 @@ $game_meta = [
     ],
     4 => [
         'lesson_no' => 'บทที่ 4',
-        'title' => 'ช่างซ่อมฟาร์มอัจฉริยะ',
-        'icon' => 'bi-bug-fill',
+        'title' => 'ตรวจสอบและแก้ไขข้อผิดพลาด',
+        'icon' => 'bi-wrench-adjustable',
         'theme' => 'danger'
     ]
 ];
@@ -317,13 +317,13 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             situation: 'สถานการณ์ของแปลงผัก',
             rules: 'เงื่อนไข If-Then-Else',
             reason: 'เหตุผล',
-            title: 'ชื่อโจทย์บั๊ก',
+            title: 'ชื่อโจทย์ซ่อมกฎ',
             system_theme: 'ระบบฟาร์มที่เลือก',
-            bug_type: 'ประเภทบั๊ก',
+            bug_type: 'ประเภทจุดผิด',
             correct_rules: 'กฎที่ถูกต้อง',
-            buggy_rules: 'กฎที่ใส่บั๊ก',
+            buggy_rules: 'กฎที่ใส่จุดผิด',
             symptom: 'อาการที่ผู้เล่นจะเห็น',
-            bug_targets: 'จุดที่เป็นบั๊ก',
+            bug_targets: 'จุดที่เป็นจุดผิด',
             fix_explanation: 'วิธีแก้และเหตุผล',
             playtest_note: 'ผลการทดลองเล่นโจทย์',
             // Lite version fields
@@ -372,9 +372,9 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             const isLite = data.project_type === 'smart_farm_debug_lite_challenge';
             return {
                 kind: 'debug_challenge',
-                title: data.title || 'โจทย์บั๊กฟาร์ม',
+                title: data.title || 'โจทย์ซ่อมกฎฟาร์ม',
                 system: isLite ? (data.themeLabel || data.theme || 'ฟาร์ม') : (data.system_theme || 'ระบบฟาร์ม'),
-                bugType: isLite ? (data.bugTarget || 'หาบั๊ก') : (data.bug_type || 'debugging'),
+                bugType: isLite ? (data.bugTarget || 'หาจุดผิด') : (data.bug_type || 'ซ่อมกฎ'),
                 symptom: isLite ? (data.problemText || '') : (data.symptom || ''),
                 tested: isLite ? !!data.tested : false,
                 isLite
@@ -473,7 +473,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                         } else if (debugSummary) {
                             playButtonHTML = debugSummary.tested ? `
                                 <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-sm rounded-pill fw-bold mt-2 align-self-start">
-                                    <i class="bi bi-bug-fill"></i> เล่นโจทย์บั๊กของเพื่อน
+                                    <i class="bi bi-wrench-adjustable"></i> เล่นโจทย์ซ่อมกฎของเพื่อน
                                 </a>
                             ` : `
                                 <span class="badge text-bg-light border text-secondary rounded-pill mt-2 align-self-start">
@@ -623,7 +623,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
                     <div class="small text-muted mt-2">เล่นด่านสายพานตรรกะที่เพื่อนออกแบบ</div>
                 ` : (debugSummary?.tested ? `
                     <a href="play_debug_work.php?work_id=${work.id}" class="btn btn-warning btn-lg rounded-pill fw-bold shadow-sm mt-3">
-                        <i class="bi bi-bug-fill"></i> เล่นโจทย์บั๊กของเพื่อน
+                        <i class="bi bi-wrench-adjustable"></i> เล่นโจทย์ซ่อมกฎของเพื่อน
                     </a>
                     <div class="small text-muted mt-2">สังเกตอาการ หาจุดผิด ซ่อม แล้วลองใหม่</div>
                 ` : (summary?.validated ? `
@@ -860,7 +860,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
             stage.innerHTML = `
                 <div style="height:100%; display:flex; align-items:center; justify-content:center;">
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:18px; padding:24px; width:90%; max-height:88%; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,.08);">
-                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์บั๊กฟาร์ม' : 'ชิ้นงานแก้ปัญหา'}</div>
+                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${data.project_type === 'smart_farm_debug_challenge' ? 'โจทย์ซ่อมกฎฟาร์ม' : 'ชิ้นงานแก้ปัญหา'}</div>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).slice(0, 3).map(key => `
                             <div style="margin-bottom:12px;">
                                 <div style="font-weight:700; color:#64748b; font-size:16px;">${STRUCTURED_LABELS[key]}</div>
@@ -909,7 +909,7 @@ $current_game = $game_meta[$game_id] ?? $game_meta[1];
 function timeAgo(dateString) {
             if (!dateString) return "เมื่อสักครู่";
             
-            // 🟢 แก้บั๊ก NaN: เปลี่ยนขีดกลาง (-) ให้เป็นทับ (/) เพื่อให้ Safari และมือถืออ่านออก
+            // 🟢 แก้ปัญหา NaN: เปลี่ยนขีดกลาง (-) ให้เป็นทับ (/) เพื่อให้ Safari และมือถืออ่านออก
             let safeDateString = dateString.replace(/-/g, '/');
             
             const date = new Date(safeDateString);

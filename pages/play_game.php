@@ -43,7 +43,7 @@ if ($game_id == 1) {
     // บทที่ 3: Smart Farm Manager
     $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 4) {
-    // บทที่ 4: กู้วิกฤตฟาร์ม (เดี๋ยวเราค่อยไปสร้างไฟล์ JS กลุ่มนี้กัน)
+    // บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด
     $game_script = "stage{$stage_id}.js"; 
 }
 

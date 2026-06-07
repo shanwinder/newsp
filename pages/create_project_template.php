@@ -23,11 +23,11 @@ $projectConfigs = [
         'rubric' => 'ตรวจความชัดเจนของแผนที่ ความถูกต้องของลำดับคำสั่ง และเหตุผลในการเลือกเส้นทาง'
     ],
     4 => [
-        'title' => 'สร้างโจทย์บั๊กฟาร์มของฉัน',
+        'title' => 'สร้างโจทย์ซ่อมกฎฟาร์มของฉัน',
         'subtitle' => 'เลือกฉาก อาการเสีย จุดผิด วิธีซ่อม แล้วทดลองเล่นก่อนส่งให้เพื่อนลองซ่อม',
         'theme' => '#d97706',
-        'icon' => 'bi-bug',
-        'rubric' => 'ตรวจว่าโจทย์มีฉาก อาการเสีย จุดผิด วิธีซ่อม และผลทดลองเล่นครบถ้วน เพื่อนสามารถกดเล่นเพื่อฝึกหาบั๊กได้จริง'
+        'icon' => 'bi-wrench-adjustable',
+        'rubric' => 'ตรวจว่าโจทย์มีฉาก อาการเสีย จุดผิด วิธีซ่อม และผลทดลองเล่นครบถ้วน เพื่อนสามารถกดเล่นเพื่อฝึกหาจุดผิดและซ่อมกฎได้จริง'
     ]
 ];
 
@@ -108,7 +108,7 @@ if ($work) {
                     <form id="project-form">
                         <?php if ($game_id === 4): ?>
                             <div class="mb-4">
-                                <label class="form-label fw-bold">ชื่อโจทย์บั๊ก</label>
+                                <label class="form-label fw-bold">ชื่อโจทย์ซ่อมกฎ</label>
                                 <input class="form-control form-control-lg" id="debug-title" value="<?php echo htmlspecialchars($existing['title'] ?? ''); ?>" placeholder="เช่น แครอทเลอะไม่ถูกล้าง">
                             </div>
 

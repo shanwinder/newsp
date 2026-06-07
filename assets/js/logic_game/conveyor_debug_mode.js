@@ -39,6 +39,38 @@
         return found ? found.label : (fallback || id || '');
     }
 
+    function bugTypeLabel(type) {
+        const labels = {
+            wrong_condition: 'เงื่อนไขผิด',
+            wrong_action: 'คำสั่งผิด',
+            too_broad_condition: 'เงื่อนไขกว้างเกินไป',
+            too_narrow_condition: 'เงื่อนไขแคบเกินไป',
+            wrong_else_action: 'คำสั่งกรณีอื่นผิด',
+            wrong_order: 'ลำดับกฎผิด',
+            boundary_error: 'ขอบเขตตัวเลขผิด',
+            missing_condition: 'ขาดเงื่อนไข',
+            missing_action: 'ขาดคำสั่ง',
+            extra_rule: 'มีกฎเกินจำเป็น'
+        };
+        return labels[type] || 'บั๊กของกฎระบบ';
+    }
+
+    function bugTypeDescription(type) {
+        const descriptions = {
+            wrong_condition: 'ระบบตรวจของผิดชนิด',
+            wrong_action: 'ระบบตรวจเจอแล้ว แต่ส่งไปผิดที่',
+            too_broad_condition: 'ระบบจับของที่ไม่ควรถูกจับด้วย',
+            too_narrow_condition: 'ระบบจับของที่ควรจับได้ไม่ครบ',
+            wrong_else_action: 'ของที่ไม่เข้าเงื่อนไขถูกส่งผิดทาง',
+            wrong_order: 'ระบบตรวจกฎผิดลำดับ',
+            boundary_error: 'ตั้งค่ามากกว่า/น้อยกว่าผิด',
+            missing_condition: 'ยังไม่ได้บอกให้ระบบตรวจบางกรณี',
+            missing_action: 'ตรวจเจอแล้ว แต่ยังไม่ได้บอกให้ทำอะไร',
+            extra_rule: 'มีกฎที่ไม่จำเป็น ทำให้ระบบสับสน'
+        };
+        return descriptions[type] || 'ลองดูรายงานแล้วซ่อมกฎที่น่าสงสัย';
+    }
+
     function isIfOnly(level = {}) {
         return level.logicType === 'if' || level.mode === 'single_action_if' || level.lessonType === 'if';
     }
@@ -78,7 +110,7 @@
             const condition = rule.type === 'else' || rule.condition === 'else'
                 ? 'กรณีอื่นทั้งหมด'
                 : labelOf(allConditions(level), rule.condition);
-            return `${ruleLabel(rule.type)} ${condition} -> ${labelOf(allActions(level), rule.action)}`;
+            return `${ruleLabel(rule.type)} ${condition} → ${labelOf(allActions(level), rule.action)}`;
         }).join('\n');
     }
 
@@ -121,7 +153,6 @@
             paused: false,
             rules: [],
             levelScores: [],
-            selectedInspectItemId: null,
             lastStats: null,
             hintsUsed: 0
         };
@@ -157,17 +188,17 @@
                     <div class="smart-farm-shell">
                         <section class="mission-card">
                             <div class="conveyor-level" id="conveyor-level-pill">ด่านย่อย 1 / 3</div>
-                            <h4 id="mission-title">Smart Farm Debug Mode</h4>
+                            <h4 id="mission-title">ซ่อมกฎฟาร์มอัจฉริยะ</h4>
                             <dl class="mission-list">
-                                <div><dt>เป้าหมายการซ่อม</dt><dd id="mission-goal">ตรวจบั๊กและแก้กฎ</dd></div>
+                                <div><dt>เป้าหมายการซ่อม</dt><dd id="mission-goal">ตรวจจุดผิดและซ่อมกฎ</dd></div>
                                 <div><dt>ตรรกะที่ใช้</dt><dd id="mission-logic">If</dd></div>
-                                <div><dt>ประเภทบั๊ก</dt><dd id="mission-bug-type">-</dd></div>
+                                <div><dt>ประเภทจุดผิด</dt><dd id="mission-bug-type">-</dd></div>
                             </dl>
                         </section>
 
                         <section class="conveyor-panel board-panel">
                             <div class="board-status">
-                                <div class="status-label">สถานะ Debug</div>
+                                <div class="status-label">สถานะการทดสอบ</div>
                                 <div class="sensor-readout" id="sensor-readout">ทดสอบกฎเดิมก่อนเริ่มซ่อม</div>
                             </div>
                             <div class="farm-stage" id="farm-stage">
@@ -198,19 +229,15 @@
                                 <div class="feedback-body">ลองเปิดระบบเดิม ดูผลลัพธ์ แล้วค่อยซ่อมกฎ</div>
                             </section>
                             <section id="debug-report" class="debug-report-card is-empty">
-                                <h4>รายงานข้อผิดพลาด</h4>
+                                <h4>รายงานการทดสอบ</h4>
                                 <div class="debug-report-body">รายงานจะแสดงหลังทดสอบกฎเดิม</div>
-                            </section>
-                            <section class="item-inspector" id="item-inspector" aria-live="polite">
-                                <h4>รายละเอียดวัตถุ</h4>
-                                <div class="inspector-content">คลิกรายการในแถบวัตถุเพื่อดูคุณสมบัติก่อนเริ่มสายพาน</div>
                             </section>
                         </aside>
 
                         <section class="conveyor-panel program-panel">
                             <div class="program-head">
                                 <div>
-                                    <h4>Debug Program</h4>
+                                    <h4>กฎของระบบ</h4>
                                     <p id="program-subtitle">กฎเสียถูกวางไว้แล้ว ให้ทดสอบก่อนซ่อม</p>
                                 </div>
                                 <div class="block-trash" id="block-trash">ลากบล็อกที่วางแล้วมาที่นี่เพื่อลบ</div>
@@ -220,8 +247,8 @@
 
                         <section class="conveyor-panel toolbox-panel">
                             <div class="toolbox-head">
-                                <h4>Rule Toolbox</h4>
-                                <span class="lesson-pill" id="lesson-pill">Debug</span>
+                                <h4>กล่องบล็อกซ่อมกฎ</h4>
+                                <span class="lesson-pill" id="lesson-pill">ซ่อมกฎ</span>
                             </div>
                             <section class="palette-group">
                                 <h4>บล็อกเงื่อนไข</h4>
@@ -259,7 +286,7 @@
                 if (!dragDrop.undo()) showFeedback('ยังไม่มีขั้นตอนให้ย้อนกลับ', 'info');
             });
             container.querySelector('#clear-conveyor').addEventListener('click', () => {
-                if (state.phase !== 'repair') return showFeedback('รอให้รายงานข้อผิดพลาดแสดงก่อน แล้วค่อยเริ่มซ่อมใหม่', 'info');
+                if (state.phase !== 'repair') return showFeedback('รอให้รายงานการทดสอบแสดงก่อน แล้วค่อยเริ่มซ่อมใหม่', 'info');
                 dragDrop.loadLevel({
                     ruleSlots: level().brokenLogic.map(normalizeRule),
                     conditions: allConditions(level()),
@@ -271,12 +298,10 @@
                 showFeedback('กลับไปที่กฎเสียเริ่มต้นแล้ว ลองซ่อมใหม่อีกครั้ง', 'info');
             });
             container.querySelector('#hint-conveyor').addEventListener('click', showHint);
-            container.querySelector('#queue-strip').addEventListener('click', (event) => {
-                const itemButton = event.target.closest('.tray-item');
-                if (!itemButton) return;
-                state.selectedInspectItemId = itemButton.dataset.itemId;
-                renderQueue();
-                renderInspector();
+            container.querySelector('#debug-report').addEventListener('click', (event) => {
+                const summaryButton = event.target.closest('.debug-report-summary-button');
+                if (!summaryButton || !state.lastStats) return;
+                showDebugReportPopup(state.lastStats);
             });
         }
 
@@ -285,16 +310,16 @@
             state.phase = 'intro';
             state.processedCount = 0;
             state.paused = false;
-            state.selectedInspectItemId = null;
             state.lastStats = null;
             state.hintsUsed = 0;
+            closeDebugReportPopup();
             const current = level();
             container.querySelector('#farm-stage').classList.toggle('greenhouse', current.theme === 'greenhouse');
             container.querySelector('#conveyor-level-pill').textContent = `ด่านย่อย ${index + 1} / ${gameConfig.levels.length}`;
             container.querySelector('#mission-title').textContent = current.title;
             container.querySelector('#mission-goal').textContent = current.debugGoal || current.mission || current.brief;
             container.querySelector('#mission-logic').textContent = current.lessonTypeLabel || current.lessonType;
-            container.querySelector('#mission-bug-type').textContent = current.bugType || '-';
+            container.querySelector('#mission-bug-type').textContent = current.bugType ? bugTypeLabel(current.bugType) : '-';
             container.querySelector('#lesson-pill').textContent = current.lessonTypeLabel || current.lessonType;
             container.querySelector('#program-subtitle').textContent = 'ระบบเริ่มจากกฎที่ผิด ลองทดสอบเพื่อดูอาการก่อนแก้';
             container.querySelector('#run-conveyor').textContent = 'ทดสอบกฎเดิม';
@@ -308,7 +333,6 @@
             dragDrop.setLocked(true);
             renderMachines();
             renderQueue();
-            renderInspector();
             renderDebugReport(null);
             updateStats();
             setControls(false);
@@ -347,39 +371,14 @@
             const queue = container.querySelector('#queue-strip');
             queue.innerHTML = '';
             level().itemQueue.forEach((item, index) => {
-                const chip = document.createElement('button');
-                chip.type = 'button';
-                chip.className = `tray-item${index < state.processedCount ? ' done' : ''}${item.id === state.selectedInspectItemId ? ' selected' : ''}`;
-                chip.dataset.itemId = item.id;
+                const chip = document.createElement('div');
+                chip.className = `tray-item${index < state.processedCount ? ' done' : ''}`;
                 chip.innerHTML = `
                     <span class="tray-icon">${escapeHtml(item.fallbackIcon || item.icon || '•')}</span>
                     <span class="tray-label">${escapeHtml(item.label || item.key)}</span>
                 `;
                 queue.appendChild(chip);
             });
-        }
-
-        function renderInspector() {
-            const panel = container.querySelector('#item-inspector');
-            const content = panel.querySelector('.inspector-content');
-            const item = findById(level().itemQueue || [], state.selectedInspectItemId);
-            if (!item) {
-                content.innerHTML = 'คลิกรายการในแถบวัตถุเพื่อดูคุณสมบัติก่อนเริ่มสายพาน';
-                panel.classList.remove('has-decoy');
-                return;
-            }
-            const inspect = item.inspect || {};
-            const properties = inspect.properties || Object.entries(item.props || {}).map(([key, value]) => `${key}: ${value}`);
-            panel.classList.toggle('has-decoy', Boolean(item.isDecoy));
-            content.innerHTML = `
-                <div class="inspector-title-row">
-                    <span class="inspector-icon">${escapeHtml(item.fallbackIcon || item.icon || '•')}</span>
-                    <strong>${escapeHtml(inspect.title || item.label || item.key)}</strong>
-                </div>
-                <ul class="inspector-props">${properties.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul>
-                ${inspect.hint ? `<div class="inspector-hint">${escapeHtml(inspect.hint)}</div>` : ''}
-                ${inspect.warning ? `<div class="inspector-warning">${escapeHtml(inspect.warning)}</div>` : ''}
-            `;
         }
 
         function showHint() {
@@ -397,7 +396,7 @@
             if (!isBrokenRun) {
                 const missing = dragDrop.validateRules();
                 if (missing) {
-                    showFeedback(`${missing} ซ่อมกฎให้ครบก่อนทดสอบหลังแก้ไข`, 'error');
+                    showFeedback(`${missing} ซ่อมกฎให้ครบก่อนทดสอบหลังซ่อม`, 'error');
                     playAudio('wrong');
                     return;
                 }
@@ -546,7 +545,7 @@
             if (isBrokenRun) {
                 state.phase = 'repair';
                 dragDrop.setLocked(false);
-                container.querySelector('#run-conveyor').textContent = 'ทดสอบหลังแก้ไข';
+                container.querySelector('#run-conveyor').textContent = 'ทดสอบหลังซ่อม';
                 container.querySelector('#program-subtitle').textContent = 'ซ่อมบล็อกที่น่าสงสัย แล้วทดสอบอีกครั้ง';
                 renderDebugReport(stats);
                 setControls(false);
@@ -561,6 +560,7 @@
             state.levelScores[state.levelIndex] = score;
 
             if (passed) {
+                renderDebugReport(stats);
                 showFeedback(current.successFeedback || `ซ่อมสำเร็จ! ผลผลิตถูกทางครบ ${stats.total} ชิ้น`, 'success');
                 if (state.levelIndex < gameConfig.levels.length - 1) {
                     window.setTimeout(() => loadLevel(state.levelIndex + 1), 1400);
@@ -581,28 +581,103 @@
             if (!stats) {
                 panel.className = 'debug-report-card is-empty';
                 panel.innerHTML = `
-                    <h4>รายงานข้อผิดพลาด</h4>
+                    <h4>รายงานการทดสอบ</h4>
                     <div class="debug-report-body">รายงานจะแสดงหลังทดสอบกฎเดิม</div>
                 `;
                 return;
             }
             const report = current.debugReport || {};
-            const wrongLabels = stats.wrongItems.slice(0, 5).map(({ item }) => item.label || item.key);
-            panel.className = 'debug-report-card';
+            const wrongCount = stats.wrongItems.length;
+            const isSuccess = wrongCount === 0;
+            panel.className = `debug-report-card${isSuccess ? ' is-success' : ''}`;
             panel.innerHTML = `
-                <h4>${escapeHtml(report.title || 'รายงานข้อผิดพลาด')}</h4>
-                <div class="debug-report-body">
-                    <p>${escapeHtml(report.summary || 'ระบบส่งผลผลิตบางชิ้นไปผิดทาง')}</p>
-                    <div class="debug-report-metric">พบผิดทาง ${stats.wrongItems.length}/${stats.total} ชิ้น</div>
-                    ${wrongLabels.length ? `<div class="debug-wrong-list">ตัวอย่าง: ${escapeHtml(wrongLabels.join(', '))}</div>` : ''}
-                    <div class="debug-rule-compare">
-                        <strong>กฎเสียเริ่มต้น</strong>
-                        <pre>${escapeHtml(rulesToText(current.brokenLogic, current))}</pre>
-                        <strong>เป้าหมายที่ต้องซ่อม</strong>
-                        <pre>${escapeHtml(rulesToText(current.expectedLogic, current))}</pre>
+                <button type="button" class="debug-report-summary-button" aria-haspopup="dialog">
+                    <span class="debug-report-button-title">รายงานการทดสอบ</span>
+                    <span class="debug-report-button-main">${escapeHtml(isSuccess ? 'ซ่อมสำเร็จ!' : `พบของไปผิดทาง ${wrongCount} จาก ${stats.total} ชิ้น`)}</span>
+                    <span class="debug-report-problem-type">
+                        <strong>จุดที่ควรตรวจ:</strong>
+                        <span>${escapeHtml(isSuccess ? 'กฎทำงานถูกต้องแล้ว' : bugTypeLabel(current.bugType))}</span>
+                    </span>
+                    <span class="debug-report-next-step">คลิกเพื่อดูรายละเอียด</span>
+                </button>
+            `;
+        }
+
+        function reportDetailHtml(stats) {
+            const current = level();
+            const report = current.debugReport || {};
+            const wrongCount = stats.wrongItems.length;
+            const wrongLabels = stats.wrongItems.slice(0, 3).map(({ item }) => item.label || item.key);
+            const hasMoreWrong = stats.wrongItems.length > wrongLabels.length;
+            const isSuccess = wrongCount === 0;
+            return `
+                ${report.summary ? `<div class="debug-detail-section"><strong>สรุปอาการ</strong><p>${escapeHtml(report.summary)}</p></div>` : ''}
+                ${report.title ? `<div class="debug-detail-section"><strong>หัวข้อรายงาน</strong><p>${escapeHtml(report.title)}</p></div>` : ''}
+                <div class="debug-detail-section">
+                    <strong>รายละเอียดที่พบ</strong>
+                    ${isSuccess
+                        ? '<p>กฎหลังซ่อมส่งผลผลิตทุกชิ้นไปถูกทางแล้ว</p>'
+                        : `
+                            <ul class="debug-wrong-list">
+                                ${stats.wrongItems.slice(0, 3).map(({ item, actualAction }) => `<li>${escapeHtml(item.label || item.key)}: ${escapeHtml(wrongFeedback(current, item, actualAction))}</li>`).join('')}
+                                ${hasMoreWrong ? '<li>และรายการอื่น ๆ</li>' : ''}
+                            </ul>
+                        `}
+                </div>
+                ${isSuccess ? '' : `
+                    <div class="debug-detail-section">
+                        <strong>ประเภทจุดผิด</strong>
+                        <p>${escapeHtml(bugTypeLabel(current.bugType))}: ${escapeHtml(bugTypeDescription(current.bugType))}</p>
+                    </div>
+                `}
+                ${wrongLabels.length ? `<div class="debug-detail-section"><strong>ตัวอย่างของที่ไปผิดทาง</strong><p>${escapeHtml(wrongLabels.join(', '))}${hasMoreWrong ? ' และรายการอื่น ๆ' : ''}</p></div>` : ''}
+                <div class="debug-rule-compare">
+                    <strong>กฎที่น่าสงสัย</strong>
+                    <pre>${escapeHtml(rulesToText(current.brokenLogic, current))}</pre>
+                    <strong>เป้าหมายที่ถูกต้อง</strong>
+                    <pre>${escapeHtml(rulesToText(current.expectedLogic, current))}</pre>
+                </div>
+            `;
+        }
+
+        function showDebugReportPopup(stats) {
+            closeDebugReportPopup();
+            const current = level();
+            const wrongCount = stats.wrongItems.length;
+            const isSuccess = wrongCount === 0;
+            const modal = document.createElement('div');
+            modal.className = 'debug-report-modal-backdrop';
+            modal.innerHTML = `
+                <div class="debug-report-modal" role="dialog" aria-modal="true" aria-labelledby="debug-report-modal-title">
+                    <div class="debug-report-modal-head">
+                        <div>
+                            <div class="debug-report-modal-kicker">${escapeHtml(isSuccess ? 'ซ่อมสำเร็จ' : `พบของไปผิดทาง ${wrongCount} จาก ${stats.total} ชิ้น`)}</div>
+                            <h3 id="debug-report-modal-title">รายงานการทดสอบ</h3>
+                        </div>
+                        <button type="button" class="debug-report-modal-close" data-action="close-report-modal" aria-label="ปิดรายงาน">×</button>
+                    </div>
+                    <div class="debug-report-modal-summary">
+                        <strong>จุดที่ควรตรวจ:</strong>
+                        <span>${escapeHtml(isSuccess ? 'กฎทำงานถูกต้องแล้ว' : bugTypeLabel(current.bugType))}</span>
+                    </div>
+                    <div class="debug-report-modal-body">
+                        ${reportDetailHtml(stats)}
+                    </div>
+                    <div class="debug-report-modal-actions">
+                        <button type="button" class="debug-report-modal-button" data-action="close-report-modal">เข้าใจแล้ว</button>
                     </div>
                 </div>
             `;
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal || event.target.closest('[data-action="close-report-modal"]')) {
+                    closeDebugReportPopup();
+                }
+            });
+            document.body.appendChild(modal);
+        }
+
+        function closeDebugReportPopup() {
+            document.querySelectorAll('.debug-report-modal-backdrop').forEach((modal) => modal.remove());
         }
 
         function highlightSuspicious() {
@@ -691,7 +766,7 @@
             overlay.innerHTML = `
                 <div class="result-card">
                     <h3>ภารกิจซ่อมกฎฟาร์มสำเร็จ!</h3>
-                    <p>${escapeHtml(gameConfig.resultText || 'คุณตรวจบั๊กและซ่อมระบบครบทุกด่านแล้ว')}</p>
+                    <p>${escapeHtml(gameConfig.resultText || 'คุณตรวจจุดผิดและซ่อมระบบครบทุกด่านแล้ว')}</p>
                     <div class="result-stars">${'★'.repeat(stars) || '0 ดาว'}</div>
                     <div class="result-metrics">
                         <div class="result-metric">คะแนนเฉลี่ย<strong>${averageScore}</strong></div>

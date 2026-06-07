@@ -83,7 +83,7 @@ $project_cta_texts = [
     1 => 'ขั้นต่อไป: ออกแบบภารกิจตรรกะคัดแยกของคุณเอง',
     2 => 'ขั้นต่อไป: ออกแบบภารกิจเส้นทางรถไถของคุณเอง',
     3 => 'ขั้นต่อไป: ออกแบบภารกิจ Smart Farm Manager ของคุณเอง',
-    4 => 'ขั้นต่อไป: ออกแบบภารกิจแก้บั๊กฟาร์มของคุณเอง'
+    4 => 'ขั้นต่อไป: ออกแบบภารกิจซ่อมกฎฟาร์มของคุณเอง'
 ];
 
 $project_cta = [
@@ -415,7 +415,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                         <div class="modal-body text-center p-4 p-lg-5">
                             <div class="display-4 mb-3">🎉</div>
                             <h3 class="fw-bold mb-2">ผ่านครบทุกด่านแล้ว!</h3>
-                            <p class="fs-5 text-secondary">ต่อไปมาสร้างโจทย์เส้นทางรถไถของตัวเองกันเถอะ</p>
+                            <p class="fs-5 text-secondary"><?php echo $game_id === 4 ? 'ต่อไปมาสร้างโจทย์ซ่อมกฎฟาร์มของตัวเองกันเถอะ' : 'ต่อไปมาสร้างโจทย์เส้นทางรถไถของตัวเองกันเถอะ'; ?></p>
                             <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
                                 <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>" class="btn btn-primary rounded-pill px-4 fw-bold">
                                     เข้าห้องสร้างชิ้นงาน

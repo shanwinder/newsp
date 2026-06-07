@@ -21,6 +21,7 @@ if (!$context) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
     <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
 
     <style>
@@ -58,6 +59,12 @@ if (!$context) {
         .badge-submitted { background: #fef08a; color: #854d0e; }
         .badge-revision { background: #fed7aa; color: #c2410c; }
         .badge-reviewed { background: #bbf7d0; color: #166534; }
+        .smart-teacher-detail { margin-top: 12px; }
+        .smart-teacher-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .smart-teacher-grid > div { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .smart-teacher-grid strong { display: block; color: #0f172a; margin-bottom: 3px; }
+        .smart-teacher-grid span { color: #475569; }
+        @media (max-width: 900px) { .smart-teacher-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 
@@ -92,6 +99,24 @@ if (!$context) {
             <div id="presentation-panel" class="content-wrapper" style="display:none;">
                 <div class="canvas-container">
                     <div id="preview-stage"></div>
+                </div>
+
+                <div id="teacher-smart-farm-tools" class="info-card mb-3" style="display:none;">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-bold text-success mb-1"><i class="bi bi-controller"></i> Teacher Play Review</h5>
+                            <div class="text-secondary small">ทดลองเล่น ดูเฉลย ตัวหลอก ผลตรวจคุณภาพ และสถานะการใช้ตัวช่วย</div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold" onclick="openSmartFarmTeacherPlayer('preview')"><i class="bi bi-eye"></i> ทดลองเล่นด่านนี้</button>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold" onclick="openSmartFarmTeacherPlayer('challenge')"><i class="bi bi-controller"></i> Challenge Mode</button>
+                            <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('answers')"><i class="bi bi-card-checklist"></i> ดูเฉลยกฎ</button>
+                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('decoys')"><i class="bi bi-shuffle"></i> ดูตัวหลอก</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('quality')"><i class="bi bi-clipboard2-check"></i> ดูผลตรวจคุณภาพ</button>
+                        </div>
+                    </div>
+                    <div id="teacher-smart-farm-player" class="d-none"></div>
+                    <div id="teacher-smart-farm-details" class="smart-teacher-detail"></div>
                 </div>
 
                 <div class="info-card">
@@ -132,12 +157,14 @@ if (!$context) {
         </div>
     </div>
 
+    <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>
     <script>
         const ASSET_PATH = '../assets/img/';
         let currentWorkId = null;
         let currentGameId = 1;
+        let currentSmartFarmWork = null;
 
         // ⚙️ ตั้งค่าขนาดไอเทม
         const ITEM_SIZES = {
@@ -277,9 +304,99 @@ if (!$context) {
             }
 
             renderCanvas(data.work_data, bgType);
+            setupSmartFarmTeacherReview(data.work_data);
 
             document.querySelectorAll('.student-item').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
+        }
+
+        function setupSmartFarmTeacherReview(jsonData) {
+            const tools = document.getElementById('teacher-smart-farm-tools');
+            const player = document.getElementById('teacher-smart-farm-player');
+            const details = document.getElementById('teacher-smart-farm-details');
+            currentSmartFarmWork = null;
+            tools.style.display = 'none';
+            player.classList.add('d-none');
+            player.innerHTML = '';
+            details.innerHTML = '';
+
+            try {
+                const parsed = JSON.parse(jsonData || '{}');
+                if (parsed && parsed.project_type === 'smart_farm_mini_game') {
+                    currentSmartFarmWork = parsed;
+                    tools.style.display = 'block';
+                    showSmartFarmTeacherDetails('quality');
+                }
+            } catch (error) {
+                currentSmartFarmWork = null;
+            }
+        }
+
+        function openSmartFarmTeacherPlayer(mode) {
+            if (!currentSmartFarmWork) return;
+            const player = document.getElementById('teacher-smart-farm-player');
+            document.getElementById('teacher-smart-farm-details').innerHTML = '';
+            player.classList.remove('d-none');
+            window.SmartFarmBuilderPreview.createPlayer(player, currentSmartFarmWork, {
+                mode,
+                allowModeSwitch: true
+            });
+            setTimeout(adjustScale, 50);
+        }
+
+        function showSmartFarmTeacherDetails(kind) {
+            if (!currentSmartFarmWork) return;
+            const player = document.getElementById('teacher-smart-farm-player');
+            const details = document.getElementById('teacher-smart-farm-details');
+            player.classList.add('d-none');
+            const data = currentSmartFarmWork;
+            const defaultBehavior = data.default_behavior || data.defaultBehavior || { type: 'pass_through', label: 'ปล่อยผ่านอัตโนมัติ' };
+            const actionLabel = (id) => {
+                const found = (data.actions || []).find((action) => action.id === id);
+                return id === (defaultBehavior.type || defaultBehavior.id || 'pass_through') ? defaultBehavior.label : (found ? found.label : id);
+            };
+
+            if (kind === 'answers') {
+                details.innerHTML = `
+                    <h6 class="fw-bold text-success"><i class="bi bi-card-checklist"></i> เฉลยกฎและปลายทาง</h6>
+                    <div class="smart-teacher-grid">
+                        ${(data.rules || []).map((rule) => {
+                            const prefix = rule.type === 'else' ? 'Else' : (rule.type === 'else_if' ? 'Else If' : 'If');
+                            const condition = rule.type === 'else' ? 'วัตถุที่เหลือทั้งหมด' : (((data.conditions || []).find((item) => item.id === rule.condition) || {}).label || '-');
+                            return `<div><strong>${escapeHtml(prefix)}</strong><span>${escapeHtml(condition)} → ${escapeHtml(actionLabel(rule.action))}</span></div>`;
+                        }).join('')}
+                        ${data.logic_type === 'if' ? `<div><strong>System</strong><span>ไม่เข้าเงื่อนไข → ${escapeHtml(defaultBehavior.label)}</span></div>` : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            if (kind === 'decoys') {
+                const decoys = (data.items || []).filter((item) => item.isDecoy);
+                details.innerHTML = `
+                    <h6 class="fw-bold text-warning"><i class="bi bi-shuffle"></i> ตัวหลอกและเหตุผล</h6>
+                    <div class="smart-teacher-grid">
+                        ${decoys.length ? decoys.map((item) => `
+                            <div><strong>${escapeHtml(item.fallbackIcon || '')} ${escapeHtml(item.label)}</strong><span>${escapeHtml(item.decoyReason || item.explain || 'เป็นวัตถุที่ใช้ทดสอบการสังเกตเงื่อนไข')}</span></div>
+                        `).join('') : '<div class="text-secondary">ไม่มีข้อมูลตัวหลอก</div>'}
+                    </div>
+                `;
+                return;
+            }
+
+            const quality = data.qualityCheck || {};
+            const assistance = data.builder_assistance || {};
+            details.innerHTML = `
+                <h6 class="fw-bold text-secondary"><i class="bi bi-clipboard2-check"></i> ผลตรวจคุณภาพด่าน</h6>
+                <div class="smart-teacher-grid">
+                    <div><strong>Branch Balance</strong><span>${quality.balancedBranches ? 'ผ่าน' : 'ควรปรับ'}</span></div>
+                    <div><strong>Decoy Quality</strong><span>${quality.hasGoodDecoys ? 'ผ่าน' : 'ควรปรับ'}</span></div>
+                    <div><strong>Destination Coverage</strong><span>${quality.usesAllDestinations ? 'ผ่าน' : 'ควรปรับ'}</span></div>
+                    <div><strong>Item Diversity</strong><span>${quality.diverseItems ? 'ผ่าน' : 'ควรปรับ'}</span></div>
+                    <div><strong>การใช้ตัวช่วย</strong><span>${assistance.used_auto_fill ? `ใช้ใส่ตัวอย่างเริ่มต้น ${assistance.auto_fill_count || 1} ครั้ง` : 'ไม่ได้ใช้'}</span></div>
+                    <div><strong>คำเตือน</strong><span>${escapeHtml((quality.warnings || []).join(' | ') || '-')}</span></div>
+                </div>
+            `;
         }
 
         function renderCanvas(jsonData, bgType) {

@@ -53,6 +53,10 @@ $projectConfigs = [
 ];
 
 $game_id = isset($project_game_id) ? intval($project_game_id) : intval($_GET['game_id'] ?? 2);
+if ($game_id === 3) {
+    header("Location: create_project_condition.php?game_id=3");
+    exit();
+}
 if (!isset($projectConfigs[$game_id])) {
     header("Location: student_dashboard.php");
     exit();

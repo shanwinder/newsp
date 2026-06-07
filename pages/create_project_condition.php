@@ -119,9 +119,6 @@ if ($work) {
 
                     <div class="catalog-toolbar">
                         <div class="catalog-filter" id="catalog-filter"></div>
-                        <button type="button" id="add-decoys" class="btn btn-outline-warning rounded-pill fw-bold">
-                            <i class="bi bi-magic"></i> เพิ่มตัวหลอกอัตโนมัติ
-                        </button>
                     </div>
                     <div id="item-catalog" class="item-catalog"></div>
 
@@ -160,7 +157,7 @@ if ($work) {
                             <div class="toolbox-head">
                                 <h4>บล็อกที่ใช้สร้างกฎ</h4>
                                 <button type="button" id="auto-fill-rules" class="btn btn-sm btn-outline-success rounded-pill fw-bold">
-                                    <i class="bi bi-stars"></i> สร้างกฎให้อัตโนมัติ
+                                    <i class="bi bi-stars"></i> ใส่ตัวอย่างเริ่มต้น
                                 </button>
                             </div>
                             <section class="palette-group">

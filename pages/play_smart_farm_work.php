@@ -149,6 +149,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>
     <?php if (!$error): ?>
@@ -185,7 +186,11 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
             `;
             new bootstrap.Modal(document.getElementById('itemDetailModal')).show();
         }
-        window.SmartFarmBuilderPreview.createPlayer('smart-farm-player', WORK_DATA, { onInspect: showItemDetail });
+        window.SmartFarmBuilderPreview.createPlayer('smart-farm-player', WORK_DATA, {
+            mode: <?php echo $isOwnWork ? "'preview'" : "'challenge'"; ?>,
+            allowModeSwitch: <?php echo $isOwnWork ? 'true' : 'false'; ?>,
+            onInspect: showItemDetail
+        });
     </script>
     <?php endif; ?>
 </body>

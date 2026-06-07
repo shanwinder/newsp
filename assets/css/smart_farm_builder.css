@@ -228,6 +228,14 @@
     line-height: 1.2;
 }
 
+.quality-warning-list {
+    color: #8a5a00;
+    background: #fff8df;
+    border: 1px solid #f4d77b;
+    border-radius: 8px;
+    padding: 9px 11px;
+}
+
 .selected-items {
     display: grid;
     gap: 8px;
@@ -266,27 +274,6 @@
 .selected-item-row .props {
     color: #668074;
     font-size: .8rem;
-}
-
-.auto-result-pill {
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: .82rem;
-    font-weight: 800;
-    text-align: center;
-    border: 1px solid #d8e6dc;
-}
-
-.auto-result-pill.special {
-    background: #ecfdf5;
-    color: #166534;
-    border-color: #bbf7d0;
-}
-
-.auto-result-pill.pass {
-    background: #f8fafc;
-    color: #475569;
-    border-color: #cbd5e1;
 }
 
 .decoy-pill {

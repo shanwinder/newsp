@@ -130,6 +130,14 @@
     }
 
     function renderTeacherDetails(data) {
+        const quality = data.qualityCheck || {};
+        const assistance = data.builder_assistance || {};
+        const qualityText = [
+            quality.balancedBranches ? 'branch สมดุล' : 'branch ยังไม่สมดุล',
+            quality.hasGoodDecoys ? 'ตัวหลอกเหมาะสม' : 'ตัวหลอกควรปรับ',
+            quality.usesAllDestinations ? 'ใช้ปลายทางครบ' : 'ใช้ปลายทางไม่ครบ',
+            quality.diverseItems ? 'วัตถุหลากหลาย' : 'วัตถุยังซ้ำมาก'
+        ].join(' | ');
         const rows = [
             ['ผลทดสอบ', data.testResult?.tested ? `${Math.round((data.testResult.accuracy || 0) * 100)}% / ${data.testResult.stars || 0} ดาว` : 'ยังไม่มี'],
             ['เงื่อนไข', (data.conditions || []).map((item) => item.label).join(', ') || '-'],
@@ -137,7 +145,10 @@
                 ...(data.actions || []).map((item) => item.label),
                 ...(isIfOnly(data) ? [((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')] : [])
             ].join(', ') || '-'],
-            ['ตัวหลอก', (data.items || []).filter((item) => item.isDecoy).map((item) => item.label).join(', ') || '-']
+            ['ตัวหลอก', (data.items || []).filter((item) => item.isDecoy).map((item) => item.label).join(', ') || '-'],
+            ['ผลตรวจคุณภาพ', qualityText],
+            ['คำเตือนคุณภาพ', (quality.warnings || []).join(' | ') || '-'],
+            ['การใช้ตัวช่วย', assistance.used_auto_fill ? `ใช้ใส่ตัวอย่างเริ่มต้น ${assistance.auto_fill_count || 1} ครั้ง` : 'ไม่ได้ใช้']
         ];
         return `
             <table class="smart-detail-table mt-3">
@@ -170,11 +181,21 @@
         const state = {
             played: false,
             running: false,
-            stats: null
+            stats: null,
+            mode: options.mode || 'challenge',
+            playerRules: []
         };
 
-        root.innerHTML = `
+        function renderShell() {
+            const isChallenge = state.mode !== 'preview';
+            root.innerHTML = `
             <div class="builder-test-panel p-0 border-0 shadow-none">
+                ${options.allowModeSwitch ? `
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button type="button" class="btn btn-sm ${state.mode === 'preview' ? 'btn-success' : 'btn-outline-success'} rounded-pill mode-preview"><i class="bi bi-eye"></i> Preview Mode</button>
+                        <button type="button" class="btn btn-sm ${state.mode === 'challenge' ? 'btn-primary' : 'btn-outline-primary'} rounded-pill mode-challenge"><i class="bi bi-controller"></i> Challenge Mode</button>
+                    </div>
+                ` : ''}
                 <div class="game-board">
                     <div class="conveyor-play-area">
                         <div class="destination-row"></div>
@@ -184,30 +205,122 @@
                     </div>
                     <div class="item-preview-bar"></div>
                 </div>
+                ${isChallenge ? `
+                    <div class="rule-builder-shell challenge-rule-shell mt-3">
+                        <section class="conveyor-panel program-panel">
+                            <div class="program-head">
+                                <div>
+                                    <h4>กฎของฉัน</h4>
+                                    <p>ลากบล็อกเงื่อนไขและปลายทางให้ครบก่อนเริ่มสายพาน</p>
+                                </div>
+                                <div class="block-trash challenge-trash">ลากบล็อกที่วางแล้วมาที่นี่เพื่อลบ</div>
+                            </div>
+                            <div class="rule-list challenge-rule-list"></div>
+                        </section>
+                        <aside class="conveyor-panel toolbox-panel">
+                            <div class="toolbox-head"><h4>คลังบล็อก</h4></div>
+                            <section class="palette-group">
+                                <h4>เงื่อนไข</h4>
+                                <div class="block-list challenge-condition-blocks"></div>
+                            </section>
+                            <section class="palette-group">
+                                <h4>ปลายทาง</h4>
+                                <div class="block-list challenge-action-blocks"></div>
+                            </section>
+                        </aside>
+                    </div>
+                ` : `
+                    <div class="readable-rules mt-3">
+                        <div class="readable-title"><i class="bi bi-card-checklist"></i> Preview Mode ใช้กฎเฉลยของผู้ออกแบบ</div>
+                    </div>
+                `}
                 <div class="d-flex flex-wrap gap-2 align-items-center mt-3">
-                    <button type="button" class="btn btn-success rounded-pill fw-bold run-player"><i class="bi bi-play-fill"></i> เล่นด่านนี้</button>
+                    <button type="button" class="btn btn-success rounded-pill fw-bold run-player"><i class="bi bi-play-fill"></i> ${isChallenge ? 'เริ่มสายพานด้วยกฎของฉัน' : 'เล่นด้วยกฎเฉลย'}</button>
                     <button type="button" class="btn btn-outline-secondary rounded-pill fw-bold show-answers" disabled><i class="bi bi-eye-fill"></i> ดูเฉลยหลังเล่น</button>
-                    <span class="player-result text-secondary">กดเล่นเพื่อทดสอบกฎของผู้ออกแบบ</span>
+                    <span class="player-result text-secondary">${isChallenge ? 'สร้างกฎเองก่อนเล่น เฉลยจะถูกซ่อนไว้' : 'Preview Mode จะแสดงผลจากกฎของผู้ออกแบบ'}</span>
                 </div>
                 <div class="answer-panel mt-3 d-none"></div>
             </div>
         `;
+            bindShell();
+        }
 
-        const destinationRow = root.querySelector('.destination-row');
-        const previewBar = root.querySelector('.item-preview-bar');
-        const movingLayer = root.querySelector('.moving-item-layer');
-        const result = root.querySelector('.player-result');
-        const answerPanel = root.querySelector('.answer-panel');
-        const runButton = root.querySelector('.run-player');
-        const answerButton = root.querySelector('.show-answers');
+        let destinationRow;
+        let previewBar;
+        let movingLayer;
+        let result;
+        let answerPanel;
+        let runButton;
+        let answerButton;
+        let dragDrop = null;
 
-        const actions = data.actions || [];
-        destinationRow.style.setProperty('--destination-count', String((actions.length || 1) + (isIfOnly(data) ? 1 : 0)));
-        destinationRow.innerHTML = actions.map((action) => `
-            <div class="destination-card"><strong>${escapeHtml(action.icon || '📦')}</strong><span>${escapeHtml(action.label)}</span></div>
-        `).join('') + (isIfOnly(data) ? `
-            <div class="pass-through-card"><strong><i class="bi bi-arrow-right-circle-fill"></i></strong><span>${escapeHtml((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')}</span></div>
-        ` : '');
+        renderShell();
+
+        function bindShell() {
+            destinationRow = root.querySelector('.destination-row');
+            previewBar = root.querySelector('.item-preview-bar');
+            movingLayer = root.querySelector('.moving-item-layer');
+            result = root.querySelector('.player-result');
+            answerPanel = root.querySelector('.answer-panel');
+            runButton = root.querySelector('.run-player');
+            answerButton = root.querySelector('.show-answers');
+
+            const actions = data.actions || [];
+            destinationRow.style.setProperty('--destination-count', String((actions.length || 1) + (isIfOnly(data) ? 1 : 0)));
+            destinationRow.innerHTML = actions.map((action) => `
+                <div class="destination-card" data-action="${escapeHtml(action.id)}"><strong>${escapeHtml(action.icon || '📦')}</strong><span>${escapeHtml(action.label)}</span></div>
+            `).join('') + (isIfOnly(data) ? `
+                <div class="pass-through-card"><strong><i class="bi bi-arrow-right-circle-fill"></i></strong><span>${escapeHtml((data.default_behavior || data.defaultBehavior || {}).label || 'ปล่อยผ่านอัตโนมัติ')}</span></div>
+            ` : '');
+
+            root.querySelector('.mode-preview')?.addEventListener('click', () => switchMode('preview'));
+            root.querySelector('.mode-challenge')?.addEventListener('click', () => switchMode('challenge'));
+            runButton.addEventListener('click', run);
+            answerButton.addEventListener('click', renderAnswers);
+            renderPreview(false);
+            initChallengeRules();
+        }
+
+        function switchMode(mode) {
+            state.mode = mode;
+            state.played = false;
+            state.stats = null;
+            state.playerRules = [];
+            renderShell();
+        }
+
+        function initChallengeRules() {
+            if (state.mode === 'preview') return;
+            const shell = root.querySelector('.challenge-rule-shell');
+            if (!shell || !window.FarmMissions?.DragDropManager) {
+                if (result) result.textContent = 'โหลดคลังบล็อกไม่สำเร็จ กรุณารีเฟรชหน้า';
+                return;
+            }
+            dragDrop = new window.FarmMissions.DragDropManager({
+                rootElement: shell,
+                rulePanel: root.querySelector('.challenge-rule-list'),
+                conditionContainer: root.querySelector('.challenge-condition-blocks'),
+                actionContainer: root.querySelector('.challenge-action-blocks'),
+                trashElement: root.querySelector('.challenge-trash'),
+                previewElement: null,
+                onRulesChanged: (rules) => {
+                    state.playerRules = rules;
+                    state.played = false;
+                    answerButton.disabled = true;
+                },
+                onFeedback: (message) => {
+                    result.className = 'player-result text-secondary';
+                    result.textContent = message;
+                }
+            });
+            dragDrop.loadLevel({
+                ruleSlots: makeChallengeRuleSlots(data),
+                conditions: data.conditions || [],
+                actions: data.actions || [],
+                allowReorder: data.logic_type === 'if_else_if_else'
+            });
+            state.playerRules = dragDrop.getRules();
+        }
 
         function renderPreview(showAnswers = false) {
             previewBar.innerHTML = (data.items || []).map((item, index) => `
@@ -244,35 +357,35 @@
 
         async function run() {
             if (state.running) return;
+            const rulesToRun = state.mode === 'preview' ? (data.rules || []) : (dragDrop ? dragDrop.getRules() : state.playerRules);
+            const missingRule = state.mode !== 'preview' && dragDrop?.validateRules();
+            if (missingRule) {
+                result.className = 'player-result text-warning fw-bold';
+                result.textContent = missingRule;
+                return;
+            }
             state.running = true;
             runButton.disabled = true;
             movingLayer.innerHTML = '';
             let correct = 0;
+            const board = root.querySelector('.conveyor-play-area');
 
             for (const item of data.items || []) {
-                const actual = evaluate(item, data.rules, data.conditions, data);
+                const actual = evaluate(item, rulesToRun, data.conditions, data);
                 const expected = normalizeAction(item.correctResult || item.correctAction, data);
                 const ok = actual === expected;
                 if (ok) correct++;
                 const token = document.createElement('div');
                 token.className = 'moving-token';
                 token.textContent = item.fallbackIcon || '🌱';
-                token.style.left = '8%';
-                token.style.top = '72%';
+                setTokenPoint(token, getBoardPoint('start', board));
                 movingLayer.appendChild(token);
                 await wait(80);
-                token.style.left = '50%';
-                token.style.top = '48%';
+                setTokenPoint(token, getBoardPoint('.scan-station', board));
                 await wait(420);
                 token.classList.add(ok ? 'correct' : 'wrong');
-                if (actual === defaultPassAction(data)) {
-                    token.style.left = '91%';
-                    token.style.top = '72%';
-                } else {
-                    const actionIndex = Math.max(0, actions.findIndex((action) => action.id === actual));
-                    token.style.left = `${destinationLeft(actionIndex, actions.length)}%`;
-                    token.style.top = '21%';
-                }
+                const targetSelector = actual === defaultPassAction(data) ? '.pass-through-card' : `[data-action="${cssEscape(actual)}"]`;
+                setTokenPoint(token, getBoardPoint(targetSelector, board));
                 await wait(420);
                 token.remove();
             }
@@ -289,11 +402,19 @@
             renderPreview(true);
         }
 
-        runButton.addEventListener('click', run);
-        answerButton.addEventListener('click', renderAnswers);
-        renderPreview(false);
-
         return { run, state };
+    }
+
+    function makeChallengeRuleSlots(data) {
+        const slots = (data.rules || []).map((rule) => ({
+            type: rule.type || 'if',
+            condition: rule.type === 'else' ? 'else' : null,
+            action: null
+        }));
+        if (slots.length) return slots;
+        if (isIfOnly(data)) return [{ type: 'if', condition: null, action: null }];
+        if (data.logic_type === 'if_else_if_else') return [{ type: 'if' }, { type: 'else_if' }, { type: 'else', condition: 'else' }];
+        return [{ type: 'if' }, { type: 'else', condition: 'else' }];
     }
 
     function detailText(item, showAnswers, data) {
@@ -320,11 +441,36 @@
         return new Promise((resolve) => window.setTimeout(resolve, ms));
     }
 
-    function destinationLeft(index, count) {
-        const safeCount = Math.max(1, count || 1);
-        if (safeCount === 1) return 50;
-        const safeIndex = Math.min(Math.max(index, 0), safeCount - 1);
-        return 14 + safeIndex * (72 / (safeCount - 1));
+    function getBoardPoint(selector, boardEl) {
+        const boardRect = boardEl.getBoundingClientRect();
+        if (selector === 'start') {
+            return {
+                x: Math.max(36, boardRect.width * 0.08),
+                y: Math.max(36, boardRect.height - 42)
+            };
+        }
+        const target = boardEl.querySelector(selector);
+        if (!target) {
+            return {
+                x: boardRect.width * 0.92,
+                y: Math.max(36, boardRect.height - 42)
+            };
+        }
+        const targetRect = target.getBoundingClientRect();
+        return {
+            x: targetRect.left + targetRect.width / 2 - boardRect.left,
+            y: Math.min(targetRect.top + targetRect.height / 2 - boardRect.top, boardRect.height - 42)
+        };
+    }
+
+    function setTokenPoint(token, point) {
+        token.style.left = `${point.x}px`;
+        token.style.top = `${point.y}px`;
+    }
+
+    function cssEscape(value) {
+        if (window.CSS?.escape) return window.CSS.escape(String(value));
+        return String(value).replace(/["\\]/g, '\\$&');
     }
 
     window.SmartFarmBuilderPreview = {

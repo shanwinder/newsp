@@ -1,5 +1,11 @@
 <?php
 session_start();
+$is_visitor = !empty($_SESSION['visitor_mode']);
 session_destroy();
-header("Location: pages/login.php");
+
+if ($is_visitor) {
+    header("Location: index.php");
+} else {
+    header("Location: pages/login.php");
+}
 ?>

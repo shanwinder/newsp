@@ -5,11 +5,12 @@ require_once '../includes/db.php';
 require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
 
+require_once '../includes/auth.php';
+
 // ตรวจสอบสิทธิ์
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header("Location: login.php");
-    exit();
-}
+require_student_like();
+
+$is_visitor = is_visitor_mode();
 
 $user_id = $_SESSION['user_id'];
 $mode = $_SESSION['mode'] ?? 'solo';
@@ -159,10 +160,21 @@ $result = $conn->query($sql);
 
     <div class="container py-4 text-center">
         
+        <?php if ($is_visitor): ?>
+        <div class="alert alert-info text-center shadow-sm fw-bold border-0 mb-4" style="border-radius: 15px; background: #e0f2fe; color: #0284c7;">
+            <i class="bi bi-info-circle-fill me-2"></i> โหมดผู้เยี่ยมชม: คุณสามารถทดลองเล่นได้ แต่คะแนนและผลงานจะไม่ถูกบันทึกถาวร
+        </div>
+        <?php endif; ?>
+
         <div class="pair-status-banner mode-<?php echo $mode; ?>">
             <h6 class="mb-2 text-secondary fw-bold">รูปแบบการเรียนรู้ปัจจุบัน</h6>
             
-            <?php if ($mode === 'solo'): ?>
+            <?php if ($is_visitor): ?>
+                <h3 class="fw-bold text-info mb-3">👋 <?php echo htmlspecialchars($display_name); ?></h3>
+                <span class="badge bg-info rounded-pill px-4 py-2 fs-6 shadow-sm text-dark">
+                    <i class="bi bi-eye-fill"></i> โหมดทดลองใช้งาน
+                </span>
+            <?php elseif ($mode === 'solo'): ?>
                 <h3 class="fw-bold text-success mb-3">🧑‍🌾 <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-success rounded-pill px-4 py-2 fs-6 shadow-sm">
                     <i class="bi bi-person-fill"></i> เรียนรู้รายบุคคล (Solo)
@@ -196,8 +208,8 @@ $result = $conn->query($sql);
             $icons = [
                 'logic' => '🌾',       // บทที่ 1 คัดแยกผลผลิต
                 'algorithm' => '🚜',   // บทที่ 2 เส้นทางเดินรถไถ
-                'condition' => '🧩',   // บทที่ 3 Smart Farm Manager
-                'debugging' => '🛠️'     // บทที่ 4 ตรวจสอบและแก้ไขข้อผิดพลาด
+                'condition' => '🧩',   // บทที่ 3 ผู้จัดการฟาร์มอัจฉริยะ
+                'debugging' => '🛠️'     // บทที่ 4 ซ่อมกฎฟาร์มอัจฉริยะ
             ];
 
             if ($result->num_rows > 0):
@@ -212,21 +224,34 @@ $result = $conn->query($sql);
                     $total_stages = $res_total->fetch_assoc()['total'];
                     $max_score = $total_stages * 3; 
 
-                    // หาคะแนนที่ทำได้ (ดึงเฉพาะคนที่ล็อกอินหลัก)
-                    $sql_score = "SELECT SUM(p.score) as earned 
-                                  FROM progress p 
-                                  JOIN stages s ON p.stage_id = s.id 
-                                  WHERE p.user_id = $user_id AND s.game_id = $gameId AND p.learning_session_id = {$context['learning_session_id']}";
-                    $res_score = $conn->query($sql_score);
-                    $current_score = $res_score->fetch_assoc()['earned'];
-                    if (!$current_score) $current_score = 0;
+                    // หาคะแนนที่ทำได้
+                    if ($is_visitor) {
+                        $sql_stages = "SELECT id FROM stages WHERE game_id = $gameId";
+                        $res_stages = $conn->query($sql_stages);
+                        $current_score = 0;
+                        while($s = $res_stages->fetch_assoc()){
+                            $current_score += $_SESSION['visitor_progress'][$s['id']]['score'] ?? 0;
+                        }
+                    } else {
+                        $sql_score = "SELECT SUM(p.score) as earned 
+                                      FROM progress p 
+                                      JOIN stages s ON p.stage_id = s.id 
+                                      WHERE p.user_id = $user_id AND s.game_id = $gameId AND p.learning_session_id = {$context['learning_session_id']}";
+                        $res_score = $conn->query($sql_score);
+                        $current_score = $res_score->fetch_assoc()['earned'];
+                        if (!$current_score) $current_score = 0;
+                    }
 
                     $percent = ($max_score > 0) ? ($current_score / $max_score) * 100 : 0;
 
                     // 🟢 เช็คสถานะการสร้างชิ้นงานว่าครูส่งกลับหรือไม่
-                    $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $gameId AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
-                    $res_work = $conn->query($sql_work);
-                    $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
+                    if ($is_visitor) {
+                        $project_status = null;
+                    } else {
+                        $sql_work = "SELECT status FROM student_works WHERE user_id = $user_id AND game_id = $gameId AND learning_session_id = {$context['learning_session_id']} LIMIT 1";
+                        $res_work = $conn->query($sql_work);
+                        $project_status = ($res_work && $res_work->num_rows > 0) ? $res_work->fetch_assoc()['status'] : null;
+                    }
             ?>
                     <div class="col-md-6 col-lg-5">
                         <div class="farm-card p-4 h-100 d-flex flex-column <?php echo ($project_status === 'revision') ? 'border-danger border-3 bg-danger bg-opacity-10' : ''; ?>">
@@ -256,7 +281,7 @@ $result = $conn->query($sql);
                                 </div>
 
                                 <?php
-                                $btn_text = "🚀 เข้าสู่บทเรียน";
+                                $btn_text = "▶️ เข้าสู่บทเรียน";
                                 $btn_class = "btn-play";
                                 
                                 if ($project_status === 'revision') {

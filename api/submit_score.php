@@ -19,6 +19,41 @@ if (!$input) {
     exit();
 }
 
+if (!empty($_SESSION['visitor_mode'])) {
+    $stage_id = intval($input['stage_id'] ?? 0);
+    $score = intval($input['score'] ?? 0);
+    $duration = intval($input['duration'] ?? $input['time_taken'] ?? 0);
+    $attempts = intval($input['attempts'] ?? 1);
+
+    if ($stage_id <= 0) {
+        echo json_encode(['status' => 'error', 'success' => false, 'message' => 'ไม่พบรหัสด่าน']);
+        exit();
+    }
+
+    if (!isset($_SESSION['visitor_progress'])) {
+        $_SESSION['visitor_progress'] = [];
+    }
+
+    $previousBest = $_SESSION['visitor_progress'][$stage_id]['score'] ?? 0;
+    $bestScore = max($previousBest, $score);
+
+    $_SESSION['visitor_progress'][$stage_id] = [
+        'score' => $bestScore,
+        'last_score' => $score,
+        'duration' => $duration,
+        'attempts' => $attempts,
+        'completed_at' => date('Y-m-d H:i:s')
+    ];
+
+    echo json_encode([
+        'status' => 'success',
+        'success' => true,
+        'visitor_mode' => true,
+        'message' => 'บันทึกคะแนนทดลองใน session แล้ว'
+    ]);
+    exit();
+}
+
 $submitter_id = $_SESSION['user_id']; // คนที่ถือเมาส์และกดส่งคะแนน
 $stage_id = intval($input['stage_id']);
 $score = intval($input['score']); // จำนวนดาว (0-3)

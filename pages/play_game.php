@@ -40,10 +40,10 @@ if ($game_id == 1) {
     // บทที่ 2: เส้นทางเดินรถไถ
     $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 3) {
-    // บทที่ 3: Smart Farm Manager
+    // บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ
     $game_script = "stage{$stage_id}.js"; 
 } elseif ($game_id == 4) {
-    // บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด
+    // บทที่ 4: ซ่อมกฎฟาร์มอัจฉริยะ
     $game_script = "stage{$stage_id}.js"; 
 }
 
@@ -115,7 +115,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             overflow: visible;
         }
 
-        .game-wrapper.debugger-lite-wrapper {
+        .game-wrapper.debug-mode-wrapper {
             max-width: min(1240px, calc(100vw - 24px));
             padding: 14px;
             align-items: stretch;
@@ -193,7 +193,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div class="col-md-3"></div>
         </div>
 
-        <div class="game-wrapper <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debugger-lite-wrapper' : ''; ?>">
+        <div class="game-wrapper <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debug-mode-wrapper' : ''; ?>">
             <div id="game-container"></div>
         </div>
     </div>

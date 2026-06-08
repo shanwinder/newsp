@@ -217,6 +217,9 @@ if (isset($_SESSION['user_id'])) {
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item"><a class="nav-link px-4" href="#features">เกี่ยวกับบทเรียน</a></li>
                     <li class="nav-item ms-lg-2 mt-3 mt-lg-0">
+                        <a href="pages/guest_start.php" class="btn btn-outline-success bg-white rounded-pill px-4 py-2 fw-bold shadow-sm me-2">
+                            👀 ทดลองใช้งาน
+                        </a>
                         <a href="pages/login.php" class="btn btn-light text-success rounded-pill px-4 py-2 fw-bold shadow-sm border-0">
                             <i class="bi bi-door-open-fill"></i> เข้าสู่ระบบ
                         </a>
@@ -246,9 +249,14 @@ if (isset($_SESSION['user_id'])) {
                         <?php echo htmlspecialchars($app['app_subtitle']); ?><br>
                         เรียนรู้ผ่านภารกิจเกม สนุก คิดเป็นขั้นตอน และแก้ปัญหาอย่างมีเหตุผล
                     </p>
-                    <a href="pages/login.php" class="btn-grand">
-                        <i class="bi bi-play-circle-fill me-2 fs-3"></i> เข้าสู่บทเรียน
-                    </a>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="pages/login.php" class="btn-grand">
+                            <i class="bi bi-play-circle-fill me-2 fs-3"></i> เข้าสู่บทเรียน
+                        </a>
+                        <a href="pages/guest_start.php" class="btn-grand" style="background: linear-gradient(45deg, #2ecc71, #1e8449); box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);">
+                            👀 ทดลองใช้งาน
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

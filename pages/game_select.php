@@ -4,8 +4,13 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
+$lessons = require __DIR__ . '/../config/lessons.php';
+
+require_once '../includes/auth.php';
+require_student_like();
 
 $context = session_context();
+$is_visitor = is_visitor_mode();
 
 // เช็คสถานะล็อกของครูเฉพาะรอบการเรียนรู้ของห้องนี้
 if ($context['learning_session_id'] > 0) {
@@ -38,27 +43,48 @@ if (!$game) {
 }
 
 // 3. ดึงข้อมูลด่าน + คะแนนที่เคยทำได้
-// ใช้ LEFT JOIN progress เพื่อดูว่าเคยได้ดาวไหม (ถ้าไม่มีคะแนน จะเป็น NULL)
-$sql_stages = "SELECT s.*, p.score, p.completed_at 
-               FROM stages s 
-               LEFT JOIN progress p ON s.id = p.stage_id AND p.user_id = ? AND p.learning_session_id = ?
-               WHERE s.game_id = ? 
-               ORDER BY s.stage_number ASC";
-$stmt_stages = $conn->prepare($sql_stages);
-$stmt_stages->bind_param("iii", $user_id, $context['learning_session_id'], $game_id);
-$stmt_stages->execute();
-$stages_result = $stmt_stages->get_result();
-
 $stages = [];
 $passed_count = 0;
 $total_stages = 0;
-while ($stage = $stages_result->fetch_assoc()) {
-    $total_stages++;
-    $stage['score'] = $stage['score'] ?? 0;
-    if ($stage['score'] > 0) {
-        $passed_count++;
+
+if ($is_visitor) {
+    $visitorProgress = $_SESSION['visitor_progress'] ?? [];
+    
+    $sql_stages = "SELECT * FROM stages WHERE game_id = ? ORDER BY stage_number ASC";
+    $stmt_stages = $conn->prepare($sql_stages);
+    $stmt_stages->bind_param("i", $game_id);
+    $stmt_stages->execute();
+    $stages_result = $stmt_stages->get_result();
+
+    while ($stage = $stages_result->fetch_assoc()) {
+        $total_stages++;
+        $stageId = (int)$stage['id'];
+        $stage['score'] = $visitorProgress[$stageId]['score'] ?? 0;
+        if ($stage['score'] > 0) {
+            $passed_count++;
+        }
+        $stages[] = $stage;
     }
-    $stages[] = $stage;
+} else {
+    // ใช้ LEFT JOIN progress เพื่อดูว่าเคยได้ดาวไหม
+    $sql_stages = "SELECT s.*, p.score, p.completed_at 
+                   FROM stages s 
+                   LEFT JOIN progress p ON s.id = p.stage_id AND p.user_id = ? AND p.learning_session_id = ?
+                   WHERE s.game_id = ? 
+                   ORDER BY s.stage_number ASC";
+    $stmt_stages = $conn->prepare($sql_stages);
+    $stmt_stages->bind_param("iii", $user_id, $context['learning_session_id'], $game_id);
+    $stmt_stages->execute();
+    $stages_result = $stmt_stages->get_result();
+
+    while ($stage = $stages_result->fetch_assoc()) {
+        $total_stages++;
+        $stage['score'] = $stage['score'] ?? 0;
+        if ($stage['score'] > 0) {
+            $passed_count++;
+        }
+        $stages[] = $stage;
+    }
 }
 
 $can_create_project = ($passed_count >= $total_stages && $total_stages > 0);
@@ -80,10 +106,10 @@ if ($can_create_project) {
 }
 
 $project_cta_texts = [
-    1 => 'ขั้นต่อไป: ออกแบบภารกิจตรรกะคัดแยกของคุณเอง',
-    2 => 'ขั้นต่อไป: ออกแบบภารกิจเส้นทางรถไถของคุณเอง',
-    3 => 'ขั้นต่อไป: ออกแบบภารกิจ Smart Farm Manager ของคุณเอง',
-    4 => 'ขั้นต่อไป: ออกแบบภารกิจซ่อมกฎฟาร์มของคุณเอง'
+    1 => $lessons[1]['project_cta'],
+    2 => $lessons[2]['project_cta'],
+    3 => $lessons[3]['project_cta'],
+    4 => $lessons[4]['project_cta'],
 ];
 
 $project_cta = [
@@ -94,42 +120,56 @@ $project_cta = [
     'button' => 'เข้าห้องสร้างชิ้นงาน',
     'sticky' => 'พร้อมสร้างชิ้นงานแล้ว'
 ];
-if ($project_status === 'revision') {
-    $project_cta = [
-        'hero_class' => 'project-hero-revision',
-        'icon' => 'bi-exclamation-triangle-fill',
-        'title' => 'คุณครูส่งชิ้นงานกลับให้แก้ไข',
-        'text' => 'อ่านคำแนะนำแล้วปรับปรุงผลงานให้ดีขึ้น',
-        'button' => 'แก้ไขชิ้นงาน',
-        'sticky' => 'มีชิ้นงานที่ต้องแก้ไข'
-    ];
-} elseif ($project_status === 'submitted') {
-    $project_cta = [
-        'hero_class' => 'project-hero-submitted',
-        'icon' => 'bi-check-circle-fill',
-        'title' => 'คุณสร้างชิ้นงานแล้ว',
-        'text' => 'สามารถเข้าไปดูหรือปรับปรุงชิ้นงานล่าสุดได้',
-        'button' => 'ดู/แก้ไขชิ้นงานล่าสุด',
-        'sticky' => 'ชิ้นงานถูกส่งแล้ว'
-    ];
-} elseif ($project_status === 'reviewed') {
-    $project_cta = [
-        'hero_class' => 'project-hero-reviewed',
-        'icon' => 'bi-patch-check-fill',
-        'title' => 'คุณมีชิ้นงานที่ครูตรวจแล้ว',
-        'text' => 'เข้าไปดูชิ้นงานและข้อเสนอแนะจากคุณครูได้',
-        'button' => 'ดูชิ้นงานที่ครูตรวจแล้ว',
-        'sticky' => 'ครูตรวจชิ้นงานแล้ว'
-    ];
-} elseif ($project_status === 'pending') {
-    $project_cta = [
-        'hero_class' => 'project-hero-submitted',
-        'icon' => 'bi-pencil-square',
-        'title' => 'คุณมีชิ้นงานที่ยังทำต่อได้',
-        'text' => 'กลับไปทำชิ้นงานต่อ แล้วทดสอบเส้นทางให้ผ่านก่อนส่ง',
-        'button' => 'ทำชิ้นงานต่อ',
-        'sticky' => 'ทำชิ้นงานต่อ'
-    ];
+if ($is_visitor) {
+    if ($can_create_project) {
+        $project_cta = [
+            'hero_class' => 'project-hero-new',
+            'icon' => 'bi-info-circle-fill',
+            'title' => 'ทดลองใช้งานสำเร็จ',
+            'text' => 'ต้องเข้าสู่ระบบนักเรียนก่อน จึงจะสร้างและบันทึกผลงานถาวรได้',
+            'button' => 'ไปหน้าเข้าสู่ระบบ',
+            'sticky' => 'เข้าสู่ระบบนักเรียน'
+        ];
+        $target_page = 'login.php';
+    }
+} else {
+    if ($project_status === 'revision') {
+        $project_cta = [
+            'hero_class' => 'project-hero-revision',
+            'icon' => 'bi-exclamation-triangle-fill',
+            'title' => 'คุณครูส่งชิ้นงานกลับให้แก้ไข',
+            'text' => 'อ่านคำแนะนำแล้วปรับปรุงผลงานให้ดีขึ้น',
+            'button' => 'แก้ไขชิ้นงาน',
+            'sticky' => 'มีชิ้นงานที่ต้องแก้ไข'
+        ];
+    } elseif ($project_status === 'submitted') {
+        $project_cta = [
+            'hero_class' => 'project-hero-submitted',
+            'icon' => 'bi-check-circle-fill',
+            'title' => 'คุณสร้างชิ้นงานแล้ว',
+            'text' => 'สามารถเข้าไปดูหรือปรับปรุงชิ้นงานล่าสุดได้',
+            'button' => 'ดู/แก้ไขชิ้นงานล่าสุด',
+            'sticky' => 'ชิ้นงานถูกส่งแล้ว'
+        ];
+    } elseif ($project_status === 'reviewed') {
+        $project_cta = [
+            'hero_class' => 'project-hero-reviewed',
+            'icon' => 'bi-patch-check-fill',
+            'title' => 'คุณมีชิ้นงานที่ครูตรวจแล้ว',
+            'text' => 'เข้าไปดูชิ้นงานและข้อเสนอแนะจากคุณครูได้',
+            'button' => 'ดูชิ้นงานที่ครูตรวจแล้ว',
+            'sticky' => 'ครูตรวจชิ้นงานแล้ว'
+        ];
+    } elseif ($project_status === 'pending') {
+        $project_cta = [
+            'hero_class' => 'project-hero-submitted',
+            'icon' => 'bi-pencil-square',
+            'title' => 'คุณมีชิ้นงานที่ยังทำต่อได้',
+            'text' => $lessons[$game_id]['pending_text'],
+            'button' => 'ทำชิ้นงานต่อ',
+            'sticky' => 'ทำชิ้นงานต่อ'
+        ];
+    }
 }
 
 // กำหนดสีธีมตามบทเรียน
@@ -288,6 +328,12 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div style="width: 120px;" class="d-none d-md-block"></div>
         </div>
 
+        <?php if ($is_visitor): ?>
+        <div class="alert alert-info text-center border-0 shadow-sm fw-bold mb-4" style="border-radius: 15px; background: #e0f2fe; color: #0284c7;">
+            <i class="bi bi-info-circle-fill"></i> โหมดทดลองใช้: ทุกด่านเปิดให้ทดลองเล่น คะแนนจะถูกเก็บชั่วคราวใน session นี้เท่านั้น
+        </div>
+        <?php endif; ?>
+
         <?php if ($can_create_project): ?>
             <div class="card project-completion-hero <?php echo $project_cta['hero_class']; ?> mb-4">
                 <div class="card-body p-4 p-lg-5">
@@ -319,10 +365,13 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 $stars = $stage['score'] ?? 0;
 
                 // Logic การล็อกด่านตามลำดับ
-                $is_locked_sequence = !$is_previous_cleared;
-
-                // ตรวจสอบว่าครูล็อกหน้าจออยู่หรือไม่
-                $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
+                if ($is_visitor) {
+                    $is_locked_sequence = false;
+                    $is_locked = false;
+                } else {
+                    $is_locked_sequence = !$is_previous_cleared;
+                    $is_locked = ($is_locked_sequence || ($global_lock && !$is_admin));
+                }
 
                 // ลิงก์เข้าสู่ด่าน
                 $link = "play_game.php?stage_id=" . $stage['id'];
@@ -377,6 +426,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         </div>
     </div>
 
+    <?php if (!$is_visitor): ?>
     <?php include '../includes/class_control_script.php'; ?>
     <script>
         setInterval(() => {
@@ -391,6 +441,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 });
         }, 3000);
     </script>
+    <?php endif; ?>
 
     <?php if ($can_create_project): ?>
         <div id="projectStickyCta" class="project-sticky-cta bg-white border d-flex align-items-center justify-content-between gap-2 px-3 py-2">
@@ -415,7 +466,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                         <div class="modal-body text-center p-4 p-lg-5">
                             <div class="display-4 mb-3">🎉</div>
                             <h3 class="fw-bold mb-2">ผ่านครบทุกด่านแล้ว!</h3>
-                            <p class="fs-5 text-secondary"><?php echo $game_id === 4 ? 'ต่อไปมาสร้างโจทย์ซ่อมกฎฟาร์มของตัวเองกันเถอะ' : 'ต่อไปมาสร้างโจทย์เส้นทางรถไถของตัวเองกันเถอะ'; ?></p>
+                            <p class="fs-5 text-secondary"><?php echo htmlspecialchars($lessons[$game_id]['completion_text']); ?></p>
                             <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
                                 <a href="<?php echo $target_page; ?>?game_id=<?php echo $game_id; ?>" class="btn btn-primary rounded-pill px-4 fw-bold">
                                     เข้าห้องสร้างชิ้นงาน

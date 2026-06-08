@@ -6,6 +6,7 @@ require_once '../includes/context.php';
 require_teacher_or_admin();
 ensure_active_account($conn);
 $context = classroom_context($conn);
+$lessons = require __DIR__ . '/../config/lessons.php';
 if (!$context) {
     header("Location: classrooms.php");
     exit();
@@ -75,10 +76,9 @@ if (!$context) {
             <div class="p-3 bg-primary text-white">
                 <h5 class="mb-3 fw-bold"><i class="bi bi-clipboard-check-fill me-2"></i> โต๊ะตรวจงาน</h5>
                 <select id="game-filter" class="form-select shadow-sm" onchange="changeGame()">
-                    <option value="1">บทที่ 1: ตรรกะคัดแยก</option>
-                    <option value="2">บทที่ 2: เส้นทางเดินรถไถ</option>
-                    <option value="3">บทที่ 3: Smart Farm Manager</option>
-                    <option value="4">บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด</option>
+                    <?php foreach ($lessons as $id => $lesson): ?>
+                    <option value="<?php echo $id; ?>">บทที่ <?php echo $id; ?>: <?php echo htmlspecialchars($lesson['title']); ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
@@ -104,12 +104,12 @@ if (!$context) {
                 <div id="teacher-smart-farm-tools" class="info-card mb-3" style="display:none;">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                         <div>
-                            <h5 class="fw-bold text-success mb-1"><i class="bi bi-controller"></i> Teacher Play Review</h5>
+                            <h5 class="fw-bold text-success mb-1"><i class="bi bi-controller"></i> เครื่องมือตรวจสอบด่าน</h5>
                             <div class="text-secondary small">ทดลองเล่น ดูเฉลย ตัวหลอก ผลตรวจคุณภาพ และสถานะการใช้ตัวช่วย</div>
                         </div>
                         <div class="d-flex flex-wrap gap-2">
                             <button type="button" class="btn btn-sm btn-success rounded-pill fw-bold" onclick="openSmartFarmTeacherPlayer('preview')"><i class="bi bi-eye"></i> ทดลองเล่นด่านนี้</button>
-                            <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold" onclick="openSmartFarmTeacherPlayer('challenge')"><i class="bi bi-controller"></i> Challenge Mode</button>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill fw-bold" onclick="openSmartFarmTeacherPlayer('challenge')"><i class="bi bi-controller"></i> โหมดท้าทาย</button>
                             <button type="button" class="btn btn-sm btn-outline-success rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('answers')"><i class="bi bi-card-checklist"></i> ดูเฉลยกฎ</button>
                             <button type="button" class="btn btn-sm btn-outline-warning rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('decoys')"><i class="bi bi-shuffle"></i> ดูตัวหลอก</button>
                             <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill fw-bold" onclick="showSmartFarmTeacherDetails('quality')"><i class="bi bi-clipboard2-check"></i> ดูผลตรวจคุณภาพ</button>

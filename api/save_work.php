@@ -3,6 +3,12 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
 header('Content-Type: application/json');
+require_once '../includes/auth.php';
+
+if (is_visitor_mode()) {
+    echo json_encode(['success' => false, 'message' => 'โหมดผู้เยี่ยมชมไม่สามารถบันทึกผลงานถาวรได้', 'error' => 'โหมดผู้เยี่ยมชมไม่สามารถบันทึกผลงานถาวรได้'], JSON_UNESCAPED_UNICODE);
+    exit();
+}
 
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);

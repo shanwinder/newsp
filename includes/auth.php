@@ -5,6 +5,24 @@ function current_role(): string
     return $_SESSION['role'] ?? 'guest';
 }
 
+function is_visitor_mode(): bool
+{
+    return !empty($_SESSION['visitor_mode']);
+}
+
+function is_student_like(): bool
+{
+    return in_array(current_role(), ['student', 'visitor'], true);
+}
+
+function require_student_like(): void
+{
+    if (!isset($_SESSION['user_id']) || !is_student_like()) {
+        header("Location: login.php");
+        exit();
+    }
+}
+
 function is_super_admin(): bool
 {
     return in_array(current_role(), ['admin', 'super_admin'], true);

@@ -2,7 +2,7 @@
 // pages/waiting_room.php
 session_start();
 require_once '../includes/db.php';
-require_once '../includes/student_navbar.php';
+require_once '../includes/auth.php';
 
 if (!isset($_GET['stage_id'])) {
     header("Location: student_dashboard.php");
@@ -15,6 +15,46 @@ $user_id = $_SESSION['user_id'];
 // ดึงข้อมูลด่าน
 $stage_res = $conn->query("SELECT * FROM stages WHERE id = $stage_id");
 $stage = $stage_res->fetch_assoc();
+
+if (is_visitor_mode()) {
+    $visitor_score = $_SESSION['visitor_progress'][$stage_id]['score'] ?? 0;
+?>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>สรุปผลคะแนน - <?php echo $stage['title']; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/game_common.css">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; min-height: 100vh; }
+    </style>
+</head>
+<body>
+<?php require_once '../includes/student_navbar.php'; ?>
+<div class="container py-5 text-center">
+    <h1 class="display-4 fw-bold mb-4">🏆 ทดลองเล่นสำเร็จ!</h1>
+    <h3 class="text-info mb-5"><?php echo $stage['title']; ?></h3>
+    
+    <div class="card bg-dark text-white shadow-lg border-0 rounded-4 mx-auto mb-5" style="max-width: 500px;">
+        <div class="card-body p-5">
+            <div class="fs-1 mb-3">⭐ <?php echo $visitor_score; ?></div>
+            <h4 class="mb-4">คะแนนนี้เก็บเฉพาะในโหมดทดลองใช้เท่านั้น</h4>
+            <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+                <a href="game_select.php?game_id=<?php echo $stage['game_id']; ?>" class="btn btn-success rounded-pill px-4 py-2 fw-bold">กลับไปเลือกด่าน</a>
+                <a href="student_dashboard.php" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold">กลับหน้า Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<?php
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -57,6 +97,7 @@ $stage = $stage_res->fetch_assoc();
     </style>
 </head>
 <body>
+<?php require_once '../includes/student_navbar.php'; ?>
 
 <div class="container py-5">
     <div class="text-center mb-5">
@@ -83,7 +124,7 @@ $stage = $stage_res->fetch_assoc();
             <span class="fs-4 waiting-pulse">รอสัญญาณจากคุณครู เพื่อไปต่อ...</span>
         </div>
         <a href="game_select.php?game_id=<?php echo $stage['game_id']; ?>" id="btn-next" class="btn btn-success btn-lg px-5 rounded-pill fw-bold d-none">
-            🚀 ไปด่านต่อไป
+            ⏩ ไปด่านต่อไป
         </a>
     </div>
 </div>

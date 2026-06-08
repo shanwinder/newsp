@@ -364,17 +364,14 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
             position: absolute;
             display: grid;
             place-items: center;
-            width: 58px;
-            height: 58px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, .92);
-            box-shadow: 0 16px 34px rgba(13, 77, 44, .24);
+            width: clamp(72px, 10vw, 120px);
+            height: clamp(72px, 10vw, 120px);
             animation: crop-float 4.5s ease-in-out infinite;
         }
 
         .floating-crop img {
-            width: 38px;
-            height: 38px;
+            width: clamp(56px, 8vw, 96px);
+            height: clamp(56px, 8vw, 96px);
             object-fit: contain;
         }
 
@@ -856,6 +853,13 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                             </button>
                         </form>
                     </div>
+                </div>
+
+                <div class="mt-4 mb-2">
+                    <p class="text-muted small mb-2">ยังไม่มีรหัสนักเรียน? ทดลองใช้งานระบบได้ที่นี่</p>
+                    <a href="guest_start.php" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                        👀 ทดลองใช้งานในฐานะผู้เยี่ยมชม
+                    </a>
                 </div>
 
                 <div class="teacher-gate">

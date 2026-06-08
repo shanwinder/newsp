@@ -6,13 +6,14 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 $app = require __DIR__ . '/../config/app.php';
+$lessons = require __DIR__ . '/../config/lessons.php';
 
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 1;
 $is_under_construction = false; 
 
 // 🎯 กำหนดเนื้อหาคู่มือตามด่านที่เลือก
 if ($game_id === 1) {
-    $game_title = "บทที่ 1: ตรรกะคัดแยก (Logic)";
+    $game_title = "บทที่ 1: " . $lessons[1]['title'];
     $game_theme = "success";
     $mission_desc = "แปลงผักของเรากำลังวุ่นวาย! ภารกิจของคุณคือการแยกแยะเมล็ดพันธุ์ ปุ๋ย และกำจัดวัชพืชออกจากแปลง ให้ถูกต้องตามเงื่อนไขที่กำหนด!";
     
@@ -24,20 +25,20 @@ if ($game_id === 1) {
     $start_link = "../pages/game_select.php?game_id=1"; 
 
 } else if ($game_id === 2) {
-    $game_title = "บทที่ 2: เส้นทางเดินรถไถ (Sequence)";
+    $game_title = "บทที่ 2: " . $lessons[2]['title'];
     $game_theme = "warning";
     $mission_desc = "วางแผนเส้นทางและประกอบบล็อกคำสั่งลูกศร เพื่อพารถไถอัตโนมัติ (🚜) ไปเก็บเกี่ยวตะกร้าผลผลิต (🧺) ให้สำเร็จอย่างปลอดภัย";
     
     $steps = [
         ['icon' => 'bi-map', 'title' => '1. สังเกตแผนที่', 'desc' => 'เริ่มด้วยการดูจุดเริ่มต้นของรถไถ ตำแหน่งตะกร้า และเช็คดูโขดหิน (🪨) สิ่งกีดขวางให้ดี'],
         ['icon' => 'bi-puzzle', 'title' => '2. ประกอบบล็อก', 'desc' => 'จินตนาการเส้นทางล่วงหน้า แล้วเรียงลูกศรทิศทาง ⬆️ ⬇️ ⬅️ ➡️ แบบทีละช่อง'],
-        ['icon' => 'bi-play-circle', 'title' => '3. สั่งรถไถวิ่ง!', 'desc' => 'ตรวจสอบความถูกต้อง เมื่อเรียงเสร็จแล้วให้กด "รันคำสั่ง" เพื่อดูรถไถวิ่งตามที่คุณเขียนอังกอริทึม!']
+        ['icon' => 'bi-play-circle', 'title' => '3. สั่งรถไถวิ่ง!', 'desc' => 'ตรวจสอบความถูกต้อง เมื่อเรียงเสร็จแล้วให้กด "รันคำสั่ง" เพื่อดูรถไถวิ่งตามที่คุณเขียนอัลกอริทึม!']
     ];
     $start_link = "../pages/game_select.php?game_id=2"; 
     $is_under_construction = false;
 
 } else if ($game_id === 3) {
-    $game_title = "บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ";
+    $game_title = "บทที่ 3: " . $lessons[3]['title'];
     $game_theme = "info";
     $mission_desc = "คุณคือผู้จัดการฟาร์มอัจฉริยะ ต้องใช้ If, If / Else และ If / Else If / Else ให้ถูกสถานการณ์ เพื่อคัดแยกผลผลิตบนสายพานฟาร์มอัตโนมัติ";
 
@@ -50,7 +51,7 @@ if ($game_id === 1) {
     $is_under_construction = false;
 
 } else if ($game_id === 4) {
-    $game_title = "บทที่ 4: ตรวจสอบและแก้ไขข้อผิดพลาด";
+    $game_title = "บทที่ 4: " . $lessons[4]['title'];
     $game_theme = "danger";
     $mission_desc = "ฝึกตรวจสอบกฎที่ผิดพลาด ทดลองรันระบบ สังเกตผลลัพธ์ที่ผิด แล้วแก้ไขเงื่อนไขและคำสั่งให้ระบบฟาร์มทำงานถูกต้อง";
 
@@ -243,7 +244,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 
                 <?php if ($game_id === 1): ?>
                 <div class="knowledge-sheet mt-3">
-                    <div class="knowledge-title"><i class="bi bi-lightbulb-fill"></i> เกร็ดความรู้: การใช้เหตุผลเชิงตรรกะ</div>
+                    <div class="knowledge-title"><i class="bi bi-lightbulb-fill"></i> เกร็ดความรู้: <?php echo htmlspecialchars($lessons[1]['topic']); ?></div>
                     <p class="text-dark fw-bold mb-2 mt-2">การแก้ปัญหาอย่างเป็นขั้นตอน เริ่มจากการเข้าใจ "เงื่อนไข" (Conditions)</p>
                     <p class="text-secondary small mb-3">ในภาษาคอมพิวเตอร์ เรามักจะเจอคำสั่งที่ช่วยในการตัดสินใจ 3 รูปแบบหลักๆ คือ:</p>
                     
@@ -273,13 +274,13 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 </div>
                 <?php elseif ($game_id === 2): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #fcd34d; background-color: #fffbeb;">
-                    <div class="knowledge-title" style="background: #f59e0b;"><i class="bi bi-code-square"></i> เกร็ดความรู้: การทำงานตามลำดับขั้นตอน (Sequential Algorithm)</div>
+                    <div class="knowledge-title" style="background: #f59e0b;"><i class="bi bi-code-square"></i> เกร็ดความรู้: <?php echo htmlspecialchars($lessons[2]['topic']); ?></div>
                     <p class="text-dark fw-bold mb-2 mt-2">ยินดีต้อนรับนักแก้ปัญหา! ในภารกิจนี้เราจะมาฝึกทักษะการเป็นนักเขียนโปรแกรมเบื้องต้น</p>
                     <p class="text-secondary small mb-0">รู้หรือไม่? คอมพิวเตอร์หรือหุ่นยนต์รถไถของเรา <strong>ไม่สามารถคิดเองได้</strong> มันจะทำงานตามคำสั่งที่เราป้อนให้ "ทีละคำสั่ง" เรียงจากคำสั่งแรกไปจนถึงคำสั่งสุดท้ายอย่างเคร่งครัด ถ้าเราวางคำสั่งสลับกันแม้แต่ขั้นตอนเดียว รถไถก็อาจจะวิ่งชนหินหรือหลงทางได้เลยนะ!</p>
                 </div>
                 <?php elseif ($game_id === 3): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #67e8f9; background-color: #ecfeff;">
-                    <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: เงื่อนไข If และ Else</div>
+                    <div class="knowledge-title" style="background: #0891b2;"><i class="bi bi-signpost-split"></i> เกร็ดความรู้: <?php echo htmlspecialchars($lessons[3]['topic']); ?></div>
                     <p class="text-dark fw-bold mb-2 mt-2">เงื่อนไขคือกฎที่ทำให้ระบบฟาร์มตัดสินใจเองได้ เหมือนการเขียนสมองให้เครื่องจักรอัตโนมัติ</p>
                     <p class="text-secondary small mb-3">เกมที่ 1 ใช้ If เพื่อจับกรณีพิเศษเท่านั้น: ถ้าเข้าเงื่อนไขให้ส่งไปเครื่องพิเศษ ถ้าไม่เข้าเงื่อนไขระบบจะปล่อยผ่านอัตโนมัติ เกมถัดไปจึงค่อยเพิ่ม Else และ Else If</p>
                     <div class="row g-2">
@@ -290,7 +291,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
                 </div>
                 <?php elseif ($game_id === 4): ?>
                 <div class="knowledge-sheet mt-3" style="border-color: #fed7aa; background-color: #fff7ed;">
-                    <div class="knowledge-title" style="background: #ea580c;"><i class="bi bi-wrench-adjustable"></i> เกร็ดความรู้: การหาจุดผิดและซ่อมระบบ</div>
+                    <div class="knowledge-title" style="background: #ea580c;"><i class="bi bi-wrench-adjustable"></i> เกร็ดความรู้: <?php echo htmlspecialchars($lessons[4]['topic']); ?></div>
                     <p class="text-dark fw-bold mb-2 mt-2">จุดผิดคือส่วนของกฎที่ทำให้ผลลัพธ์ออกมาไม่ถูกต้อง</p>
                     <p class="text-secondary small mb-0">นักซ่อมระบบที่ดีจะทดสอบกฎเดิม ดูผลที่ผิด แล้วค่อยซ่อมกฎ เมื่อซ่อมแล้วต้องทดสอบอีกครั้งเพื่อยืนยันว่าระบบทำงานถูกต้อง</p>
                 </div>

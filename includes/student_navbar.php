@@ -16,39 +16,50 @@ $app = require __DIR__ . '/../config/app.php';
 
 $user_id = $_SESSION['user_id'];
 
+require_once __DIR__ . '/auth.php';
+
 // --------------------------------------------------------
 // 1️⃣ คำนวณดาวรวมทั้งหมด (Live Update)
 // --------------------------------------------------------
-$learning_session_id = intval($_SESSION['learning_session_id'] ?? 0);
-$sql_stars = "SELECT SUM(score) as total_score FROM progress WHERE user_id = ? AND (? = 0 OR learning_session_id = ?)";
-$stmt = $conn->prepare($sql_stars);
-$stmt->bind_param("iii", $user_id, $learning_session_id, $learning_session_id);
-$stmt->execute();
-$res_stars = $stmt->get_result();
-$row_stars = $res_stars->fetch_assoc();
-
-// ถ้ายังไม่เคยเล่นเลย ให้เป็น 0
-$total_stars = $row_stars['total_score'] ? $row_stars['total_score'] : 0;
-
-// --------------------------------------------------------
-// 2️⃣ ดึงฉายา (Title) ตามจำนวนดาว
-// --------------------------------------------------------
-$sql_title = "SELECT title_name, css_class FROM titles 
-              WHERE min_stars_required <= ? 
-              ORDER BY min_stars_required DESC LIMIT 1";
-$stmt = $conn->prepare($sql_title);
-$stmt->bind_param("i", $total_stars);
-$stmt->execute();
-$res_title = $stmt->get_result();
-
-if ($res_title->num_rows > 0) {
-    $title_data = $res_title->fetch_assoc();
-    $current_title = $title_data['title_name'];
-    $badge_color = $title_data['css_class']; // เช่น badge-warning
+if (is_visitor_mode()) {
+    $total_stars = 0;
+    foreach ($_SESSION['visitor_progress'] ?? [] as $progress) {
+        $total_stars += intval($progress['score'] ?? 0);
+    }
+    $current_title = 'โหมดทดลองใช้';
+    $badge_color = 'bg-info text-dark';
 } else {
-    // ถ้ายังไม่มีฉายา ปรับให้เข้ากับชื่อผู้เรียนใหม่
-    $current_title = "นักคิดเริ่มต้น";
-    $badge_color = "bg-secondary";
+    $learning_session_id = intval($_SESSION['learning_session_id'] ?? 0);
+    $sql_stars = "SELECT SUM(score) as total_score FROM progress WHERE user_id = ? AND (? = 0 OR learning_session_id = ?)";
+    $stmt = $conn->prepare($sql_stars);
+    $stmt->bind_param("iii", $user_id, $learning_session_id, $learning_session_id);
+    $stmt->execute();
+    $res_stars = $stmt->get_result();
+    $row_stars = $res_stars->fetch_assoc();
+
+    // ถ้ายังไม่เคยเล่นเลย ให้เป็น 0
+    $total_stars = $row_stars['total_score'] ? $row_stars['total_score'] : 0;
+
+    // --------------------------------------------------------
+    // 2️⃣ ดึงฉายา (Title) ตามจำนวนดาว
+    // --------------------------------------------------------
+    $sql_title = "SELECT title_name, css_class FROM titles 
+                  WHERE min_stars_required <= ? 
+                  ORDER BY min_stars_required DESC LIMIT 1";
+    $stmt = $conn->prepare($sql_title);
+    $stmt->bind_param("i", $total_stars);
+    $stmt->execute();
+    $res_title = $stmt->get_result();
+
+    if ($res_title->num_rows > 0) {
+        $title_data = $res_title->fetch_assoc();
+        $current_title = $title_data['title_name'];
+        $badge_color = $title_data['css_class']; // เช่น badge-warning
+    } else {
+        // ถ้ายังไม่มีฉายา ปรับให้เข้ากับชื่อผู้เรียนใหม่
+        $current_title = "นักคิดเริ่มต้น";
+        $badge_color = "bg-secondary";
+    }
 }
 ?>
 

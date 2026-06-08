@@ -4,7 +4,8 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
-if (!isset($_SESSION['user_id'])) {
+require_once '../includes/auth.php';
+if (!is_student_like() || is_visitor_mode()) {
     header("Location: login.php");
     exit();
 }
@@ -119,7 +120,7 @@ if ($res && $res->num_rows > 0) {
 
     <div class="container-fluid py-4 px-lg-5">
         <div class="text-center text-white mb-3 text-shadow">
-            <h1 class="fw-bold"><i class="bi bi-controller"></i> สตูดิโอสร้างชิ้นงาน "จับผิดตรรกะ"</h1>
+            <h1 class="fw-bold"><i class="bi bi-controller"></i> สตูดิโอสร้างโจทย์ตรรกะคัดแยก</h1>
             <p class="fs-5 opacity-75 mb-0">ออกแบบเงื่อนไขที่ซับซ้อน แล้วส่งให้เพื่อนๆ ฝึกแก้ปัญหาอย่างเป็นขั้นตอน!</p>
         </div>
 

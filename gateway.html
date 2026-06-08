@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+
+  <!--
+    ============================================================
+    ไฟล์นำทางสำหรับอัปโหลดเข้าสู่ OBEC Content Center CMS
+    หน้าที่ของไฟล์นี้:
+    1) แสดงข้อมูลนวัตกรรมและเจ้าของผลงาน
+    2) นับถอยหลัง 10 วินาที
+    3) นำทางไปยังเว็บระบบจริงโดยอัตโนมัติ
+
+    จุดที่มักต้องแก้ไข:
+    - ลิงก์ระบบจริง: แก้ที่ meta refresh และตัวแปร targetUrl ใน JavaScript ด้านล่าง
+    - ชื่อนวัตกรรม: แก้ในส่วน <section class="innovation-panel">
+    - เจ้าของผลงาน / ตำแหน่ง / สังกัด: แก้ในส่วน <section class="profile-grid">
+    ============================================================
+  -->
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>กำลังนำทางสู่ระบบเกมแบบฝึกทักษะออนไลน์</title>
+  <meta name="description" content="การพัฒนาเกมแบบฝึกทักษะออนไลน์ เพื่อส่งเสริมทักษะการแก้ปัญหาอย่างเป็นขั้นตอน เรื่อง การแก้ปัญหาอย่างเป็นขั้นตอน โดยใช้การจัดการเรียนรู้แบบใช้เกมเป็นฐาน (Game-Based Learning) สำหรับนักเรียนชั้นประถมศึกษาปีที่ 4">
+
+  <style>
+    /*
+      ============================================================
+      ส่วนกำหนดค่าสีหลักของธีม
+      สามารถปรับสีได้ที่ :root เพื่อเปลี่ยนบรรยากาศทั้งหน้า
+      ============================================================
+    */
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1e3a8a;
+      --green: #16a34a;
+      --green-dark: #166534;
+      --gold: #f59e0b;
+      --gold-soft: #fef3c7;
+      --sky: #7dd3fc;
+      --rose: #fb7185;
+      --ink: #0f172a;
+      --slate: #475569;
+      --muted: #64748b;
+      --white: #ffffff;
+      --glass: rgba(255, 255, 255, .78);
+      --glass-strong: rgba(255, 255, 255, .92);
+      --line: rgba(148, 163, 184, .24);
+      --shadow-xl: 0 36px 110px rgba(15, 23, 42, .28);
+      --shadow-md: 0 18px 44px rgba(15, 23, 42, .15);
+      --ring: 314;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", "Noto Sans", sans-serif;
+      color: var(--ink);
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 9% 14%, rgba(255,255,255,.9) 0 7%, transparent 24%),
+        radial-gradient(circle at 92% 12%, rgba(251,191,36,.62) 0 9%, transparent 25%),
+        radial-gradient(circle at 76% 78%, rgba(34,197,94,.28) 0 11%, transparent 28%),
+        linear-gradient(135deg, #bae6fd 0%, #dbeafe 32%, #fdf2f8 64%, #fef3c7 100%);
+    }
+
+    /*
+      ลายตารางโปร่งด้านหลัง สื่อถึงการเขียนลำดับขั้นตอนและการแก้ปัญหา
+    */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.15) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.82), transparent 88%);
+      z-index: 0;
+    }
+
+    /*
+      องค์ประกอบฉากพื้นหลัง: ดวงอาทิตย์ เมฆ เนินเขา และประกายแสง
+      ถ้าต้องการหน้าที่เรียบขึ้น สามารถซ่อน class เหล่านี้ได้
+    */
+    .sun {
+      position: fixed;
+      top: 30px;
+      right: 54px;
+      width: 116px;
+      height: 116px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff7ad 0 28%, #fde047 29% 46%, #f59e0b 47% 100%);
+      box-shadow: 0 0 85px rgba(245, 158, 11, .68);
+      z-index: -4;
+      animation: sunPulse 4.5s ease-in-out infinite;
+    }
+
+    .sun::before {
+      content: "";
+      position: absolute;
+      inset: -28px;
+      border-radius: inherit;
+      background: repeating-conic-gradient(from 8deg, rgba(245,158,11,.44) 0 8deg, transparent 8deg 20deg);
+      animation: spin 30s linear infinite;
+      z-index: -1;
+    }
+
+    .hill {
+      position: fixed;
+      left: -8vw;
+      right: -8vw;
+      bottom: -92px;
+      height: 33vh;
+      min-height: 230px;
+      z-index: -4;
+      background:
+        radial-gradient(ellipse at 18% 100%, #86efac 0 36%, transparent 37%),
+        radial-gradient(ellipse at 66% 100%, #4ade80 0 44%, transparent 45%),
+        radial-gradient(ellipse at 92% 105%, #22c55e 0 34%, transparent 35%),
+        linear-gradient(180deg, transparent 0 27%, #16a34a 28% 100%);
+      filter: drop-shadow(0 -12px 55px rgba(22, 163, 74, .25));
+    }
+
+    .cloud {
+      position: fixed;
+      width: 250px;
+      height: 84px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.74);
+      box-shadow:
+        58px -21px 0 12px rgba(255,255,255,.68),
+        124px 4px 0 8px rgba(255,255,255,.56),
+        22px 16px 0 4px rgba(255,255,255,.45);
+      z-index: -3;
+      animation: drift 25s ease-in-out infinite;
+    }
+
+    .cloud.one {
+      left: 6vw;
+      top: 11vh;
+      transform: scale(.72);
+    }
+
+    .cloud.two {
+      right: 18vw;
+      top: 22vh;
+      transform: scale(.55);
+      opacity: .68;
+      animation-delay: -9s;
+    }
+
+    .spark {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    .spark span {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, .9);
+      box-shadow: 0 0 22px rgba(251, 191, 36, .9);
+      animation: sparkle 5s ease-in-out infinite;
+    }
+
+    .spark span:nth-child(1) { left: 8%; top: 30%; animation-delay: -1s; }
+    .spark span:nth-child(2) { left: 18%; top: 70%; animation-delay: -3s; transform: scale(.62); }
+    .spark span:nth-child(3) { left: 86%; top: 36%; animation-delay: -2s; }
+    .spark span:nth-child(4) { left: 78%; top: 78%; animation-delay: -.3s; transform: scale(.55); }
+    .spark span:nth-child(5) { left: 48%; top: 9%; animation-delay: -4s; transform: scale(.72); }
+    .spark span:nth-child(6) { left: 94%; top: 60%; animation-delay: -1.8s; transform: scale(.5); }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      padding: clamp(18px, 3vw, 42px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      isolation: isolate;
+    }
+
+    /*
+      กล่องหลักแบบหน้ากว้าง
+      ออกแบบให้เป็นแผงเดียว ไม่แยกเป็น 2 กล่องลอย เพื่อให้ดูเป็นงานชิ้นเดียวกัน
+    */
+    .gateway {
+      width: min(1420px, 100%);
+      min-height: min(780px, calc(100vh - 84px));
+      position: relative;
+      border-radius: 44px;
+      border: 1px solid rgba(255,255,255,.72);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.95), rgba(255,255,255,.74) 48%, rgba(255,255,255,.64)),
+        radial-gradient(circle at 12% 18%, rgba(37,99,235,.16), transparent 32%),
+        radial-gradient(circle at 88% 18%, rgba(34,197,94,.16), transparent 34%);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .gateway::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255,255,255,.82), transparent 22%),
+        radial-gradient(circle at 100% 0%, rgba(251,191,36,.32), transparent 27%),
+        linear-gradient(120deg, rgba(255,255,255,.24), transparent 48%);
+      pointer-events: none;
+    }
+
+    .gateway-grid {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: clamp(24px, 3vw, 46px);
+      min-height: inherit;
+      padding: clamp(26px, 4vw, 58px);
+      align-items: stretch;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .topline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(34,197,94,.16));
+      border: 1px solid rgba(37,99,235,.18);
+      color: #1e40af;
+      font-weight: 900;
+      letter-spacing: .15px;
+      box-shadow: 0 12px 24px rgba(37,99,235,.08);
+    }
+
+    .badge .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 6px rgba(34,197,94,.16);
+      animation: beacon 1.55s ease-in-out infinite;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.7);
+      border: 1px solid rgba(148,163,184,.24);
+      color: #334155;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4.2vw, 4.65rem);
+      line-height: 1.08;
+      letter-spacing: -1.4px;
+      color: #0f172a;
+      max-width: 1000px;
+    }
+
+    .gradient-text {
+      display: block;
+      margin-top: 6px;
+      background: linear-gradient(90deg, #1d4ed8, #16a34a 48%, #f59e0b 88%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 8px 24px rgba(37,99,235,.18));
+    }
+
+    /*
+      แผงชื่อนวัตกรรม
+      แยกออกจากข้อมูลบุคคลเพื่อให้อ่านง่ายในหน้ากว้าง
+    */
+    .innovation-panel {
+      margin-top: 24px;
+      padding: clamp(18px, 2.2vw, 28px);
+      border-radius: 30px;
+      background: rgba(255,255,255,.66);
+      border: 1px solid rgba(255,255,255,.78);
+      box-shadow: 0 16px 42px rgba(15,23,42,.08);
+      max-width: 1080px;
+    }
+
+    .label {
+      margin: 0 0 8px;
+      color: #1d4ed8;
+      font-weight: 950;
+      letter-spacing: .2px;
+    }
+
+    .innovation-title {
+      margin: 0;
+      color: #1f2937;
+      font-size: clamp(1rem, 1.55vw, 1.28rem);
+      line-height: 1.9;
+      font-weight: 760;
+    }
+
+    /*
+      ข้อมูลเจ้าของผลงาน
+      จัดเลย์เอาต์ใหม่เป็น 2 ช่องบน + 1 ช่องสังกัดกว้างเต็มแถว
+    */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, .7fr);
+      gap: 14px;
+      margin-top: 18px;
+      max-width: 1080px;
+    }
+
+    .info-card {
+      position: relative;
+      padding: 17px 18px;
+      border-radius: 24px;
+      background: rgba(248,250,252,.84);
+      border: 1px solid rgba(148,163,184,.22);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .info-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, var(--blue), var(--green), var(--gold));
+      opacity: .85;
+    }
+
+    .info-label {
+      color: #64748b;
+      font-size: .86rem;
+      font-weight: 850;
+      margin-bottom: 4px;
+    }
+
+    .info-value {
+      color: #0f172a;
+      font-size: 1.04rem;
+      font-weight: 950;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    /*
+      สังกัดรวมโรงเรียนและสำนักงานเขตไว้ในช่องเดียว
+      ถ้าต้องการเปลี่ยนชื่อโรงเรียนหรือเขต ให้แก้ข้อความใน HTML class="affiliation-lines"
+    */
+    .affiliation-card {
+      grid-column: 1 / -1;
+      background:
+        linear-gradient(135deg, rgba(239,246,255,.92), rgba(240,253,244,.9)),
+        rgba(255,255,255,.75);
+    }
+
+    .affiliation-lines {
+      display: grid;
+      grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .affiliation-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(148,163,184,.2);
+    }
+
+    .affiliation-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(37,99,235,.15), rgba(34,197,94,.16));
+      font-size: 1.2rem;
+    }
+
+    .affiliation-sub {
+      color: #64748b;
+      font-size: .82rem;
+      font-weight: 850;
+      margin-bottom: 2px;
+    }
+
+    .affiliation-name {
+      color: #0f172a;
+      font-weight: 950;
+      line-height: 1.5;
+    }
+
+    .feature-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.68);
+      border: 1px solid rgba(148,163,184,.24);
+      color: #1f2937;
+      font-weight: 850;
+      box-shadow: 0 12px 22px rgba(15,23,42,.07);
+    }
+
+    /*
+      ฉากเกมจำลองด้านล่าง
+      ใช้เพื่อสื่อธีมเกษตรกรและการเดินทางของรถไถ
+    */
+    .farm-strip {
+      position: relative;
+      margin-top: 30px;
+      min-height: 154px;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.64);
+      background:
+        linear-gradient(180deg, rgba(125,211,252,.5) 0 43%, rgba(187,247,208,.9) 44% 100%);
+      box-shadow: inset 0 0 42px rgba(255,255,255,.48);
+    }
+
+    .farm-strip::before {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 52%;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.26) 0 4px, transparent 4px 52px),
+        linear-gradient(0deg, rgba(132,204,22,.18) 0 4px, transparent 4px 44px);
+    }
+
+    .path {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: 44px;
+      height: 18px;
+      border-radius: 999px;
+      background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,.54) 0 16px, transparent 16px 30px),
+        linear-gradient(90deg, rgba(124,45,18,.64), rgba(180,83,9,.54));
+      transform: rotate(-1.5deg);
+      box-shadow: 0 10px 20px rgba(124,45,18,.16);
+    }
+
+    .tractor {
+      position: absolute;
+      left: 8%;
+      bottom: 50px;
+      font-size: 50px;
+      filter: drop-shadow(0 10px 10px rgba(15,23,42,.2));
+      animation: tractorMove 10s ease-in-out infinite;
+    }
+
+    .target {
+      position: absolute;
+      right: 10%;
+      bottom: 54px;
+      font-size: 45px;
+      animation: bob 2.6s ease-in-out infinite;
+    }
+
+    .crop {
+      position: absolute;
+      bottom: 30px;
+      font-size: 30px;
+      animation: bob 3.2s ease-in-out infinite;
+    }
+
+    .crop.c1 { left: 34%; animation-delay: -.4s; }
+    .crop.c2 { left: 49%; animation-delay: -1.1s; }
+    .crop.c3 { left: 64%; animation-delay: -.8s; }
+    .crop.c4 { left: 76%; animation-delay: -1.7s; }
+
+    /*
+      แผงนับถอยหลังด้านขวา
+      หากต้องการเปลี่ยนเวลานับถอยหลัง ให้แก้ตัวแปร total ใน JavaScript
+    */
+    .side-panel {
+      display: flex;
+      align-items: stretch;
+      min-width: 0;
+    }
+
+    .count-card {
+      width: 100%;
+      border-radius: 34px;
+      padding: 28px 24px;
+      background:
+        linear-gradient(165deg, rgba(15,23,42,.94), rgba(30,58,138,.92) 56%, rgba(22,101,52,.88));
+      color: #fff;
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 18px;
+    }
+
+    .count-card::before {
+      content: "";
+      position: absolute;
+      width: 310px;
+      height: 310px;
+      border-radius: 50%;
+      top: -120px;
+      right: -120px;
+      background: radial-gradient(circle, rgba(251,191,36,.34), transparent 62%);
+    }
+
+    .count-card::after {
+      content: "";
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      left: -135px;
+      bottom: -140px;
+      background: radial-gradient(circle, rgba(34,197,94,.28), transparent 62%);
+    }
+
+    .rocket {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      font-size: 46px;
+      background: linear-gradient(135deg, #2563eb, #22c55e 58%, #fbbf24);
+      box-shadow: 0 18px 36px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.55);
+      animation: float 3.2s ease-in-out infinite;
+      z-index: 1;
+    }
+
+    .rocket::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 21px;
+      border: 2px solid rgba(255,255,255,.64);
+    }
+
+    .count-wrap {
+      position: relative;
+      width: 184px;
+      height: 184px;
+      display: grid;
+      place-items: center;
+      z-index: 1;
+    }
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      transform: rotate(-90deg);
+    }
+
+    .ring circle {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+    }
+
+    .track {
+      stroke: rgba(255,255,255,.16);
+    }
+
+    .progress {
+      stroke: url(#ringGradient);
+      stroke-dasharray: var(--ring);
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset .9s linear;
+      filter: drop-shadow(0 0 10px rgba(251,191,36,.48));
+    }
+
+    .count-inner {
+      position: relative;
+      width: 132px;
+      height: 132px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.28);
+      box-shadow: inset 0 0 30px rgba(255,255,255,.08), 0 16px 32px rgba(0,0,0,.18);
+    }
+
+    #count {
+      display: block;
+      font-size: 4.05rem;
+      line-height: 1;
+      font-weight: 1000;
+      color: #fff;
+      text-shadow: 0 8px 24px rgba(0,0,0,.28);
+    }
+
+    .second-label {
+      margin-top: -4px;
+      color: rgba(255,255,255,.76);
+      font-weight: 900;
+      font-size: .85rem;
+    }
+
+    .redirect-title {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      font-size: clamp(1.35rem, 2vw, 2rem);
+      line-height: 1.28;
+      color: #fff;
+    }
+
+    .redirect-text {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: rgba(255,255,255,.78);
+      line-height: 1.75;
+      font-size: .98rem;
+      max-width: 310px;
+    }
+
+    .actions {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 10px;
+      width: 100%;
+      max-width: 290px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      min-height: 50px;
+      padding: 13px 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      font-weight: 950;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+
+    .btn-primary {
+      color: #0f172a;
+      background: linear-gradient(135deg, #fef3c7, #fbbf24);
+      box-shadow: 0 16px 34px rgba(251,191,36,.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 42px rgba(251,191,36,.36);
+    }
+
+    .btn-ghost {
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.22);
+    }
+
+    .btn-ghost:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,.18);
+    }
+
+    .url-box {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 310px;
+      padding: 11px 13px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.1);
+      border: 1px dashed rgba(255,255,255,.35);
+      color: rgba(255,255,255,.86);
+      font-size: .82rem;
+      word-break: break-all;
+    }
+
+    .footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 16px;
+      color: rgba(255,255,255,.66);
+      font-size: .78rem;
+      line-height: 1.6;
+    }
+
+    /*
+      Animation ทั้งหมดอยู่ส่วนท้ายเพื่อแก้ไขง่าย
+      ถ้าต้องการลดความหวือหวา ให้ลด animation-duration หรือปิดใน media prefers-reduced-motion
+    */
+    @keyframes sunPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes drift {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 34px -10px; }
+    }
+
+    @keyframes sparkle {
+      0%, 100% { opacity: .22; transform: translateY(0) scale(.65); }
+      45% { opacity: 1; transform: translateY(-16px) scale(1); }
+    }
+
+    @keyframes beacon {
+      0%, 100% { opacity: .78; transform: scale(.92); }
+      50% { opacity: 1; transform: scale(1.12); }
+    }
+
+    @keyframes tractorMove {
+      0% { left: 7%; transform: translateY(0) rotate(-3deg); }
+      45% { left: 74%; transform: translateY(-2px) rotate(2deg); }
+      56% { left: 74%; transform: translateY(-2px) rotate(2deg); }
+      100% { left: 7%; transform: translateY(0) rotate(-3deg); }
+    }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+    }
+
+    /*
+      Responsive: เมื่อจอแคบลง จะเรียงแผงหลักเป็นแนวตั้ง
+    */
+    @media (max-width: 1120px) {
+      .gateway-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        min-height: 420px;
+      }
+
+      .count-card {
+        min-height: 420px;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .profile-grid,
+      .affiliation-lines {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 12px;
+      }
+
+      .gateway {
+        border-radius: 28px;
+      }
+
+      .gateway-grid {
+        padding: 22px;
+      }
+
+      .topline {
+        gap: 8px;
+      }
+
+      .badge,
+      .pill,
+      .feature {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .farm-strip {
+        min-height: 136px;
+      }
+
+      .tractor {
+        font-size: 42px;
+      }
+
+      .target {
+        font-size: 38px;
+      }
+
+      .crop {
+        font-size: 26px;
+      }
+
+      .side-panel {
+        min-height: 390px;
+      }
+    }
+
+    /*
+      รองรับผู้ใช้ที่ตั้งค่าเครื่องให้ลดการเคลื่อนไหว
+    */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <!-- ฉากพื้นหลังตกแต่ง -->
+    <div class="sun" aria-hidden="true"></div>
+    <div class="cloud one" aria-hidden="true"></div>
+    <div class="cloud two" aria-hidden="true"></div>
+    <div class="hill" aria-hidden="true"></div>
+    <div class="spark" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <section class="gateway" aria-label="หน้าเชื่อมต่อไปยังระบบเกมแบบฝึกทักษะออนไลน์">
+      <div class="gateway-grid">
+        <div class="main-content">
+          <!-- ป้ายด้านบน สามารถปรับข้อความหรือเพิ่ม badge ได้ -->
+          <div class="topline">
+            <div class="badge"><span class="dot"></span> OBEC Content Center Gateway</div>
+            <div class="pill">🎮 Game-Based Learning</div>
+            <div class="pill">🌾 Smart Farmer Theme</div>
+          </div>
+
+          <!-- หัวเรื่องหลักของหน้า -->
+          <h1>
+            เกมแบบฝึกทักษะออนไลน์
+            <span class="gradient-text">การแก้ปัญหาอย่างเป็นขั้นตอน</span>
+          </h1>
+
+          <!-- ชื่อนวัตกรรมเต็ม -->
+          <section class="innovation-panel" aria-label="ชื่อนวัตกรรม">
+            <p class="label">ชื่อนวัตกรรม</p>
+            <p class="innovation-title">การพัฒนาเกมแบบฝึกทักษะออนไลน์ เพื่อส่งเสริมทักษะการแก้ปัญหาอย่างเป็นขั้นตอน เรื่อง การแก้ปัญหาอย่างเป็นขั้นตอน โดยใช้การจัดการเรียนรู้แบบใช้เกมเป็นฐาน (Game-Based Learning) สำหรับนักเรียนชั้นประถมศึกษาปีที่ 4</p>
+          </section>
+
+          <!-- ข้อมูลเจ้าของผลงานและสังกัด -->
+          <section class="profile-grid" aria-label="ข้อมูลเจ้าของผลงาน">
+            <div class="info-card">
+              <div class="info-label">เจ้าของผลงาน</div>
+              <div class="info-value">นายณัฐดนัย สุวรรณไตรย์</div>
+            </div>
+
+            <div class="info-card">
+              <div class="info-label">ตำแหน่ง</div>
+              <div class="info-value">ครู</div>
+            </div>
+
+            <div class="info-card affiliation-card">
+              <div class="info-label">สังกัด</div>
+              <div class="affiliation-lines">
+                <div class="affiliation-item">
+                  <div class="affiliation-icon">🏫</div>
+                  <div>
+                    <div class="affiliation-sub">สถานศึกษา</div>
+                    <div class="affiliation-name">โรงเรียนบ้านนาอุดม</div>
+                  </div>
+                </div>
+                <div class="affiliation-item">
+                  <div class="affiliation-icon">🏛️</div>
+                  <div>
+                    <div class="affiliation-sub">สำนักงานเขตพื้นที่การศึกษา</div>
+                    <div class="affiliation-name">สำนักงานเขตพื้นที่การศึกษาประถมศึกษามุกดาหาร</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- จุดเด่นของนวัตกรรม สามารถเพิ่ม/ลบรายการได้ -->
+          <div class="feature-row" aria-label="จุดเด่นของนวัตกรรม">
+            <div class="feature">🧠 ฝึกคิดเชิงอัลกอริทึม</div>
+            <div class="feature">🚜 เกมภารกิจธีมเกษตรกร</div>
+            <div class="feature">🧩 สร้างชิ้นงานและแลกเปลี่ยนผลงาน</div>
+            <div class="feature">📊 ระบบติดตามผลการเรียนรู้</div>
+          </div>
+
+          <!-- ฉากจำลองรถไถด้านล่าง -->
+          <div class="farm-strip" aria-hidden="true">
+            <div class="path"></div>
+            <div class="tractor">🚜</div>
+            <div class="target">🧺</div>
+            <div class="crop c1">🌽</div>
+            <div class="crop c2">🥕</div>
+            <div class="crop c3">🌾</div>
+            <div class="crop c4">🍅</div>
+          </div>
+        </div>
+
+        <!-- แผงนับถอยหลังและปุ่มเข้าสู่ระบบ -->
+        <aside class="side-panel">
+          <div class="count-card" aria-label="กำลังนับถอยหลังเพื่อเข้าสู่ระบบ">
+            <div class="rocket" aria-hidden="true">🚀</div>
+
+            <div class="count-wrap" role="timer" aria-live="polite">
+              <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                  <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#38bdf8"/>
+                    <stop offset="52%" stop-color="#22c55e"/>
+                    <stop offset="100%" stop-color="#fbbf24"/>
+                  </linearGradient>
+                </defs>
+                <circle class="track" cx="60" cy="60" r="50"></circle>
+                <circle class="progress" id="progressRing" cx="60" cy="60" r="50"></circle>
+              </svg>
+              <div class="count-inner">
+                <div>
+                  <span id="count">10</span>
+                  <div class="second-label">วินาที</div>
+                </div>
+              </div>
+            </div>
+
+            <h2 class="redirect-title">กำลังนำทางเข้าสู่ระบบจริง</h2>
+            <p class="redirect-text">
+              ระบบจะพาเข้าสู่เว็บไซต์เกมแบบฝึกทักษะออนไลน์โดยอัตโนมัติ
+              หากไม่เปลี่ยนหน้า สามารถกดปุ่มด้านล่างเพื่อเข้าสู่ระบบได้ทันที
+            </p>
+
+            <div class="actions">
+              <a class="btn btn-primary" href="https://krupub.great-site.net/" rel="noopener">✨ เข้าสู่ระบบทันที</a>
+              <button class="btn btn-ghost" type="button" id="pauseBtn" aria-pressed="false">⏸️ หยุดนับถอยหลัง</button>
+            </div>
+
+            <div class="url-box">https://krupub.great-site.net/</div>
+            <div class="footer">
+              ไฟล์นำทางสำหรับเผยแพร่ผ่านระบบ CMS<br>
+              ระบบจริงทำงานบนเว็บแอปพลิเคชันภายนอก
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /*
+      ============================================================
+      JavaScript สำหรับนับถอยหลังและเปลี่ยนหน้าอัตโนมัติ
+
+      วิธีปรับแต่ง:
+      - targetUrl: ลิงก์เว็บไซต์ระบบจริง
+      - total: จำนวนวินาทีนับถอยหลัง
+      - ปุ่ม pauseBtn ใช้หยุด/นับต่อได้ เผื่อผู้ใช้ต้องการอ่านข้อมูลก่อน
+      ============================================================
+    */
+    (function () {
+      const targetUrl = "https://krupub.great-site.net/";
+      const total = 10;
+      const ringLength = 314;
+
+      let remaining = total;
+      let paused = false;
+      let redirected = false;
+
+      const countEl = document.getElementById("count");
+      const ring = document.getElementById("progressRing");
+      const pauseBtn = document.getElementById("pauseBtn");
+
+      function updateUI() {
+        countEl.textContent = String(Math.max(0, remaining));
+        const offset = ringLength * ((total - remaining) / total);
+        ring.style.strokeDashoffset = String(offset);
+      }
+
+      function goToSystem() {
+        if (redirected) return;
+        redirected = true;
+        window.location.href = targetUrl;
+      }
+
+      pauseBtn.addEventListener("click", function () {
+        paused = !paused;
+        pauseBtn.setAttribute("aria-pressed", paused ? "true" : "false");
+        pauseBtn.textContent = paused ? "▶️ นับถอยหลังต่อ" : "⏸️ หยุดนับถอยหลัง";
+      });
+
+      updateUI();
+
+      const timer = setInterval(function () {
+        if (paused) return;
+
+        remaining -= 1;
+        updateUI();
+
+        if (remaining <= 0) {
+          clearInterval(timer);
+          setTimeout(goToSystem, 250);
+        }
+      }, 1000);
+    })();
+  </script>
+</body>
+</html>

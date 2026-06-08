@@ -4,7 +4,8 @@ require_once '../includes/db.php';
 require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
 
-if (!isset($_SESSION['user_id'])) {
+require_once '../includes/auth.php';
+if (!is_student_like() || is_visitor_mode()) {
     header("Location: login.php");
     exit();
 }
@@ -56,7 +57,7 @@ if ($work) {
                     <h1 class="fw-bold mb-1"><i class="bi bi-diagram-3-fill me-2"></i>สร้างด่านฟาร์มอัจฉริยะของฉัน</h1>
                     <p class="fs-5 mb-0 opacity-75">Smart Farm Mini Game Builder: ออกแบบวัตถุ เงื่อนไข กฎ และทดสอบให้เล่นได้จริง</p>
                 </div>
-                <span class="builder-version-pill">บทที่ 3: Condition</span>
+                <span class="builder-version-pill">บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ</span>
             </div>
         </div>
     </header>

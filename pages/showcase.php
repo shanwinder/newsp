@@ -6,7 +6,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 require_once '../includes/db.php';
 require_once '../includes/context.php';
-$app = require __DIR__ . '/../config/app.php';
+$lessons = require __DIR__ . '/../config/lessons.php';
 $game_id = intval($_GET['game_id'] ?? 1);
 $context = session_context();
 $project_pages = [
@@ -16,37 +16,16 @@ $project_pages = [
     4 => 'create_project_debug.php'
 ];
 $project_page = $project_pages[$game_id] ?? 'create_project_logic.php';
-$game_meta = [
-    1 => [
-        'lesson_no' => 'บทที่ 1',
-        'title' => 'ตรรกะคัดแยก',
-        'icon' => 'bi-diagram-3-fill',
-        'theme' => 'success',
-        'modal_title' => 'เงื่อนไขของโจทย์'
-    ],
-    2 => [
-        'lesson_no' => 'บทที่ 2',
-        'title' => 'เส้นทางเดินรถไถ',
-        'icon' => 'bi-signpost-2-fill',
-        'theme' => 'primary',
-        'modal_title' => 'ภารกิจเส้นทางรถไถ'
-    ],
-    3 => [
-        'lesson_no' => 'บทที่ 3',
-        'title' => 'Smart Farm Manager',
-        'icon' => 'bi-diagram-3',
-        'theme' => 'info',
-        'modal_title' => 'กติกาด่านสายพาน'
-    ],
-    4 => [
-        'lesson_no' => 'บทที่ 4',
-        'title' => 'ตรวจสอบและแก้ไขข้อผิดพลาด',
-        'icon' => 'bi-wrench-adjustable',
-        'theme' => 'danger',
-        'modal_title' => 'รายละเอียดโจทย์ซ่อมกฎ'
-    ]
+
+// ใช้ config กลางแทน hard-code $game_meta
+$lesson = $lessons[$game_id] ?? $lessons[1];
+$current_game = [
+    'lesson_no'   => 'บทที่ ' . $game_id,
+    'title'       => $lesson['title'],
+    'icon'        => $lesson['bi_icon'],
+    'theme'       => $lesson['theme'],
+    'modal_title' => $lesson['modal_heading'],
 ];
-$current_game = $game_meta[$game_id] ?? $game_meta[1];
 ?>
 <!DOCTYPE html>
 <html lang="th">

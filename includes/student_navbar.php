@@ -81,6 +81,12 @@ if (is_visitor_mode()) {
             <ul class="navbar-nav ms-auto align-items-center gap-3 mt-3 mt-lg-0">
 
                 <li class="nav-item">
+                    <a href="manual_student.php" class="nav-link text-success fw-bold d-flex align-items-center">
+                        <i class="bi bi-book me-1"></i> คู่มือ
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <div class="d-flex align-items-center px-3 py-1 rounded-pill"
                         style="background: #f0fdf4; border: 2px solid #bbf7d0;">
 

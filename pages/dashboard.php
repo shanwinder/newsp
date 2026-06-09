@@ -96,6 +96,7 @@ $active_classroom = $context['classroom'];
                 <?php if (is_super_admin()): ?>
                     <a href="super_admin_dashboard.php" class="btn btn-warning btn-sm rounded-pill text-dark fw-bold">อนุมัติครู</a>
                 <?php endif; ?>
+                <a href="manual_teacher.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">คู่มือครู</a>
                 <a href="classrooms.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">ห้องเรียนของฉัน</a>
                 <a href="../logout.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">ออกจากระบบ</a>
             </div>

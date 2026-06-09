@@ -151,6 +151,14 @@ $result = $conn->query($sql);
             70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
+
+        .transition-hover {
+            transition: all 0.3s ease;
+        }
+        .transition-hover:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
     </style>
 </head>
 
@@ -200,6 +208,25 @@ $result = $conn->query($sql);
                 เลือกภารกิจการเรียนรู้
             </h1>
             <p class="text-muted fs-5">สะสม<?php echo htmlspecialchars($app['mission_stars']); ?>เพื่อเป็นนักแก้ปัญหาอย่างเป็นขั้นตอน</p>
+        </div>
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-6 col-lg-5">
+                <a href="manual_student.php" class="text-decoration-none">
+                    <div class="card border-0 shadow-sm rounded-4 bg-white border-start border-5 border-warning transition-hover">
+                        <div class="card-body p-3 d-flex align-items-center">
+                            <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                                <i class="bi bi-journal-bookmark-fill text-warning fs-3"></i>
+                            </div>
+                            <div class="text-start">
+                                <h5 class="fw-bold text-dark mb-0">คู่มือการเรียนรู้</h5>
+                                <p class="text-muted small mb-0">อ่านวิธีใช้งานและเทคนิคการแก้ปัญหา</p>
+                            </div>
+                            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <div class="row g-4 text-start justify-content-center">

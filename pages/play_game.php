@@ -2,7 +2,10 @@
 // pages/play_game.php
 session_start();
 require_once '../includes/db.php';
+require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
+require_student_like();
+assessment_require_pretest_for_game($conn);
 
 // 1. รับค่า Stage ID
 if (!isset($_GET['stage_id'])) {

@@ -1,10 +1,13 @@
 <?php
 // pages/instruction.php
 session_start();
+require_once '../includes/db.php';
+require_once '../includes/assessment.php';
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../login.php");
     exit();
 }
+assessment_require_pretest_for_game($conn);
 $app = require __DIR__ . '/../config/app.php';
 $lessons = require __DIR__ . '/../config/lessons.php';
 

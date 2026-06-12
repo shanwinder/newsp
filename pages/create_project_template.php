@@ -2,12 +2,14 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
+assessment_require_pretest_for_game($conn);
 
 $projectConfigs = [
     2 => [

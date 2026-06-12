@@ -3,6 +3,7 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
 
 require_once '../includes/auth.php';
@@ -17,6 +18,7 @@ $mode = $_SESSION['mode'] ?? 'solo';
 $team_members = $_SESSION['team_members'] ?? [$user_id];
 $display_name = $_SESSION['name'] ?? 'นักเรียน';
 $context = session_context();
+$assessmentStatus = assessment_student_status($conn, intval($user_id), $context);
 
 // ดึงชื่อและบทบาทของสมาชิกในทีมทุกคนมาเพื่อแสดงผล
 $team_data = [];
@@ -203,6 +205,51 @@ $result = $conn->query($sql);
             <?php endif; ?>
         </div>
 
+        <?php if (!$is_visitor && $assessmentStatus['configured']): ?>
+        <section class="card border-0 shadow-sm rounded-4 mb-5 text-start overflow-hidden">
+            <div class="card-header border-0 py-3 px-4 text-white" style="background:linear-gradient(135deg,#047857,#0f766e)">
+                <h4 class="fw-bold mb-0"><i class="bi bi-clipboard2-check-fill me-2"></i>สถานะการประเมินผล</h4>
+            </div>
+            <div class="card-body p-4">
+                <?php if (!$assessmentStatus['individual']): ?>
+                    <div class="alert alert-warning mb-0">
+                        แบบทดสอบก่อนเรียน–หลังเรียนเป็นการวัดผลรายบุคคล กรุณาเข้าสู่ระบบแบบรายบุคคลเพื่อทำแบบทดสอบ
+                    </div>
+                <?php else: ?>
+                    <div class="row g-3">
+                        <?php foreach (['pretest' => 'ก่อนเรียน', 'posttest' => 'หลังเรียน'] as $assessmentType => $thaiLabel):
+                            $assessmentItem = $assessmentStatus[$assessmentType];
+                            $submitted = !empty($assessmentItem['submitted']);
+                            $available = !empty($assessmentItem['available']);
+                        ?>
+                        <div class="col-md-6">
+                            <div class="border rounded-4 p-3 h-100 d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                    <h5 class="fw-bold mb-0">แบบทดสอบ<?php echo $thaiLabel; ?></h5>
+                                    <span class="badge bg-<?php echo $submitted ? 'success' : ($available ? 'warning text-dark' : 'secondary'); ?> rounded-pill">
+                                        <?php echo $submitted ? 'ทำแล้ว' : ($available ? 'เปิดให้ทำ' : 'ยังไม่เปิด'); ?>
+                                    </span>
+                                </div>
+                                <p class="text-muted mb-3"><?php echo htmlspecialchars($assessmentItem['title'] ?: 'ยังไม่ได้กำหนดชุดข้อสอบ'); ?></p>
+                                <?php if ($available || $submitted): ?>
+                                    <a href="assessment_intro.php?type=<?php echo $assessmentType; ?>" class="btn btn-<?php echo $assessmentType === 'pretest' ? 'success' : 'primary'; ?> rounded-pill mt-auto">
+                                        <?php echo $submitted ? 'ดูสถานะการส่ง' : (!empty($assessmentItem['in_progress']) ? 'ทำต่อ' : 'เริ่มทำแบบทดสอบ'); ?>
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-outline-secondary rounded-pill mt-auto" disabled><i class="bi bi-lock-fill"></i> รอคุณครูเปิด</button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php if ($assessmentStatus['pretest_blocking']): ?>
+                        <div class="alert alert-danger mt-3 mb-0 fw-bold"><i class="bi bi-exclamation-circle-fill me-2"></i>กรุณาทำแบบทดสอบก่อนเรียนก่อนเริ่มภารกิจ</div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
         <div class="mb-5">
             <h1 class="display-5 fw-bold" style="color: #166534;">
                 เลือกภารกิจการเรียนรู้
@@ -318,8 +365,8 @@ $result = $conn->query($sql);
                                     $btn_text = "✅ เข้าสู่บทเรียน (มีผลงานแล้ว)";
                                 }
                                 ?>
-                                <a href="instruction.php?game_id=<?php echo $row['id']; ?>" class="<?php echo strpos($btn_class, 'btn ') !== false ? $btn_class : 'btn ' . $btn_class . ' w-100 d-block text-white text-decoration-none'; ?>">
-                                    <?php echo $btn_text; ?>
+                                <a href="<?php echo $assessmentStatus['pretest_blocking'] ? 'assessment_intro.php?type=pretest&required=1' : 'instruction.php?game_id=' . intval($row['id']); ?>" class="<?php echo strpos($btn_class, 'btn ') !== false ? $btn_class : 'btn ' . $btn_class . ' w-100 d-block text-white text-decoration-none'; ?> <?php echo $assessmentStatus['pretest_blocking'] ? 'opacity-75' : ''; ?>">
+                                    <?php echo $assessmentStatus['pretest_blocking'] ? '🔒 ทำ Pre-test ก่อน' : $btn_text; ?>
                                 </a>
                             </div>
                         </div>

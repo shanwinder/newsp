@@ -133,7 +133,7 @@ $active_classroom = $context['classroom'];
                         <h5 class="mb-0"><i class="bi bi-controller"></i> สถานะการเข้าเรียน</h5>
                         <span id="status-text" class="badge bg-warning text-dark"><?php echo strtoupper($current_status); ?></span>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-wrap">
                         <button onclick="toggleGame('active')" class="btn btn-success flex-grow-1" id="btn-resume" <?php echo ($current_status == 'active') ? 'disabled' : ''; ?>>
                             <i class="bi bi-play-fill"></i> อนุญาตให้เข้าเรียน
                         </button>
@@ -179,6 +179,18 @@ $active_classroom = $context['classroom'];
                         </a>
                         <a href="export_scores.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
                             <i class="bi bi-download"></i> Export คะแนน
+                        </a>
+                        <a href="assessment_manage.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-journal-check"></i> จัดการข้อสอบ
+                        </a>
+                        <a href="assessment_settings.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-dark btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-sliders"></i> ตั้งค่าการสอบ
+                        </a>
+                        <a href="assessment_report.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-info btn-sm rounded-pill px-3 shadow-sm text-dark">
+                            <i class="bi bi-bar-chart-fill"></i> ผลสอบก่อน–หลัง
+                        </a>
+                        <a href="../api/export_assessment_scores.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-info btn-sm rounded-pill px-3 shadow-sm text-dark">
+                            <i class="bi bi-filetype-csv"></i> Export ผลสอบ
                         </a>
                         <button type="submit" form="bulk-delete-form" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm"
                             onclick="return confirm('⚠️ ยืนยันการลบนักเรียนที่เลือกทั้งหมด? ข้อมูลการเล่นจะหายไปด้วยนะ!');">

@@ -6,6 +6,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/assessment.php';
+assessment_require_pretest_for_game($conn);
 $lessons = require __DIR__ . '/../config/lessons.php';
 $game_id = intval($_GET['game_id'] ?? 1);
 $context = session_context();

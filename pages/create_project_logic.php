@@ -3,12 +3,14 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
 require_once '../includes/auth.php';
 if (!is_student_like() || is_visitor_mode()) {
     header("Location: login.php");
     exit();
 }
+assessment_require_pretest_for_game($conn);
 $game_id = 1; 
 $user_id = $_SESSION['user_id'];
 $context = session_context();

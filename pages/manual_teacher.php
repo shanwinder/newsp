@@ -577,7 +577,7 @@ require_teacher_or_admin();
       <a href="#overview">ภาพรวม</a><a href="#lessons">เนื้อหา 4 บท</a
       ><a href="#quick">เริ่มใช้งาน</a><a href="#control">ควบคุมชั้นเรียน</a
       ><a href="#students">เส้นทางนักเรียน</a><a href="#assessment">ประเมินผล</a
-      ><a href="#flow">แผนจัดกิจกรรม</a><a href="#faq">คำถามที่พบบ่อย</a>
+      ><a href="#assessment-module">ข้อสอบก่อน–หลัง</a><a href="#flow">แผนจัดกิจกรรม</a><a href="#faq">คำถามที่พบบ่อย</a>
     </nav>
 
     <main class="page">
@@ -1086,11 +1086,20 @@ require_teacher_or_admin();
         </details>
       </section>
 
+      <section id="assessment-module" class="section">
+        <div class="title"><div class="icon">📝</div><div><h2>11. การใช้ระบบข้อสอบก่อนเรียน–หลังเรียน</h2><p class="lead">ใช้เมนู Assessment บน Dashboard เพื่อควบคุมการสอบและสรุปผลรายห้องเรียน</p></div></div>
+        <div class="grid g2">
+          <div class="card"><h3>เตรียมและเปิดข้อสอบ</h3><ul class="checklist"><li>ตรวจชุดข้อสอบในเมนู “จัดการข้อสอบ”</li><li>เลือกชุด Pre-test และ Post-test ใน “ตั้งค่าการสอบ”</li><li>เปิด Pre-test และเลือกบังคับทำก่อนเข้าเกมได้</li><li>เปิด Post-test เมื่อจบกิจกรรมตามแผนการสอน</li><li>ข้อสอบที่มีผู้ทำแล้วควรสร้างเวอร์ชันใหม่แทนการแก้ทับ</li></ul></div>
+          <div class="card"><h3>ติดตามและนำผลไปใช้</h3><ul class="checklist"><li>ดูคะแนนรายคนและผลต่างก่อน–หลัง</li><li>ดูค่าเฉลี่ย SD, E1 และ E2</li><li>วิเคราะห์คะแนนแยกตามบทเรียนทั้ง 4 บท</li><li>Reset รายคนเมื่อมีเหตุจำเป็น</li><li>Export CSV สำหรับจัดทำรายงาน Best Practice</li></ul></div>
+        </div>
+        <div class="note"><strong>ข้อสำคัญ:</strong> แบบทดสอบต้องทำในโหมดรายบุคคล ระบบจะไม่อนุญาตให้กลุ่มทำข้อสอบร่วมกัน และจะไม่แสดงเฉลยรายข้อแก่นักเรียน</div>
+      </section>
+
       <section id="check" class="section">
         <div class="title">
           <div class="icon">✅</div>
           <div>
-            <h2>11. รายการตรวจสอบก่อนใช้จริง</h2>
+            <h2>12. รายการตรวจสอบก่อนใช้จริง</h2>
             <p class="lead">
               ครูสามารถใช้รายการนี้ตรวจความพร้อมก่อนนำระบบไปใช้กับนักเรียนทั้งห้อง
             </p>
@@ -1105,6 +1114,7 @@ require_teacher_or_admin();
               <li>เตรียมรหัสเข้าชั้นเรียนให้นักเรียน</li>
               <li>ทดสอบเข้าใช้งานด้วยตนเองอย่างน้อย 1 ครั้ง</li>
               <li>เตรียมคำถามนำเข้าสู่บทเรียน</li>
+              <li>เลือกชุดข้อสอบและตรวจสถานะเปิด–ปิด Pre-test/Post-test</li>
             </ul>
           </div>
           <div class="card">

@@ -3,11 +3,13 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
 $lessons = require __DIR__ . '/../config/lessons.php';
 
 require_once '../includes/auth.php';
 require_student_like();
+assessment_require_pretest_for_game($conn);
 
 $context = session_context();
 $is_visitor = is_visitor_mode();

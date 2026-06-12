@@ -154,13 +154,6 @@ $result = $conn->query($sql);
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
         }
 
-        .transition-hover {
-            transition: all 0.3s ease;
-        }
-        .transition-hover:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
     </style>
 </head>
 
@@ -205,75 +198,11 @@ $result = $conn->query($sql);
             <?php endif; ?>
         </div>
 
-        <?php if (!$is_visitor && $assessmentStatus['configured']): ?>
-        <section class="card border-0 shadow-sm rounded-4 mb-5 text-start overflow-hidden">
-            <div class="card-header border-0 py-3 px-4 text-white" style="background:linear-gradient(135deg,#047857,#0f766e)">
-                <h4 class="fw-bold mb-0"><i class="bi bi-clipboard2-check-fill me-2"></i>สถานะการประเมินผล</h4>
-            </div>
-            <div class="card-body p-4">
-                <?php if (!$assessmentStatus['individual']): ?>
-                    <div class="alert alert-warning mb-0">
-                        แบบทดสอบก่อนเรียน–หลังเรียนเป็นการวัดผลรายบุคคล กรุณาเข้าสู่ระบบแบบรายบุคคลเพื่อทำแบบทดสอบ
-                    </div>
-                <?php else: ?>
-                    <div class="row g-3">
-                        <?php foreach (['pretest' => 'ก่อนเรียน', 'posttest' => 'หลังเรียน'] as $assessmentType => $thaiLabel):
-                            $assessmentItem = $assessmentStatus[$assessmentType];
-                            $submitted = !empty($assessmentItem['submitted']);
-                            $available = !empty($assessmentItem['available']);
-                        ?>
-                        <div class="col-md-6">
-                            <div class="border rounded-4 p-3 h-100 d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
-                                    <h5 class="fw-bold mb-0">แบบทดสอบ<?php echo $thaiLabel; ?></h5>
-                                    <span class="badge bg-<?php echo $submitted ? 'success' : ($available ? 'warning text-dark' : 'secondary'); ?> rounded-pill">
-                                        <?php echo $submitted ? 'ทำแล้ว' : ($available ? 'เปิดให้ทำ' : 'ยังไม่เปิด'); ?>
-                                    </span>
-                                </div>
-                                <p class="text-muted mb-3"><?php echo htmlspecialchars($assessmentItem['title'] ?: 'ยังไม่ได้กำหนดชุดข้อสอบ'); ?></p>
-                                <?php if ($available || $submitted): ?>
-                                    <a href="assessment_intro.php?type=<?php echo $assessmentType; ?>" class="btn btn-<?php echo $assessmentType === 'pretest' ? 'success' : 'primary'; ?> rounded-pill mt-auto">
-                                        <?php echo $submitted ? 'ดูสถานะการส่ง' : (!empty($assessmentItem['in_progress']) ? 'ทำต่อ' : 'เริ่มทำแบบทดสอบ'); ?>
-                                    </a>
-                                <?php else: ?>
-                                    <button class="btn btn-outline-secondary rounded-pill mt-auto" disabled><i class="bi bi-lock-fill"></i> รอคุณครูเปิด</button>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php if ($assessmentStatus['pretest_blocking']): ?>
-                        <div class="alert alert-danger mt-3 mb-0 fw-bold"><i class="bi bi-exclamation-circle-fill me-2"></i>กรุณาทำแบบทดสอบก่อนเรียนก่อนเริ่มภารกิจ</div>
-                    <?php endif; ?>
-                <?php endif; ?>
-            </div>
-        </section>
-        <?php endif; ?>
-
         <div class="mb-5">
             <h1 class="display-5 fw-bold" style="color: #166534;">
                 เลือกภารกิจการเรียนรู้
             </h1>
             <p class="text-muted fs-5">สะสม<?php echo htmlspecialchars($app['mission_stars']); ?>เพื่อเป็นนักแก้ปัญหาอย่างเป็นขั้นตอน</p>
-        </div>
-
-        <div class="row justify-content-center mb-5">
-            <div class="col-md-6 col-lg-5">
-                <a href="manual_student.php" class="text-decoration-none">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white border-start border-5 border-warning transition-hover">
-                        <div class="card-body p-3 d-flex align-items-center">
-                            <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                                <i class="bi bi-journal-bookmark-fill text-warning fs-3"></i>
-                            </div>
-                            <div class="text-start">
-                                <h5 class="fw-bold text-dark mb-0">คู่มือการเรียนรู้</h5>
-                                <p class="text-muted small mb-0">อ่านวิธีใช้งานและเทคนิคการแก้ปัญหา</p>
-                            </div>
-                            <i class="bi bi-chevron-right ms-auto text-muted"></i>
-                        </div>
-                    </div>
-                </a>
-            </div>
         </div>
 
         <div class="row g-4 text-start justify-content-center">

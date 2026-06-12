@@ -12,11 +12,32 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/db.php'; // เรียกใช้ connection
 require_once __DIR__ . '/context.php';
+require_once __DIR__ . '/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
 
 $user_id = $_SESSION['user_id'];
 
 require_once __DIR__ . '/auth.php';
+
+$navbarAssessmentStatus = $assessmentStatus ?? null;
+if (!is_visitor_mode() && !is_array($navbarAssessmentStatus)) {
+    $navbarAssessmentStatus = assessment_student_status($conn, intval($user_id), session_context());
+}
+
+$assessmentButtonClass = 'btn-outline-success';
+$assessmentButtonText = 'แบบทดสอบ';
+if (is_array($navbarAssessmentStatus)) {
+    if (!empty($navbarAssessmentStatus['pretest_blocking'])) {
+        $assessmentButtonClass = 'btn-danger assessment-nav-pulse';
+        $assessmentButtonText = 'ทำ Pre-test ก่อน';
+    } elseif ((!empty($navbarAssessmentStatus['pretest']['available']) && empty($navbarAssessmentStatus['pretest']['submitted']))
+        || (!empty($navbarAssessmentStatus['posttest']['available']) && empty($navbarAssessmentStatus['posttest']['submitted']))) {
+        $assessmentButtonClass = 'btn-warning text-dark';
+        $assessmentButtonText = 'มีแบบทดสอบ';
+    } elseif (!empty($navbarAssessmentStatus['pretest']['submitted']) || !empty($navbarAssessmentStatus['posttest']['submitted'])) {
+        $assessmentButtonClass = 'btn-success';
+    }
+}
 
 // --------------------------------------------------------
 // 1️⃣ คำนวณดาวรวมทั้งหมด (Live Update)
@@ -80,11 +101,54 @@ if (is_visitor_mode()) {
         <div class="collapse navbar-collapse" id="studentNav">
             <ul class="navbar-nav ms-auto align-items-center gap-3 mt-3 mt-lg-0">
 
-                <li class="nav-item">
-                    <a href="manual_student.php" class="nav-link text-success fw-bold d-flex align-items-center">
-                        <i class="bi bi-book me-1"></i> คู่มือ
+                <li class="nav-item manual-nav-item">
+                    <a href="manual_student.php" class="btn btn-outline-success manual-nav-button rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center gap-2" title="เปิดคู่มือการเรียนรู้สำหรับนักเรียน">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>คู่มือการเรียนรู้</span>
                     </a>
                 </li>
+
+                <?php if (!is_visitor_mode() && !empty($navbarAssessmentStatus['configured'])): ?>
+                <li class="nav-item assessment-nav-item">
+                    <details class="assessment-nav-details">
+                        <summary class="btn <?php echo $assessmentButtonClass; ?> rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard2-check-fill"></i>
+                            <span><?php echo htmlspecialchars($assessmentButtonText); ?></span>
+                            <i class="bi bi-chevron-down assessment-nav-chevron"></i>
+                        </summary>
+                        <div class="assessment-nav-panel">
+                            <div class="fw-bold text-success mb-2"><i class="bi bi-clipboard2-check-fill me-1"></i> ระบบแบบทดสอบ</div>
+                            <?php if (empty($navbarAssessmentStatus['individual'])): ?>
+                                <div class="alert alert-warning small mb-0 py-2">
+                                    แบบทดสอบต้องทำเป็นรายบุคคล กรุณาเข้าสู่ระบบใหม่ในโหมดรายบุคคล
+                                </div>
+                            <?php else: ?>
+                                <?php foreach (['pretest' => 'ก่อนเรียน', 'posttest' => 'หลังเรียน'] as $assessmentType => $thaiLabel):
+                                    $assessmentItem = $navbarAssessmentStatus[$assessmentType];
+                                    $submitted = !empty($assessmentItem['submitted']);
+                                    $available = !empty($assessmentItem['available']);
+                                ?>
+                                <div class="assessment-nav-row">
+                                    <div>
+                                        <div class="fw-semibold">แบบทดสอบ<?php echo $thaiLabel; ?></div>
+                                        <small class="text-<?php echo $submitted ? 'success' : ($available ? 'warning' : 'secondary'); ?>">
+                                            <?php echo $submitted ? 'ทำแล้ว' : ($available ? (!empty($assessmentItem['in_progress']) ? 'กำลังทำ' : 'เปิดให้ทำ') : 'ยังไม่เปิด'); ?>
+                                        </small>
+                                    </div>
+                                    <?php if ($available || $submitted): ?>
+                                        <a href="assessment_intro.php?type=<?php echo $assessmentType; ?>" class="btn btn-sm btn-<?php echo $assessmentType === 'pretest' ? 'success' : 'primary'; ?> rounded-pill px-3">
+                                            <?php echo $submitted ? 'ดูผล' : (!empty($assessmentItem['in_progress']) ? 'ทำต่อ' : 'เริ่มทำ'); ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill"><i class="bi bi-lock-fill"></i> ล็อก</span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </details>
+                </li>
+                <?php endif; ?>
 
                 <li class="nav-item">
                     <div class="d-flex align-items-center px-3 py-1 rounded-pill"
@@ -122,8 +186,106 @@ if (is_visitor_mode()) {
 </nav>
 
 <style>
+    .manual-nav-button {
+        white-space: nowrap;
+        background: #fff;
+        border-width: 2px;
+    }
+
+    .manual-nav-button:hover,
+    .manual-nav-button:focus {
+        color: #fff;
+        background: #198754;
+        transform: translateY(-1px);
+    }
+
+    .assessment-nav-item {
+        position: relative;
+    }
+
+    .assessment-nav-details > summary {
+        list-style: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .assessment-nav-details > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .assessment-nav-chevron {
+        font-size: .75rem;
+        transition: transform .2s ease;
+    }
+
+    .assessment-nav-details[open] .assessment-nav-chevron {
+        transform: rotate(180deg);
+    }
+
+    .assessment-nav-panel {
+        position: absolute;
+        z-index: 1100;
+        top: calc(100% + 12px);
+        right: 0;
+        width: min(360px, calc(100vw - 24px));
+        padding: 16px;
+        border: 1px solid #d1fae5;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 18px 45px rgba(15, 118, 110, .2);
+    }
+
+    .assessment-nav-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .assessment-nav-row:first-of-type {
+        border-top: 0;
+    }
+
+    .assessment-nav-pulse {
+        animation: assessment-nav-pulse 1.8s infinite;
+    }
+
+    @keyframes assessment-nav-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, .35); }
+        50% { box-shadow: 0 0 0 8px rgba(220, 53, 69, 0); }
+    }
+
     @keyframes wave-farm {
         0%, 100% { transform: rotate(0deg); }
         50% { transform: rotate(15deg); }
+    }
+
+    @media (max-width: 991.98px) {
+        .manual-nav-item {
+            width: 100%;
+        }
+
+        .manual-nav-button {
+            width: 100%;
+            min-height: 44px;
+        }
+
+        .assessment-nav-item {
+            width: 100%;
+        }
+
+        .assessment-nav-details > summary {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .assessment-nav-panel {
+            position: static;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: none;
+        }
     }
 </style>

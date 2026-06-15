@@ -577,7 +577,7 @@ require_teacher_or_admin();
       <a href="#overview">ภาพรวม</a><a href="#lessons">เนื้อหา 4 บท</a
       ><a href="#quick">เริ่มใช้งาน</a><a href="#control">ควบคุมชั้นเรียน</a
       ><a href="#students">เส้นทางนักเรียน</a><a href="#assessment">ประเมินผล</a
-      ><a href="#assessment-module">ข้อสอบก่อน–หลัง</a><a href="#flow">แผนจัดกิจกรรม</a><a href="#faq">คำถามที่พบบ่อย</a>
+      ><a href="#assessment-module">ข้อสอบก่อน–หลัง</a><a href="#survey-module">แบบสอบถาม</a><a href="#flow">แผนจัดกิจกรรม</a><a href="#faq">คำถามที่พบบ่อย</a>
     </nav>
 
     <main class="page">
@@ -1095,11 +1095,20 @@ require_teacher_or_admin();
         <div class="note"><strong>ข้อสำคัญ:</strong> แบบทดสอบต้องทำในโหมดรายบุคคล ระบบจะไม่อนุญาตให้กลุ่มทำข้อสอบร่วมกัน และจะไม่แสดงเฉลยรายข้อแก่นักเรียน</div>
       </section>
 
+      <section id="survey-module" class="section">
+        <div class="title"><div class="icon">💬</div><div><h2>12. การใช้แบบสอบถามความพึงพอใจ</h2><p class="lead">เก็บความคิดเห็นรายบุคคลหลังผู้เรียนใช้งานเกมและทำ Post-test แล้ว เพื่อนำไปปรับปรุงสื่อและจัดทำรายงาน Best Practice</p></div></div>
+        <div class="grid g2">
+          <div class="card"><h3>ตั้งค่าและเปิดรับคำตอบ</h3><ul class="checklist"><li>เข้าเมนู “ตั้งค่าแบบสอบถาม” บน Dashboard</li><li>เลือกชุดแบบสอบถามและสถานะ “เปิดรับ”</li><li>เลือกบังคับให้ส่ง Post-test ก่อนตอบได้</li><li>ไม่ควรเปิดให้แก้ไขหลังส่ง ยกเว้นมีเหตุจำเป็น</li><li>แบบสอบถามตอบได้เฉพาะโหมดรายบุคคล</li></ul></div>
+          <div class="card"><h3>รายงานและการส่งออก</h3><ul class="checklist"><li>ดูจำนวนและร้อยละของผู้ตอบ</li><li>ดูค่าเฉลี่ยและ S.D. รายข้อ รายด้าน และภาพรวม</li><li>ดูสถานะรายคนและ Reset เมื่อต้องการให้ตอบใหม่</li><li>Export CSV แบบรายบุคคล รายด้าน และความคิดเห็นปลายเปิด</li><li>ใช้ตารางรายด้านประกอบรายงาน Best Practice</li></ul></div>
+        </div>
+        <div class="note"><strong>ข้อสำคัญ:</strong> ความพึงพอใจไม่ใช่คะแนนผลสัมฤทธิ์ ห้ามนำไปรวมกับคะแนนเกมหรือคะแนนข้อสอบ และไม่ควรเปิดเผยความคิดเห็นรายคนให้นักเรียนคนอื่นเห็น</div>
+      </section>
+
       <section id="check" class="section">
         <div class="title">
           <div class="icon">✅</div>
           <div>
-            <h2>12. รายการตรวจสอบก่อนใช้จริง</h2>
+            <h2>13. รายการตรวจสอบก่อนใช้จริง</h2>
             <p class="lead">
               ครูสามารถใช้รายการนี้ตรวจความพร้อมก่อนนำระบบไปใช้กับนักเรียนทั้งห้อง
             </p>

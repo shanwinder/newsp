@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/survey.php';
 
 if (!is_teacher_or_admin()) {
     echo json_encode(['error' => 'Unauthorized', 'students' => []]);
@@ -16,8 +17,12 @@ if (!$context) {
     exit();
 }
 
+$settings = survey_settings($conn, intval($context['learning_session_id']));
+$surveyId = intval($settings['survey_id'] ?? 0);
+
 $sql = "SELECT u.user_id as id, u.student_id, u.name, u.class_level, u.last_seen,
-        (SELECT SUM(score) FROM progress p WHERE p.user_id = u.user_id AND p.learning_session_id = ?) as total_score
+        (SELECT SUM(score) FROM progress p WHERE p.user_id = u.user_id AND p.learning_session_id = ?) as total_score,
+        EXISTS(SELECT 1 FROM survey_responses sr WHERE sr.user_id=u.user_id AND sr.survey_id=? AND sr.learning_session_id=? AND sr.status='submitted') as survey_submitted
         FROM users u
         WHERE u.role = 'student'
           AND u.school_id = ?
@@ -27,7 +32,9 @@ $sql = "SELECT u.user_id as id, u.student_id, u.name, u.class_level, u.last_seen
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param(
-    "iiii",
+    "iiiiii",
+    $context['learning_session_id'],
+    $surveyId,
     $context['learning_session_id'],
     $context['school_id'],
     $context['classroom_id'],
@@ -41,6 +48,7 @@ $students = [];
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $row['total_score'] = $row['total_score'] ? intval($row['total_score']) : 0;
+        $row['survey_submitted'] = (bool) $row['survey_submitted'];
 
         // เผื่อกรณีข้อมูลเก่าไม่มี ให้แสดงเป็นว่างๆ (-)
         if (empty($row['student_id'])) $row['student_id'] = '-';

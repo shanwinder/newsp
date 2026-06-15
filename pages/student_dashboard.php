@@ -49,10 +49,7 @@ $result = $conn->query($sql);
     <title>ศูนย์ฝึกทักษะการแก้ปัญหา - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/game_common.css">
+    <?php require '../includes/student_topbar_head.php'; ?>
 
     <style>
         body {
@@ -309,7 +306,7 @@ $result = $conn->query($sql);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require '../includes/student_topbar_scripts.php'; ?>
     <?php include '../includes/class_control_script.php'; ?>
 </body>
 </html>

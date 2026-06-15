@@ -191,10 +191,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <meta charset="UTF-8">
     <title>เลือกด่าน - <?php echo htmlspecialchars($game['title']); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/game_common.css">
+    <?php require '../includes/student_topbar_head.php'; ?>
 
     <style>
         body {
@@ -482,7 +479,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <?php endif; ?>
     <?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require '../includes/student_topbar_scripts.php'; ?>
     <?php if ($can_create_project && $project_status === null): ?>
         <script>
             const completionModalKey = 'completion-modal-seen-<?php echo $game_id; ?>-<?php echo intval($context['learning_session_id']); ?>';

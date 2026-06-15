@@ -17,9 +17,7 @@ $attempt = $item['attempt'] ?? null;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($label); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <?php require '../includes/student_topbar_head.php'; ?>
     <link rel="stylesheet" href="../assets/css/assessment.css">
 </head>
 <body class="assessment-page">
@@ -72,6 +70,7 @@ $attempt = $item['attempt'] ?? null;
         </div>
     </div>
 </main>
+<?php require '../includes/student_topbar_scripts.php'; ?>
 <script>
 const startButton = document.getElementById('start-btn');
 if (startButton) {

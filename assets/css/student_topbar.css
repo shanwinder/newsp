@@ -1,0 +1,227 @@
+.student-topbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 4px solid #10b981;
+  backdrop-filter: blur(10px);
+  font-family: "Kanit", sans-serif;
+}
+
+.student-topbar .student-brand-icon {
+  margin-right: 12px;
+  font-size: 2rem;
+  animation: wave-farm 2s infinite;
+}
+
+.student-topbar .student-brand-name {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.student-topbar .student-brand-subtitle {
+  font-size: 0.85rem;
+}
+
+.student-topbar .manual-nav-button {
+  border-width: 2px;
+  background: #fff;
+  white-space: nowrap;
+}
+
+.student-topbar .manual-nav-button:hover,
+.student-topbar .manual-nav-button:focus {
+  color: #fff;
+  background: #198754;
+  transform: translateY(-1px);
+}
+
+.student-topbar .assessment-nav-item {
+  position: relative;
+}
+
+.student-topbar .assessment-nav-details > summary {
+  list-style: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.student-topbar .assessment-nav-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.student-topbar .assessment-nav-chevron {
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+
+.student-topbar .assessment-nav-details[open] .assessment-nav-chevron {
+  transform: rotate(180deg);
+}
+
+.student-topbar .assessment-nav-panel {
+  position: absolute;
+  z-index: 1100;
+  top: calc(100% + 12px);
+  right: 0;
+  width: min(360px, calc(100vw - 24px));
+  padding: 16px;
+  border: 1px solid #d1fae5;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(15, 118, 110, 0.2);
+}
+
+.student-topbar .assessment-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.student-topbar .assessment-nav-row:first-of-type {
+  border-top: 0;
+}
+
+.student-topbar .assessment-nav-pulse {
+  animation: assessment-nav-pulse 1.8s infinite;
+}
+
+.student-topbar .survey-nav-button {
+  border-width: 2px;
+  white-space: nowrap;
+}
+
+.student-topbar .survey-nav-pulse {
+  animation: survey-nav-pulse 1.8s infinite;
+}
+
+.student-topbar .student-profile-item {
+  flex: 0 0 auto;
+}
+
+.student-topbar .student-profile-card {
+  min-width: 220px;
+  border: 2px solid #bbf7d0;
+  background: #f0fdf4;
+}
+
+.student-topbar .student-profile-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.student-topbar .student-profile-name {
+  max-width: 190px;
+  overflow: hidden;
+  color: #212529 !important;
+  font-size: 0.95rem;
+  font-weight: 800 !important;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.student-topbar .student-profile-title {
+  display: inline-block !important;
+  max-width: 190px;
+  margin-top: 3px;
+  overflow: hidden;
+  color: #fff !important;
+  background: #198754;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25;
+  opacity: 1 !important;
+  text-overflow: ellipsis;
+  visibility: visible !important;
+  white-space: nowrap;
+}
+
+.student-topbar .student-star-counter {
+  border: 2px solid #fbbf24;
+}
+
+.student-topbar .student-star-icon {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.student-topbar .student-star-count {
+  font-size: 1.1rem;
+}
+
+.student-topbar .student-logout-button {
+  width: 40px;
+  height: 40px;
+}
+
+@keyframes assessment-nav-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+  }
+}
+
+@keyframes survey-nav-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes wave-farm {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+@media (max-width: 1199.98px) {
+  .student-topbar .manual-nav-item,
+  .student-topbar .assessment-nav-item,
+  .student-topbar .survey-nav-item,
+  .student-topbar .survey-nav-button,
+  .student-topbar .student-profile-item,
+  .student-topbar .student-profile-card {
+    width: 100%;
+  }
+
+  .student-topbar .manual-nav-button,
+  .student-topbar .survey-nav-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .student-topbar .assessment-nav-details > summary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .student-topbar .assessment-nav-panel {
+    position: static;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: none;
+  }
+
+  .student-topbar .student-profile-card {
+    justify-content: center;
+    min-height: 58px;
+  }
+
+  .student-topbar .student-profile-name,
+  .student-topbar .student-profile-title {
+    max-width: min(260px, 60vw);
+  }
+}

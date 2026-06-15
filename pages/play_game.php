@@ -69,10 +69,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/game_common.css">
+    <?php require '../includes/student_topbar_head.php'; ?>
     <?php if ($is_conveyor_condition_stage || $is_debugger_stage): ?>
         <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
     <?php endif; ?>
@@ -250,7 +247,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require '../includes/student_topbar_scripts.php'; ?>
     <?php include '../includes/class_control_script.php'; ?>
 </body>
 </html>

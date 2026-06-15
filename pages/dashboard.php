@@ -3,6 +3,7 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/survey.php';
 $app = require __DIR__ . '/../config/app.php';
 
 require_teacher_or_admin();
@@ -41,6 +42,8 @@ if (!$context) {
 $current_status = $context['learning_session']['class_status'] ?? 'active';
 $nav_status = $context['learning_session']['navigation_status'] ?? 'locked';
 $active_classroom = $context['classroom'];
+$surveyReport = survey_report_data($conn, $context);
+$surveySummary = $surveyReport['summary'];
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -160,6 +163,18 @@ $active_classroom = $context['classroom'];
             </div>
         </div>
 
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body"><div class="text-muted small">ตอบแบบสอบถามแล้ว</div><div class="display-6 fw-bold text-success"><?php echo $surveySummary['responded']; ?><span class="fs-5 text-muted">/<?php echo $surveySummary['total_students']; ?> คน</span></div><div class="small text-muted"><?php echo number_format($surveySummary['response_percent'], 2); ?>% ของนักเรียนทั้งหมด</div></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body"><div class="text-muted small">ค่าเฉลี่ยความพึงพอใจรวม</div><div class="display-6 fw-bold text-warning"><?php echo number_format($surveySummary['mean'], 2); ?><span class="fs-5 text-muted">/5.00</span></div><div class="small text-muted">S.D. <?php echo number_format($surveySummary['sd'], 2); ?></div></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100"><div class="card-body"><div class="text-muted small">ระดับความพึงพอใจ</div><div class="display-6 fw-bold text-primary"><?php echo htmlspecialchars($surveySummary['level']); ?></div><div class="small text-muted">สถานะรับคำตอบ: <?php echo htmlspecialchars($surveyReport['settings']['survey_status'] ?? 'ยังไม่ตั้งค่า'); ?></div></div></div>
+            </div>
+        </div>
+
         <div class="card shadow-sm border-0 rounded-4">
             <div class="card-header bg-white py-3">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -167,7 +182,7 @@ $active_classroom = $context['classroom'];
                         <i class="bi bi-people-fill me-2"></i> จัดการนักเรียนและผลการเรียนรู้
                     </h5>
 
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 flex-wrap">
                         <a href="review_work.php" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
                             <i class="bi bi-easel2-fill"></i> ตรวจชิ้นงาน
                         </a>
@@ -192,6 +207,15 @@ $active_classroom = $context['classroom'];
                         <a href="../api/export_assessment_scores.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-info btn-sm rounded-pill px-3 shadow-sm text-dark">
                             <i class="bi bi-filetype-csv"></i> Export ผลสอบ
                         </a>
+                        <a href="survey_settings.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-sliders"></i> ตั้งค่าแบบสอบถาม
+                        </a>
+                        <a href="survey_report.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-success btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-chat-heart-fill"></i> ผลความพึงพอใจ
+                        </a>
+                        <a href="export_survey_results.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-warning btn-sm rounded-pill px-3 shadow-sm text-dark">
+                            <i class="bi bi-filetype-csv"></i> Export แบบสอบถาม
+                        </a>
                         <button type="submit" form="bulk-delete-form" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm"
                             onclick="return confirm('⚠️ ยืนยันการลบนักเรียนที่เลือกทั้งหมด? ข้อมูลการเล่นจะหายไปด้วยนะ!');">
                             <i class="bi bi-trash-fill"></i> ลบที่เลือก
@@ -214,12 +238,13 @@ $active_classroom = $context['classroom'];
                                     <th>ชั้นเรียน</th>
                                     <th>สถานะ</th>
                                     <th>คะแนนรวม</th>
+                                    <th>แบบสอบถาม</th>
                                     <th class="text-end pe-4">จัดการ</th>
                                 </tr>
                             </thead>
                             <tbody id="student-list-body">
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="8" class="text-center py-5 text-muted">
                                         <div class="spinner-border text-primary mb-2" role="status"></div><br>กำลังโหลดข้อมูล...
                                     </td>
                                 </tr>
@@ -244,7 +269,7 @@ $active_classroom = $context['classroom'];
                     let html = '';
 
                     if (!data.students || data.students.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">ยังไม่มีนักเรียนในระบบ</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5 text-muted">ยังไม่มีนักเรียนในระบบ</td></tr>';
                         return;
                     }
 
@@ -256,6 +281,9 @@ $active_classroom = $context['classroom'];
                         let statusBadge = (diff < 15) ?
                             '<span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-circle-fill small"></i> Online</span>' :
                             '<span class="badge bg-secondary bg-opacity-10 text-secondary">Offline</span>';
+                        const surveyBadge = std.survey_submitted ?
+                            '<span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle-fill"></i> ส่งแล้ว</span>' :
+                            '<span class="badge bg-secondary bg-opacity-10 text-secondary">ยังไม่ส่ง</span>';
 
                         html += `
                             <tr>
@@ -267,6 +295,7 @@ $active_classroom = $context['classroom'];
                                 <td><span class="badge bg-light text-dark border">${std.class_level}</span></td>
                                 <td>${statusBadge}</td>
                                 <td class="fw-bold text-warning fs-6">${std.total_score} ⭐</td>
+                                <td>${surveyBadge}</td>
                                 <td class="text-end pe-4">
                                     <a href="edit_user.php?id=${std.id}" class="btn btn-outline-warning btn-sm action-btn me-1" title="แก้ไข">
                                         <i class="bi bi-pencil-fill"></i>
@@ -284,7 +313,7 @@ $active_classroom = $context['classroom'];
                 .catch(error => {
                     console.error("Error fetching students:", error);
                     document.getElementById('student-list-body').innerHTML = `
-                        <tr><td colspan="7" class="text-center py-4 text-danger">
+                        <tr><td colspan="8" class="text-center py-4 text-danger">
                             <i class="bi bi-exclamation-triangle-fill"></i> ขัดข้อง! ไม่สามารถโหลดข้อมูลได้ โปรดลองรีเฟรชหน้าเว็บ
                         </td></tr>`;
                 });

@@ -5,6 +5,7 @@ require_once '../includes/db.php';
 require_once '../includes/context.php';
 require_once '../includes/assessment.php';
 $app = require __DIR__ . '/../config/app.php';
+require_once '../includes/media_credit.php';
 
 require_once '../includes/auth.php';
 
@@ -305,6 +306,8 @@ $result = $conn->query($sql);
             <?php endif; ?>
         </div>
     </div>
+
+    <?php render_media_credit_footer('about_media.php'); ?>
 
     <?php require '../includes/student_topbar_scripts.php'; ?>
     <?php include '../includes/class_control_script.php'; ?>

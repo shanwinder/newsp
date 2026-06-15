@@ -4,6 +4,7 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 $app = require __DIR__ . '/../config/app.php';
+require_once '../includes/media_credit.php';
 
 // ตรวจสอบสิทธิ์ครูหรือแอดมิน
 require_teacher_or_admin();
@@ -1140,10 +1141,6 @@ require_teacher_or_admin();
       </section>
     </main>
 
-    <footer class="footer page">
-      <strong><?php echo htmlspecialchars($app['app_name']); ?></strong><br />
-      เรื่อง การแก้ปัญหาอย่างเป็นขั้นตอน สำหรับนักเรียนชั้นประถมศึกษาปีที่ 4<br />
-      ธีมภารกิจฟาร์มแก้ปัญหา • คู่มือสำหรับครูผู้สอน
-    </footer>
+    <?php render_media_credit_footer('about_media.php', 'page'); ?>
   </body>
 </html>

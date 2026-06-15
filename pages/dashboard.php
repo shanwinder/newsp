@@ -5,6 +5,7 @@ require_once '../includes/db.php';
 require_once '../includes/context.php';
 require_once '../includes/survey.php';
 $app = require __DIR__ . '/../config/app.php';
+require_once '../includes/media_credit.php';
 
 require_teacher_or_admin();
 ensure_active_account($conn);
@@ -100,6 +101,7 @@ $surveySummary = $surveyReport['summary'];
                     <a href="super_admin_dashboard.php" class="btn btn-warning btn-sm rounded-pill text-dark fw-bold">อนุมัติครู</a>
                 <?php endif; ?>
                 <a href="manual_teacher.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">คู่มือครู</a>
+                <a href="about_media.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">เกี่ยวกับสื่อ</a>
                 <a href="classrooms.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">ห้องเรียนของฉัน</a>
                 <a href="../logout.php" class="btn btn-light btn-sm rounded-pill text-primary fw-bold">ออกจากระบบ</a>
             </div>
@@ -256,6 +258,8 @@ $surveySummary = $surveyReport['summary'];
         </div>
 
     </div>
+
+    <?php render_media_credit_footer('about_media.php'); ?>
 
     <script>
         function loadStudents() {

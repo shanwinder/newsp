@@ -2,6 +2,8 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/survey.php';
+require_once '../includes/media_credit.php';
+$app = require __DIR__ . '/../config/app.php';
 $context = survey_teacher_context($conn);
 $report = survey_report_data($conn, $context);
 $type = in_array($_GET['type'] ?? '', ['individual','category','comments'], true) ? $_GET['type'] : 'individual';
@@ -10,6 +12,7 @@ header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename="'.$filename.'"');
 $output = fopen('php://output','w');
 fwrite($output, "\xEF\xBB\xBF");
+write_media_credit_csv_metadata($output, 'รายงานแบบสอบถามความพึงพอใจ', $app);
 if ($type === 'category') {
     fputcsv($output,['category','mean','sd','level','respondents']);
     foreach($report['category_stats'] as $row) fputcsv($output,[$row['name'],number_format($row['mean'],2,'.',''),number_format($row['sd'],2,'.',''),$row['level'],$row['respondents']]);

@@ -4,6 +4,7 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
 $app = require __DIR__ . '/../config/app.php';
+require_once '../includes/media_credit.php';
 
 // หากล็อกอินอยู่แล้วให้ข้ามไปหน้า Dashboard
 if (isset($_SESSION['user_id'])) {
@@ -860,6 +861,9 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                     <a href="guest_start.php" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
                         👀 ทดลองใช้งานในฐานะผู้เยี่ยมชม
                     </a>
+                    <a href="about_media.php" class="btn btn-outline-success rounded-pill px-4 fw-bold ms-2">
+                        <i class="bi bi-info-circle-fill"></i> เกี่ยวกับสื่อ
+                    </a>
                 </div>
 
                 <div class="teacher-gate">
@@ -889,6 +893,8 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
             </section>
         </main>
     </div>
+
+    <?php render_media_credit_footer('about_media.php'); ?>
 
     <script>
         document.querySelectorAll('input[name="group_student_ids[]"]').forEach((input, index) => {

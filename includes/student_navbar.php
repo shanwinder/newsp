@@ -150,6 +150,13 @@ $badge_color = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', (string) $badge_color);
                     </a>
                 </li>
 
+                <li class="nav-item manual-nav-item">
+                    <a href="about_media.php" class="btn btn-outline-primary manual-nav-button rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center gap-2" title="ข้อมูลผู้พัฒนาและลิขสิทธิ์สื่อ">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>เกี่ยวกับสื่อ</span>
+                    </a>
+                </li>
+
                 <?php if (!is_visitor_mode() && !empty($navbarAssessmentStatus['configured'])): ?>
                 <li class="nav-item assessment-nav-item">
                     <details class="assessment-nav-details">

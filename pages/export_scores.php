@@ -2,6 +2,8 @@
 session_start();
 require_once '../includes/db.php';
 require_once '../includes/context.php';
+require_once '../includes/media_credit.php';
+$app = require __DIR__ . '/../config/app.php';
 
 require_teacher_or_admin();
 ensure_active_account($conn);
@@ -18,6 +20,7 @@ header('Content-Disposition: attachment; filename="' . $filename . '"');
 
 $out = fopen('php://output', 'w');
 fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+write_media_credit_csv_metadata($out, 'รายงานคะแนนเกมแบบฝึกทักษะออนไลน์', $app);
 
 $headers = ['student_id', 'name', 'classroom', 'join_code'];
 for ($i = 1; $i <= 12; $i++) {

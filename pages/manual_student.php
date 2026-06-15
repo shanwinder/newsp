@@ -4,6 +4,7 @@ session_start();
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 $app = require __DIR__ . '/../config/app.php';
+require_once '../includes/media_credit.php';
 
 // ตรวจสอบสิทธิ์นักเรียนหรือผู้เยี่ยมชม
 require_student_like();
@@ -53,6 +54,6 @@ require_student_like();
     <section id="summary" class="section-card"><div class="section-title"><div class="icon">✅</div><div><h2>13. สรุปสิ่งที่ควรจำ</h2><p class="lead">ใช้รายการนี้ทบทวนก่อนเริ่มเรียนหรือก่อนส่งผลงาน</p></div></div><div class="grid grid-2"><div class="card"><h3>ก่อนเล่นเกม</h3><ul class="checklist"><li>เข้าสู่ระบบด้วยข้อมูลของตนเอง</li><li>อ่านเกร็ดความรู้ก่อนเริ่มภารกิจ</li><li>อ่านคำสั่งของด่านให้ครบ</li><li>คิดก่อนลงมือทำ</li></ul></div><div class="card"><h3>หลังเล่นเกม</h3><ul class="checklist"><li>ดูคะแนนและทบทวนวิธีคิดของตนเอง</li><li>ลองใหม่ได้เมื่อยังไม่เข้าใจ</li><li>ถามครูเมื่อพบปัญหา</li><li>ให้เกียรติผลงานของเพื่อน</li></ul></div></div><div class="callout"><strong>เป้าหมายที่แท้จริง:</strong> นักเรียนไม่จำเป็นต้องถูกตั้งแต่ครั้งแรก แต่ควรกล้าคิด กล้าลอง กล้าสังเกต และพัฒนาวิธีแก้ปัญหาของตนเองให้ดีขึ้น</div></section>
     <p class="print-note">เอกสารนี้จัดทำเพื่อพิมพ์หรือแนบเป็นคู่มือประกอบการใช้งานระบบเกมแบบฝึกทักษะออนไลน์สำหรับนักเรียน</p>
   </main>
-  <footer class="footer page"><strong><?php echo htmlspecialchars($app['app_name']); ?></strong><br>เรื่อง การแก้ปัญหาอย่างเป็นขั้นตอน สำหรับนักเรียนชั้นประถมศึกษาปีที่ 4<br>ธีมภารกิจฟาร์มแก้ปัญหา • คู่มือสำหรับนักเรียน</footer>
+  <?php render_media_credit_footer('about_media.php', 'page'); ?>
 </body>
 </html>

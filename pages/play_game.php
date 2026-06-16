@@ -30,6 +30,7 @@ if ($result->num_rows == 0) {
 $stage = $result->fetch_assoc();
 $game_id = $stage['game_id'];
 $stage_num = $stage['stage_number'];
+$is_logic_stage = in_array($stage_id, [1, 2, 3], true);
 $is_sequence_stage = in_array($stage_id, [4, 5, 6], true);
 $is_conveyor_condition_stage = in_array($stage_id, [7, 8, 9], true);
 $is_debugger_stage = in_array($stage_id, [10, 11, 12], true);
@@ -115,6 +116,15 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             overflow: visible;
         }
 
+        .game-wrapper.logic-wrapper {
+            max-width: min(1080px, calc(100vw - 24px));
+            padding: 14px;
+            align-items: stretch;
+            border: 1px solid <?php echo $theme['border']; ?>;
+            outline: 0;
+            overflow: visible;
+        }
+
         .game-wrapper.debug-mode-wrapper {
             max-width: min(1240px, calc(100vw - 24px));
             padding: 14px;
@@ -193,7 +203,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
             <div class="col-md-3"></div>
         </div>
 
-        <div class="game-wrapper <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debug-mode-wrapper' : ''; ?>">
+        <div class="game-wrapper <?php echo $is_logic_stage ? 'logic-wrapper' : ''; ?> <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'conveyor-wrapper' : ''; ?> <?php echo $is_debugger_stage ? 'debug-mode-wrapper' : ''; ?>">
             <div id="game-container"></div>
         </div>
     </div>

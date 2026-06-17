@@ -358,6 +358,26 @@ INSERT INTO `system_settings` (`setting_key`, `setting_value`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `site_visits`
+--
+
+CREATE TABLE `site_visits` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `session_key` varchar(128) NOT NULL,
+  `ip_hash` char(64) DEFAULT NULL,
+  `user_agent_hash` char(64) DEFAULT NULL,
+  `page` varchar(100) NOT NULL DEFAULT 'landing',
+  `visited_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `visit_date` date GENERATED ALWAYS AS (cast(`visited_at` as date)) STORED,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_session_page_date` (`session_key`, `page`, `visit_date`),
+  KEY `idx_page_visited_at` (`page`, `visited_at`),
+  KEY `idx_visit_date` (`visit_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `titles`
 --
 

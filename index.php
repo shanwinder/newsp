@@ -13,6 +13,43 @@ if (isset($_SESSION['user_id'])) {
     }
     exit();
 }
+
+// 2. นับผู้เข้าชม Landing Page แบบ 1 session ต่อ 1 วัน
+$total_visits = 0;
+$today_visits = 0;
+
+try {
+    $visitor_session_key = session_id();
+    $visitor_ip_hash = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? '');
+    $visitor_agent_hash = hash('sha256', $_SERVER['HTTP_USER_AGENT'] ?? '');
+
+    $stmt_visit = $conn->prepare("
+        INSERT IGNORE INTO site_visits
+            (session_key, ip_hash, user_agent_hash, page, visited_at)
+        VALUES
+            (?, ?, ?, 'landing', NOW())
+    ");
+    $stmt_visit->bind_param("sss", $visitor_session_key, $visitor_ip_hash, $visitor_agent_hash);
+    $stmt_visit->execute();
+
+    $res_total = $conn->query("SELECT COUNT(*) AS total FROM site_visits WHERE page = 'landing'");
+    if ($res_total) {
+        $total_visits = (int)($res_total->fetch_assoc()['total'] ?? 0);
+    }
+
+    $res_today = $conn->query("
+        SELECT COUNT(*) AS total
+        FROM site_visits
+        WHERE page = 'landing' AND visit_date = CURDATE()
+    ");
+    if ($res_today) {
+        $today_visits = (int)($res_today->fetch_assoc()['total'] ?? 0);
+    }
+} catch (Throwable $e) {
+    error_log('Visitor counter error: ' . $e->getMessage());
+    $total_visits = 0;
+    $today_visits = 0;
+}
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -194,11 +231,45 @@ if (isset($_SESSION['user_id'])) {
         .navbar-brand-text { color: white; transition: 0.3s; }
         .navbar-grand.scrolled .navbar-brand-text { color: var(--dark-green); }
 
+        /* --- Visitor Counter Pills --- */
+        .visitor-stats {
+            position: relative;
+            z-index: 4;
+        }
+
+        .visitor-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-weight: 700;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .visitor-pill strong {
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #fff8d6;
+        }
+
         /* Media Query for Mobile */
         @media (max-width: 768px) {
             .hero-title { font-size: 2.8rem; }
             .hero-subtitle { font-size: 1.2rem; }
             .hero-section { text-align: center; }
+        }
+
+        @media (max-width: 576px) {
+            .visitor-pill {
+                width: 100%;
+                justify-content: center;
+                font-size: 0.95rem;
+            }
         }
     </style>
 </head>
@@ -256,6 +327,20 @@ if (isset($_SESSION['user_id'])) {
                         <a href="pages/guest_start.php" class="btn-grand" style="background: linear-gradient(45deg, #2ecc71, #1e8449); box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);">
                             👀 ทดลองใช้งาน
                         </a>
+                    </div>
+                    <div class="visitor-stats mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                        <div class="visitor-pill">
+                            <i class="bi bi-eye-fill me-1"></i>
+                            ผู้เข้าชมทั้งหมด
+                            <strong><?php echo number_format($total_visits); ?></strong>
+                            ครั้ง
+                        </div>
+                        <div class="visitor-pill">
+                            <i class="bi bi-calendar-check-fill me-1"></i>
+                            วันนี้
+                            <strong><?php echo number_format($today_visits); ?></strong>
+                            ครั้ง
+                        </div>
                     </div>
                 </div>
             </div>

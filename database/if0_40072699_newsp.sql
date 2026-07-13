@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: sql306.infinityfree.com
--- Generation Time: Jul 07, 2026 at 04:20 AM
+-- Generation Time: Jul 13, 2026 at 02:25 AM
 -- Server version: 11.4.12-MariaDB
 -- PHP Version: 7.2.22
 
@@ -362,7 +362,8 @@ INSERT INTO `game_logs` (`id`, `user_id`, `stage_id`, `action`, `detail`, `logge
 (127, 34, 10, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 248 s, Attempts: 3, Detail: {\"mode\":\"conveyor_debug\",\"average_score\":96,\"level_scores\":[100,96,92],\"total_correct\":16,\"total_items\":16}', '2026-06-07 10:53:03', 2, 2, 33, 2),
 (128, 34, 11, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 252 s, Attempts: 3, Detail: {\"mode\":\"conveyor_debug\",\"average_score\":96,\"level_scores\":[100,96,92],\"total_correct\":15,\"total_items\":15}', '2026-06-07 14:30:47', 2, 2, 33, 2),
 (129, 34, 12, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 278 s, Attempts: 3, Detail: {\"mode\":\"conveyor_debug\",\"average_score\":96,\"level_scores\":[100,96,92],\"total_correct\":16,\"total_items\":16}', '2026-06-07 17:02:11', 2, 2, 33, 2),
-(130, 34, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 3, Time: 24 s, Attempts: 1', '2026-06-16 15:42:32', 2, 2, 33, 2);
+(130, 34, 1, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 1, Time: 34 s, Attempts: 8', '2026-06-15 16:51:09', 2, 2, 33, 2),
+(131, 34, 3, 'pass', 'Mode: solo, Role: solo (คนกดส่งงาน), Score: 2, Time: 46 s, Attempts: 4', '2026-06-15 16:52:22', 2, 2, 33, 2);
 
 -- --------------------------------------------------------
 
@@ -428,14 +429,14 @@ INSERT INTO `progress` (`id`, `user_id`, `stage_id`, `score`, `duration_seconds`
 (7, 31, 3, 2, 27, 3, '2026-04-04 06:41:12', 1, 1, 1, 1),
 (8, 18, 4, 3, 131, 4, '2026-04-07 15:49:48', 1, 1, 1, 1),
 (9, 31, 4, 2, 148, 5, '2026-04-04 21:29:21', 1, 1, 1, 1),
-(11, 34, 1, 3, 24, 1, '2026-06-16 22:42:32', 2, 2, 33, 2),
+(11, 34, 1, 3, 34, 8, '2026-06-15 23:51:09', 2, 2, 33, 2),
 (12, 34, 7, 3, 461, 3, '2026-06-06 22:03:38', 2, 2, 33, 2),
 (13, 34, 10, 3, 248, 3, '2026-06-07 17:53:03', 2, 2, 33, 2),
 (14, 34, 4, 3, 32, 3, '2026-06-04 21:43:21', 2, 2, 33, 2),
 (15, 34, 5, 3, 49, 3, '2026-06-07 17:26:05', 2, 2, 33, 2),
 (16, 34, 6, 3, 77, 3, '2026-06-04 23:19:43', 2, 2, 33, 2),
 (22, 34, 2, 3, 21, 0, '2026-06-04 02:26:22', 2, 2, 33, 2),
-(23, 34, 3, 3, 29, 1, '2026-06-04 02:27:08', 2, 2, 33, 2),
+(23, 34, 3, 3, 46, 4, '2026-06-15 23:52:22', 2, 2, 33, 2),
 (29, 34, 8, 3, 300, 3, '2026-06-06 22:08:48', 2, 2, 33, 2),
 (30, 34, 9, 3, 222, 3, '2026-06-06 22:12:38', 2, 2, 33, 2),
 (44, 34, 11, 3, 252, 3, '2026-06-07 21:30:47', 2, 2, 33, 2),
@@ -462,7 +463,8 @@ CREATE TABLE `project_likes` (
 
 INSERT INTO `project_likes` (`id`, `user_id`, `work_id`, `created_at`, `school_id`, `classroom_id`) VALUES
 (2, 18, 1, '2026-04-04 01:32:52', NULL, NULL),
-(3, 34, 4, '2026-06-07 01:36:39', 2, 2);
+(3, 34, 4, '2026-06-07 01:36:39', 2, 2),
+(4, 34, 2, '2026-06-15 16:52:56', 2, 2);
 
 -- --------------------------------------------------------
 
@@ -493,6 +495,39 @@ INSERT INTO `schools` (`id`, `school_code`, `school_name`, `district`, `province
 (1, 'DEFAULT', 'โรงเรียนบ้านนาอุดม', NULL, 'มุกดาหาร', 'สำนักงานเขตพื้นที่การศึกษาประถมศึกษามุกดาหาร', 'ครูผู้สอน', NULL, NULL, 'approved', '2026-06-03 16:17:26', NULL),
 (2, 'DEMO', 'โรงเรียน Demo สำหรับทดลองใช้', 'เมือง', 'มุกดาหาร', 'OBEC Content Center Demo', 'ครูทดลอง', NULL, NULL, 'approved', '2026-06-03 16:17:26', '2026-06-04 00:59:53'),
 (3, NULL, 'โรงเรียนบ้านทดสอบ', 'ทดสอบ', 'ทดสอบ', 'ทดสอบ', 'นายทดสอบ เป็นครู', 'test@test.com', '0123456789', 'approved', '2026-06-13 02:01:52', '2026-06-13 02:02:20');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `site_visits`
+--
+
+CREATE TABLE `site_visits` (
+  `id` int(11) NOT NULL,
+  `session_key` varchar(128) NOT NULL,
+  `ip_hash` char(64) DEFAULT NULL,
+  `user_agent_hash` char(64) DEFAULT NULL,
+  `page` varchar(100) NOT NULL DEFAULT 'landing',
+  `visited_at` datetime DEFAULT current_timestamp(),
+  `visit_date` date GENERATED ALWAYS AS (cast(`visited_at` as date)) STORED
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `site_visits`
+--
+
+INSERT INTO `site_visits` (`id`, `session_key`, `ip_hash`, `user_agent_hash`, `page`, `visited_at`) VALUES
+(1, 'n45andqd645148m87167kd9ie3', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '8f42af6f304383bbe22bc11b9f1c9ce77bb37478b15b0b0d93224e249f36e68e', 'landing', '2026-06-16 23:55:21'),
+(2, '', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '8f42af6f304383bbe22bc11b9f1c9ce77bb37478b15b0b0d93224e249f36e68e', 'landing', '2026-06-16 23:55:41'),
+(5, 'o0i7idgj8u95vpjvm44lm300gc', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-06-16 23:56:29'),
+(6, 'ip2cngmktioevq0u8qijf4mb5p', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-06-17 00:00:14'),
+(8, '3bpvlj8fno1fo5h8lmerloirkd', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-06-18 05:37:48'),
+(9, 'um9vm2gvk2t7qruvitljrv0mk8', 'eff8e7ca506627fe15dda5e0e512fcaad70b6d520f37cc76597fdb4f2d83a1a3', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-06-26 01:02:34'),
+(10, 'd62a19b42af76608fdbba67f0acb38bf', '222e46c18451691665c36dec52375b0339261d83995d977f1aaa0343969fbe91', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-07-07 16:15:36'),
+(11, '2c87381ce0adc3fa4f3b9c27f7ecbd46', 'ec68daf78ac7f352f1509a9d2b9b64de4dacc1527296ef77c2cd8c6322f401f6', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-07-09 05:11:01'),
+(12, 'baab844a00d7d6c884f2bd60dd1d1bd4', '539fbaada07004bdf6bb980f9941626f99da709e7e2052f4a013b84fed7a9a7d', '93af66442f9c9958e5fcc0142d9e74de955c481ce0fcd6baea96ae774c2305a7', 'landing', '2026-07-09 05:11:11'),
+(21, '156a8028f0854200eab7efed00f8164a', 'ec68daf78ac7f352f1509a9d2b9b64de4dacc1527296ef77c2cd8c6322f401f6', '365d59e9b0d62fad2f7a80ba5727b69d992e812c8acfc819ac36e33ca4f522bd', 'landing', '2026-07-09 05:12:04'),
+(24, '1a2a07c232232532bad9c370c8997e76', '222e46c18451691665c36dec52375b0339261d83995d977f1aaa0343969fbe91', 'e625a3d42ef01c764e5960f048f430f34b7862e7aa3264338186d02f75d0cb9c', 'landing', '2026-07-13 13:18:46');
 
 -- --------------------------------------------------------
 
@@ -816,7 +851,7 @@ INSERT INTO `users` (`user_id`, `student_id`, `name`, `class_level`, `password`,
 (31, '2712', 'เด็กชายภีรวัฒน์ ศรีสรรณ์', 'ป.4', '$2y$10$x31BKZHxKBfCxlMOP2HqeuYJO36CyufS9ca48GYvEd1FndKZE4b26', 'student', '2026-03-05 16:26:20', NULL, 'team_69d04fad06364', 'group', 'member', 1, 1, 1, 1, NULL, NULL, 'active', NULL, NULL),
 (32, '017', 'เด็กชายทดสอบ ลองดู', 'ป.4', '$2y$10$MZrjczSGPvlj8cz1NGyoG.WY8ycL3bS7a6Ub5W5T6tJghNxNJ/op6', 'student', '2026-03-06 07:20:35', '2026-06-03 09:26:58', 'team_6a1fe773bf3dc', 'solo', 'solo', NULL, 1, 1, 1, NULL, NULL, 'active', NULL, NULL),
 (33, 'demo_teacher', 'ครูทดลอง', NULL, '$2y$10$gfXRGXXOcEBOfKWWePUj/OjXJXitmcEx4O1SKtiBp24G3pGaWwmbG', 'teacher', '2026-06-03 09:17:26', NULL, NULL, NULL, NULL, NULL, 2, NULL, NULL, 'demo_teacher@example.local', NULL, 'active', '2026-06-04 00:59:53', 1),
-(34, 'demo01', 'นักเรียนทดลอง หนึ่ง', 'ป.4', '$2y$10$DswC7hU5ouhjgaOFermzsOaCw0jNoFvoFkxcEXWq0.J6DxxIsjaEO', 'student', '2026-06-03 09:17:26', '2026-06-16 16:59:37', 'team_6a316eab8a750', 'solo', 'solo', NULL, 2, 2, 33, NULL, NULL, 'active', NULL, NULL),
+(34, 'demo01', 'นักเรียนทดลอง หนึ่ง', 'ป.4', '$2y$10$DswC7hU5ouhjgaOFermzsOaCw0jNoFvoFkxcEXWq0.J6DxxIsjaEO', 'student', '2026-06-03 09:17:26', '2026-07-07 09:16:53', 'team_6a4cc3c1886f0', 'solo', 'solo', NULL, 2, 2, 33, NULL, NULL, 'active', NULL, NULL),
 (35, 'T40CC702E3E', 'นายทดสอบ เป็นครู', NULL, '$2y$10$RjEbMh/aFEuj43b3.P3LWeJspGQ0RKRVhNrV1nQBJ7CVGG1Wm0zy.', 'teacher', '2026-06-12 19:01:52', '2026-06-12 19:04:38', NULL, NULL, NULL, NULL, 3, NULL, NULL, 'test@test.com', '0123456789', 'active', '2026-06-13 02:02:20', 1);
 
 --
@@ -923,6 +958,15 @@ ALTER TABLE `schools`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `site_visits`
+--
+ALTER TABLE `site_visits`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_session_page_date` (`session_key`,`page`,`visit_date`),
+  ADD KEY `idx_page_visited_at` (`page`,`visited_at`),
+  ADD KEY `idx_visit_date` (`visit_date`);
+
+--
 -- Indexes for table `student_works`
 --
 ALTER TABLE `student_works`
@@ -1023,7 +1067,7 @@ ALTER TABLE `assessment_attempts`
 -- AUTO_INCREMENT for table `assessment_questions`
 --
 ALTER TABLE `assessment_questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT for table `assessment_settings`
@@ -1047,7 +1091,7 @@ ALTER TABLE `games`
 -- AUTO_INCREMENT for table `game_logs`
 --
 ALTER TABLE `game_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=131;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `learning_sessions`
@@ -1059,19 +1103,25 @@ ALTER TABLE `learning_sessions`
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `project_likes`
 --
 ALTER TABLE `project_likes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `schools`
 --
 ALTER TABLE `schools`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `site_visits`
+--
+ALTER TABLE `site_visits`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `stages`
@@ -1101,13 +1151,13 @@ ALTER TABLE `survey_answers`
 -- AUTO_INCREMENT for table `survey_questions`
 --
 ALTER TABLE `survey_questions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `survey_responses`
 --
 ALTER TABLE `survey_responses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `survey_settings`

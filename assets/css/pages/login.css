@@ -53,14 +53,27 @@
             filter: blur(2px);
         }
 
-        .login-page {
+        body.login-page {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-page-layout {
             position: relative;
             z-index: 1;
             min-height: 100vh;
+            width: 100%;
+            flex: 1 0 auto;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 36px 18px;
+        }
+
+        .login-page > .media-credit-footer {
+            width: min(1180px, calc(100% - 36px));
+            flex: 0 0 auto;
+            margin-top: 0;
         }
 
         .login-shell {
@@ -471,9 +484,13 @@
         }
 
         @media (max-width: 575px) {
-            .login-page {
+            .login-page-layout {
                 padding: 14px;
                 align-items: flex-start;
+            }
+
+            .login-page > .media-credit-footer {
+                width: calc(100% - 28px);
             }
 
             .login-shell {

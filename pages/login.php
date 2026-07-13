@@ -203,7 +203,7 @@ require __DIR__ . '/../includes/app_head.php';
 ?>
 </head>
 <body class="app-page login-page">
-    <div class="login-page">
+    <div class="login-page-layout">
         <main class="login-shell" aria-label="เข้าสู่ระบบบทเรียนฟาร์ม">
             <section class="farm-hero-panel" aria-hidden="true">
                 <div class="hero-content">

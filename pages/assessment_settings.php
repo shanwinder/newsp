@@ -34,9 +34,15 @@ $assessmentStmt->execute();
 $assessments = $assessmentStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ตั้งค่าการสอบ</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet"><style>body{font-family:Kanit,sans-serif;background:#f1f5f9}.card{border:0;border-radius:20px}</style></head><body>
+<?php
+$page_styles = array (
+  0 => 'pages/assessment_settings.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
+</head><body class="app-page assessment-settings-page">
 <nav class="navbar navbar-dark bg-primary"><div class="container"><span class="navbar-brand fw-bold"><i class="bi bi-sliders"></i> ตั้งค่าการสอบ</span><a class="btn btn-light btn-sm rounded-pill" href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>">กลับ Dashboard</a></div></nav>
-<main class="container py-4" style="max-width:900px"><div class="mb-4"><h3 class="fw-bold"><?php echo htmlspecialchars($context['classroom']['classroom_name']); ?></h3><div class="text-muted"><?php echo htmlspecialchars($context['learning_session']['session_name']); ?></div></div>
+<main class="assessment-settings-main container py-4"><div class="mb-4"><h3 class="fw-bold"><?php echo htmlspecialchars($context['classroom']['classroom_name']); ?></h3><div class="text-muted"><?php echo htmlspecialchars($context['learning_session']['session_name']); ?></div></div>
 <?php if ($message): ?><div class="alert alert-success"><?php echo htmlspecialchars($message); ?></div><?php endif; ?>
 <form method="post" class="card shadow-sm"><div class="card-body p-4 p-md-5"><input type="hidden" name="csrf_token" value="<?php echo assessment_csrf_token(); ?>">
 <?php foreach (['pretest'=>'ก่อนเรียน','posttest'=>'หลังเรียน'] as $type=>$thai): ?>

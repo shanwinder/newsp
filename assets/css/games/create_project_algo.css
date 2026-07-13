@@ -1,0 +1,157 @@
+/* Extracted from pages/create_project_algo.php; keep selectors page-local by loading only here. */
+body {
+            font-family: 'Kanit', sans-serif;
+            background: #eef6ff;
+            min-height: 100vh;
+            color: #172033;
+        }
+
+        .studio-header {
+            background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+            color: #fff;
+            padding: 28px 0 24px;
+        }
+
+        .studio-panel {
+            background: #fff;
+            border: 1px solid #dbe7f3;
+            border-radius: 8px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .tool-button {
+            min-height: 78px;
+            border: 2px solid #dbe7f3;
+            border-radius: 8px;
+            background: #f8fbff;
+            transition: border-color .15s, background .15s, transform .15s;
+        }
+
+        .tool-button:hover:not(:disabled),
+        .tool-button.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+
+        .tool-button:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .tool-button.tool-erase {
+            grid-column: 1 / -1;
+            border-color: #ef4444;
+            background: #fff1f2;
+            color: #991b1b;
+        }
+
+        .tool-button.tool-erase:hover:not(:disabled),
+        .tool-button.tool-erase.active {
+            border-color: #dc2626;
+            background: #fee2e2;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, .12);
+            transform: translateY(-1px);
+        }
+
+        .tool-button.tool-erase .erase-label {
+            font-weight: 800;
+        }
+
+        .tool-button.tool-erase .erase-help {
+            font-size: .75rem;
+            color: #b91c1c;
+        }
+
+        .tool-button.tool-erase .count-badge {
+            display: none;
+        }
+
+        /* Must override the Bootstrap state utility applied before erase mode is selected. */
+        #selected-tool-label.erase-mode {
+            background: #dc2626 !important;
+            color: #ffffff !important;
+        }
+
+        #phaser-canvas,
+        /* Phaser writes canvas dimensions inline at runtime. */
+        #phaser-canvas canvas {
+            touch-action: pan-y;
+        }
+
+        #phaser-canvas {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            border: 1px solid #dbe7f3;
+            border-radius: 8px;
+        }
+
+        #phaser-canvas canvas {
+            width: min(540px, 100%) !important;
+            height: auto !important;
+            display: block;
+            image-rendering: auto;
+        }
+
+        .command-zone {
+            min-height: 120px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+            padding: 10px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .command-chip {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #fff;
+            font-size: 22px;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+        }
+
+        .mission-tabs .btn {
+            border-radius: 999px;
+        }
+
+        .count-badge {
+            font-size: .78rem;
+        }
+
+        .studio-checklist {
+            border: 1px solid #dbe7f3;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 0;
+        }
+
+        .check-item.done {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        .check-item.missing {
+            color: #b91c1c;
+            font-weight: 600;
+        }
+.create-project-algo-page .algorithm-thinking-input { min-height: 150px; resize: vertical; }

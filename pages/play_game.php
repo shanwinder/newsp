@@ -17,9 +17,9 @@ $stage_id = intval($_GET['stage_id']);
 $user_id = $_SESSION['user_id'];
 
 // 2. ดึงข้อมูลด่าน และ Game ID
-$sql = "SELECT s.*, g.title as game_title 
-        FROM stages s 
-        JOIN games g ON s.game_id = g.id 
+$sql = "SELECT s.*, g.title as game_title
+        FROM stages s
+        JOIN games g ON s.game_id = g.id
         WHERE s.id = $stage_id";
 $result = $conn->query($sql);
 
@@ -39,16 +39,16 @@ $is_debugger_stage = in_array($stage_id, [10, 11, 12], true);
 $game_script = "";
 if ($game_id == 1) {
     // บทที่ 1: คัดแยกผลผลิต (ไฟล์เดิมที่คุณครูมีอยู่แล้ว)
-    $game_script = "stage{$stage_id}.js"; 
+    $game_script = "stage{$stage_id}.js";
 } elseif ($game_id == 2) {
     // บทที่ 2: เส้นทางเดินรถไถ
-    $game_script = "stage{$stage_id}.js"; 
+    $game_script = "stage{$stage_id}.js";
 } elseif ($game_id == 3) {
     // บทที่ 3: ผู้จัดการฟาร์มอัจฉริยะ
-    $game_script = "stage{$stage_id}.js"; 
+    $game_script = "stage{$stage_id}.js";
 } elseif ($game_id == 4) {
     // บทที่ 4: ซ่อมกฎฟาร์มอัจฉริยะ
-    $game_script = "stage{$stage_id}.js"; 
+    $game_script = "stage{$stage_id}.js";
 }
 
 // 4. กำหนดสีธีมตามบทเรียน (ให้เข้ากับหน้าเลือกด่าน)
@@ -70,119 +70,21 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <?php require '../includes/student_topbar_head.php'; ?>
-    <?php if ($is_conveyor_condition_stage || $is_debugger_stage): ?>
-        <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
-    <?php endif; ?>
-
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: <?php echo $theme['bg']; ?>;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-            min-height: 100vh;
-        }
-
-        /* กล่องเกม */
-        .game-wrapper {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            margin: 0 auto;
-            max-width: min(1180px, calc(100vw - 32px));
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            border: 6px solid #fff;
-            outline: 3px dashed <?php echo $theme['border']; ?>;
-            overflow: <?php echo ($is_conveyor_condition_stage || $is_debugger_stage) ? 'visible' : 'hidden'; ?>;
-        }
-
-        #game-container {
-            width: 100%;
-            max-width: 100%;
-            min-width: 0;
-        }
-
-        .game-wrapper.conveyor-wrapper {
-            max-width: min(1220px, calc(100vw - 24px));
-            padding: 14px;
-            align-items: stretch;
-            border: 1px solid <?php echo $theme['border']; ?>;
-            outline: 0;
-            overflow: visible;
-        }
-
-        .game-wrapper.logic-wrapper {
-            max-width: min(1080px, calc(100vw - 24px));
-            padding: 14px;
-            align-items: stretch;
-            border: 1px solid <?php echo $theme['border']; ?>;
-            outline: 0;
-            overflow: visible;
-        }
-
-        .game-wrapper.debug-mode-wrapper {
-            max-width: min(1240px, calc(100vw - 24px));
-            padding: 14px;
-            align-items: stretch;
-            border: 1px solid <?php echo $theme['border']; ?>;
-            outline: 0;
-            overflow: visible;
-        }
-
-        #game-container canvas {
-            max-width: 100%;
-            height: auto !important;
-            border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
-        }
-
-        /* หัวข้อด่าน */
-        .stage-title {
-            font-weight: 800;
-            color: #2c3e50;
-            text-shadow: 2px 2px 0px rgba(255, 255, 255, 1);
-            position: relative;
-            display: inline-block;
-            z-index: 1;
-        }
-
-        /* เส้นขีดหลังชื่อด่าน */
-        .stage-title::after {
-            content: '';
-            display: block;
-            width: 100%;
-            height: 12px;
-            background: <?php echo $theme['line']; ?>;
-            position: absolute;
-            bottom: 5px;
-            left: 0;
-            z-index: -1;
-            opacity: 0.6;
-            border-radius: 5px;
-        }
-
-        .btn-back-float {
-            transition: all 0.2s;
-            background: white;
-            border: 2px solid #e0e0e0;
-            color: #555;
-            font-weight: bold;
-        }
-
-        .btn-back-float:hover {
-            transform: translateX(-5px);
-            border-color: <?php echo $theme['border']; ?>;
-            color: <?php echo $theme['border']; ?>;
-        }
-    </style>
+    <?php
+    $page_styles = [
+        'components/rank_badges.css',
+        'components/student_topbar.css',
+        'components/class_control.css',
+        'games/play_game_shell.css',
+    ];
+    if ($is_logic_stage) $page_styles[] = 'games/farm_logic_missions.css';
+    if ($is_sequence_stage) $page_styles[] = 'games/farm_missions.css';
+    if ($is_conveyor_condition_stage || $is_debugger_stage) $page_styles[] = 'games/conveyor_logic.css';
+    require __DIR__ . '/../includes/app_head.php';
+    ?>
 </head>
 
-<body>
+<body class="app-page play-game-page game-theme-<?php echo intval($game_id); ?><?php echo $is_logic_stage ? ' farm-logic-game' : ''; ?><?php echo $is_sequence_stage ? ' farm-missions-game' : ''; ?><?php echo $is_conveyor_condition_stage ? ' conveyor-game' : ''; ?><?php echo $is_debugger_stage ? ' conveyor-game debugger-game' : ''; ?>">
     <?php require_once '../includes/student_navbar.php'; ?>
 
     <div class="container py-4">
@@ -257,7 +159,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <?php endif; ?>
     <script src="../assets/js/logic_game/<?php echo $game_script; ?>"></script>
 
-    <?php require '../includes/student_topbar_scripts.php'; ?>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <?php include '../includes/class_control_script.php'; ?>
 </body>
 </html>

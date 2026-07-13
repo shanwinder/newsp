@@ -54,18 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <title>แก้ไขข้อมูลนักเรียน</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f1f5f9;
-        }
-    </style>
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'pages/edit_user.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page edit-user-page">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-6">

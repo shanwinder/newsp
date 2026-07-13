@@ -37,8 +37,8 @@ if (isset($_POST["import"])) {
             $student_id = trim($column[0] ?? '');
             $name = trim($column[1] ?? '');
             $class_level = trim($column[2] ?? '');
-            $raw_pass = trim($column[3] ?? ''); 
-            
+            $raw_pass = trim($column[3] ?? '');
+
             if (empty($raw_pass)) {
                 $raw_pass = '1234'; // ถ้าไม่ใส่รหัส ให้ default 1234
             }
@@ -76,18 +76,19 @@ if (isset($_POST["import"])) {
     <meta charset="UTF-8">
     <title>นำเข้านักเรียน (CSV)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f1f5f9;
-        }
-    </style>
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'pages/import_students.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page import-students-page">
 
     <div class="container py-5">
         <div class="row justify-content-center">

@@ -20,116 +20,6 @@
         finished: false
     };
 
-    function ensureLogicStyles() {
-        if (document.getElementById('farm-logic-missions-style')) return;
-
-        const style = document.createElement('style');
-        style.id = 'farm-logic-missions-style';
-        style.innerHTML = `
-            #game-container {
-                width: min(1000px, 94vw);
-            }
-
-            #phaser-canvas,
-            #phaser-canvas canvas {
-                touch-action: pan-y;
-            }
-
-            .logic-shell * {
-                box-sizing: border-box;
-            }
-
-            .logic-mission,
-            .logic-card {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-shadow: 0 12px 28px rgba(15,23,42,.08);
-                padding: 16px;
-            }
-
-            .logic-mission {
-                margin-bottom: 14px;
-            }
-
-            .logic-layout {
-                display: grid;
-                grid-template-columns: minmax(360px, 1fr) 300px;
-                gap: 18px;
-                align-items: stretch;
-            }
-
-            #phaser-canvas {
-                width: 100%;
-                min-height: 420px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow: hidden;
-            }
-
-            #phaser-canvas canvas {
-                width: min(640px, 100%) !important;
-                height: auto !important;
-                max-width: 100%;
-                image-rendering: auto;
-                display: block;
-                border-radius: 8px;
-                box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
-            }
-
-            .logic-side-panel {
-                display: grid;
-                gap: 12px;
-                align-content: start;
-            }
-
-            .logic-stat-grid {
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-
-            .logic-stat {
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                background: #f8fafc;
-                padding: 10px;
-                font-weight: 700;
-                color: #1f2937;
-            }
-
-            @media (max-width: 900px) {
-                .logic-layout {
-                    grid-template-columns: 1fr;
-                }
-
-                #phaser-canvas {
-                    min-height: 360px;
-                }
-            }
-
-            @media (max-width: 576px) {
-                #game-container {
-                    width: 100%;
-                }
-
-                .logic-mission,
-                .logic-card {
-                    padding: 12px;
-                }
-
-                .logic-layout {
-                    gap: 12px;
-                }
-
-                #phaser-canvas {
-                    min-height: 320px;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-    }
 
     function escapeHtml(value) {
         return String(value ?? '')
@@ -145,7 +35,7 @@
         if (!container) return null;
 
         container.innerHTML = `
-            <div class="logic-shell">
+            <div class="farm-logic-game logic-shell">
                 <div class="logic-mission">
                     <div id="logic-level-indicator" class="fw-bold text-success">ด่านย่อยที่ 1 / ${escapeHtml(config.levels.length)}</div>
                     <h4 id="logic-mission-title" class="fw-bold mb-1 text-dark">${escapeHtml(config.title)}</h4>
@@ -847,7 +737,7 @@
         }
 
         resetState(config);
-        ensureLogicStyles();
+
         if (!createLogicShell(config)) return;
 
         class FarmLogicScene extends Phaser.Scene {

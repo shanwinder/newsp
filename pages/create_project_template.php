@@ -69,25 +69,12 @@ if ($work) {
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($config['title']); ?> - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background:#f8fafc; min-height:100vh; color:#172033; }
-        .hero { background: <?php echo $config['theme']; ?>; color:white; padding:36px 0 28px; }
-        .work-panel { background:white; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 18px 40px rgba(15,23,42,.08); }
-        .rubric-box { background:#fffbeb; border-left:5px solid #f59e0b; border-radius:8px; }
-        textarea { min-height:130px; resize:vertical; }
-        .debug-builder-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px; }
-        .debug-builder-choice { border:1px solid #e2e8f0; border-radius:8px; padding:14px; background:#fff; cursor:pointer; min-height:108px; }
-        .debug-builder-choice input { margin-right:6px; }
-        .debug-builder-choice:has(input:checked) { border-color:#d97706; box-shadow:0 0 0 3px rgba(217,119,6,.16); background:#fff7ed; }
-        .debug-builder-preview { border:1px solid #fed7aa; background:#fff7ed; border-radius:8px; padding:14px; }
-        .debug-builder-scene { display:inline-flex; align-items:center; min-height:30px; border-radius:999px; background:#ffedd5; color:#9a3412; padding:4px 12px; font-weight:800; margin-bottom:10px; }
-        @media (max-width: 768px) { .debug-builder-grid { grid-template-columns: 1fr; } }
-    </style>
+    <?php
+    $page_styles = ['games/create_project_template.css'];
+    require __DIR__ . '/../includes/app_head.php';
+    ?>
 </head>
-<body>
+<body class="app-page create-project-template-page" style="--project-theme: <?php echo htmlspecialchars($config['theme'], ENT_QUOTES, 'UTF-8'); ?>;">
     <div class="hero">
         <div class="container">
             <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-light btn-sm rounded-pill mb-3"><i class="bi bi-arrow-left"></i> กลับหน้าเลือกด่าน</a>

@@ -11,7 +11,7 @@ if (!is_student_like() || is_visitor_mode()) {
     exit();
 }
 assessment_require_pretest_for_game($conn);
-$game_id = 1; 
+$game_id = 1;
 $user_id = $_SESSION['user_id'];
 $context = session_context();
 $existingData = null;
@@ -24,9 +24,9 @@ $sql = "SELECT * FROM student_works WHERE user_id = $user_id AND game_id = $game
 $res = $conn->query($sql);
 if ($res && $res->num_rows > 0) {
     $work = $res->fetch_assoc();
-    $existingData = $work['work_data']; 
+    $existingData = $work['work_data'];
     $desc = $work['description'];
-    
+
     $bgMatch = [];
     if (preg_match('/\[ฉากหลัง:\s*(.*?)\]/', $desc, $bgMatch)) {
         $existingBg = $bgMatch[1];
@@ -34,7 +34,7 @@ if ($res && $res->num_rows > 0) {
     } else {
         $existingDesc = $desc;
     }
-    
+
     if ($work['status'] === 'revision') {
         $revisionFeedback = $work['feedback'];
     }
@@ -47,78 +47,22 @@ if ($res && $res->num_rows > 0) {
     <meta charset="UTF-8">
     <title>สร้างชิ้นงานตรรกะคัดแยก - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%); 
-            min-height: 100vh;
-            color: #333;
-            /* 🟢 ปิดฟีเจอร์ "ดึงเพื่อรีเฟรช" (Pull-to-refresh) บน Tablet/มือถือ */
-            overscroll-behavior-y: none; 
-        }
 
-        .editor-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            border: 4px solid #fff;
-        }
 
-        .toolbox-panel {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            border: 2px dashed #cbd5e1;
-            height: 480px;
-            overflow-y: auto;
-        }
 
-        .tool-item {
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 10px;
-            padding: 8px;
-            text-align: center;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 2px solid transparent;
-        }
 
-        .tool-item:hover {
-            transform: translateY(-3px) scale(1.02);
-            border-color: #27ae60;
-            background: #e9f7ef;
-        }
-
-        .tool-item img {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-        }
-
-        #phaser-canvas {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
-            border: 3px solid #27ae60;
-            touch-action: none;
-            /* 🟢 ป้องกันการเผลอคลุมดำรูปภาพเวลาแตะค้างบน Tablet */
-            -webkit-user-select: none; 
-            user-select: none;
-            -webkit-touch-callout: none;
-            background-color: #fff;
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'games/create_project_logic.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page create-project-logic-page">
 
     <div class="container-fluid py-4 px-lg-5">
         <div class="text-center text-white mb-3 text-shadow">
@@ -135,7 +79,7 @@ if ($res && $res->num_rows > 0) {
 
         <div class="editor-container">
             <div class="row g-3">
-                
+
                 <div class="col-lg-3 order-2 order-lg-1">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h5 class="fw-bold text-success m-0"><i class="bi bi-box-seam"></i> คลังไอเทม</h5>
@@ -155,15 +99,15 @@ if ($res && $res->num_rows > 0) {
                         <button class="btn btn-sm btn-outline-danger rounded-pill" onclick="changeBackground('barn')">โรงนา</button>
                         <button class="btn btn-sm btn-outline-info rounded-pill" onclick="changeBackground('v_garden')">แปลงผัก</button>
                     </div>
-                    
-                    <div id="phaser-canvas" class="w-100 d-flex justify-content-center" style="height: 480px;"></div>
+
+                    <div id="phaser-canvas" class="logic-preview-canvas w-100 d-flex justify-content-center"></div>
                 </div>
 
                 <div class="col-lg-3 order-3">
                     <div class="h-100 d-flex flex-column">
                         <div class="bg-light p-3 rounded-3 mb-2 border flex-grow-1">
                             <label class="fw-bold mb-2 text-danger"><i class="bi bi-chat-text-fill"></i> ตั้งโจทย์/เงื่อนไขของด่าน</label>
-                            <textarea id="desc-input" class="form-control border-0 shadow-sm" style="height: 120px; resize: none;"
+                            <textarea id="desc-input" class="logic-description-input form-control border-0 shadow-sm"
                                 placeholder="เช่น 'จงกำจัดแมลงสีแดง และวัชพืชใบกลมให้หมด!' หรือ 'คลิกเฉพาะปุ๋ยสีเขียวที่เป็นเม็ดกลม'"></textarea>
                         </div>
 
@@ -189,16 +133,16 @@ if ($res && $res->num_rows > 0) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 <script>
         const GAME_ID = <?php echo $game_id; ?>;
-        let placedItems = []; 
+        let placedItems = [];
         let sceneRef;
         let gridBg, bgImage;
         let currentBgType = 'grid';
 
         const assetList = [
-            { key: 'basket', img: '../assets/img/basket.webp', label: 'ตะกร้า', scale: 160, role: 'decoy' }, 
+            { key: 'basket', img: '../assets/img/basket.webp', label: 'ตะกร้า', scale: 160, role: 'decoy' },
             { key: 'weed_spiky', img: '../assets/img/weed_spiky.webp', label: 'หญ้าแหลม', scale: 120, role: 'decoy' },
             { key: 'weed_round', img: '../assets/img/weed_round.webp', label: 'หญ้ากลม', scale: 120, role: 'decoy' },
             { key: 'bug_red', img: '../assets/img/bug_red.webp', label: 'แมลงแดง', scale: 100, role: 'decoy' },
@@ -216,7 +160,7 @@ if ($res && $res->num_rows > 0) {
             const container = document.getElementById('container-items');
             assetList.forEach(item => {
                 const col = document.createElement('div');
-                col.className = 'col-6'; 
+                col.className = 'col-6';
                 col.innerHTML = `
                     <div class="tool-item" onclick="spawnItem('${item.key}', ${item.scale}, '${item.role}')">
                         <img src="${item.img}" alt="${item.label}">
@@ -230,14 +174,14 @@ if ($res && $res->num_rows > 0) {
         const config = {
             type: Phaser.AUTO,
             parent: 'phaser-canvas',
-            width: 800, 
+            width: 800,
             height: 480,
             backgroundColor: '#ffffff',
             scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-            input: { 
-                mouse: { preventDefaultWheel: false }, 
+            input: {
+                mouse: { preventDefaultWheel: false },
                 touch: { capture: true },
-                activePointers: 2 
+                activePointers: 2
             },
             scene: { preload: preload, create: create }
         };
@@ -262,7 +206,7 @@ if ($res && $res->num_rows > 0) {
 
             let initialBg = '<?php echo $existingBg; ?>';
             changeBackground(initialBg);
-            
+
             <?php if ($existingData): ?>
             try {
                 let savedItems = <?php echo $existingData; ?>;
@@ -273,7 +217,7 @@ if ($res && $res->num_rows > 0) {
                 });
             } catch(e) { console.error('Failed to parse existing data', e); }
             <?php endif; ?>
-            
+
             document.getElementById('desc-input').value = `<?php echo str_replace('`', '\`', htmlspecialchars_decode($existingDesc, ENT_QUOTES)); ?>`;
         }
 
@@ -286,8 +230,8 @@ if ($res && $res->num_rows > 0) {
             } else {
                 gridBg.setVisible(false);
                 bgImage.setVisible(true);
-                bgImage.setTexture('bg_' + type); 
-                bgImage.setDisplaySize(800, 480); 
+                bgImage.setTexture('bg_' + type);
+                bgImage.setDisplaySize(800, 480);
             }
             sceneRef.children.sendToBack(gridBg);
             sceneRef.children.sendToBack(bgImage);
@@ -299,21 +243,21 @@ if ($res && $res->num_rows > 0) {
             const x = startX !== null ? startX : Phaser.Math.Between(350, 450);
             const y = startY !== null ? startY : Phaser.Math.Between(200, 280);
 
-            const touchAreaSize = targetSize + 20; 
+            const touchAreaSize = targetSize + 20;
             const container = sceneRef.add.container(x, y).setSize(touchAreaSize, touchAreaSize).setInteractive({ cursor: 'pointer' });
             sceneRef.input.setDraggable(container);
-            
+
             const img = sceneRef.add.image(0, 0, key);
             img.setDisplaySize(targetSize, targetSize * (img.height / img.width));
             container.add(img);
 
             container.setData('type', key);
-            container.setData('role', defaultRole); 
+            container.setData('role', defaultRole);
 
             let statusText = null;
             if (defaultRole !== 'decor') {
-                statusText = sceneRef.add.text(0, -targetSize/2 - 15, defaultRole === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก', { 
-                    fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: defaultRole === 'target' ? '#27ae60' : '#e74c3c', padding: {x:6, y:3} 
+                statusText = sceneRef.add.text(0, -targetSize/2 - 15, defaultRole === 'target' ? '🎯 เป้าหมาย' : '❌ ตัวหลอก', {
+                    fontSize: '14px', fontFamily: 'Kanit', color: '#fff', backgroundColor: defaultRole === 'target' ? '#27ae60' : '#e74c3c', padding: {x:6, y:3}
                 }).setOrigin(0.5);
                 container.add(statusText);
             }
@@ -327,7 +271,7 @@ if ($res && $res->num_rows > 0) {
             });
 
             container.on('drag', function(pointer, dragX, dragY) {
-                this.x = dragX; 
+                this.x = dragX;
                 this.y = dragY;
             });
 
@@ -346,17 +290,17 @@ if ($res && $res->num_rows > 0) {
                 if (timeDiff > 0 && timeDiff < 350) {
                     clearTimeout(this.getData('clickTimer'));
                     this.setData('lastClickTime', 0);
-                    deleteItem(this); 
+                    deleteItem(this);
                 } else {
                     this.setData('lastClickTime', now);
-                    
+
                     let timer = setTimeout(() => {
                         if (!this.active || this.getData('role') === 'decor') return;
-                        
+
                         let currentRole = this.getData('role');
                         let newRole = currentRole === 'decoy' ? 'target' : 'decoy';
                         this.setData('role', newRole);
-                        
+
                         if (newRole === 'target') {
                             statusText.setText('🎯 เป้าหมาย');
                             statusText.setBackgroundColor('#27ae60');
@@ -423,9 +367,9 @@ if ($res && $res->num_rows > 0) {
                 .then(data => {
                     if (data.success) {
                         if (confirm('🎉 สร้างชิ้นงานสำเร็จ!\n\nกด "OK" เพื่อไปดูผลงาน\nกด "Cancel" เพื่อกลับหน้าหลัก')) {
-                            window.location.href = 'showcase.php?game_id=<?php echo $game_id; ?>'; 
+                            window.location.href = 'showcase.php?game_id=<?php echo $game_id; ?>';
                         } else {
-                            window.location.href = 'student_dashboard.php'; 
+                            window.location.href = 'student_dashboard.php';
                         }
                     }
                 })

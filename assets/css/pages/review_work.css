@@ -1,0 +1,62 @@
+/* Extracted from pages/review_work.php; keep selectors page-local by loading only here. */
+body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; height: 100vh; overflow: hidden; }
+        .layout-container { display: flex; height: 100vh; width: 100vw; }
+
+        /* Sidebar (ซ้าย) */
+        .sidebar { width: 340px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        .student-item { padding: 15px 20px; border-bottom: 1px solid #f8fafc; cursor: pointer; transition: 0.2s; }
+        .student-item:hover { background: #f1f5f9; }
+        .student-item.active { background: #e0f2fe; border-left: 5px solid #0ea5e9; }
+
+        /* Main Stage (ขวา) */
+        .main-stage { flex-grow: 1; background-color: #e2e8f0; display: flex; flex-direction: column; overflow-y: auto; }
+        .content-wrapper { padding: 30px; }
+
+        .bg-grid-pattern {
+            background-color: #ffffff;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .canvas-container { display: flex; justify-content: center; margin-bottom: 25px; }
+        #preview-stage {
+            width: 800px; height: 480px; background-color: #fff; position: relative; overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); border: 8px solid #cbd5e1; border-radius: 12px;
+            background-size: cover; background-position: center; transform-origin: top center;
+        }
+        .preview-item { position: absolute; transform: translate(-50%, -50%); filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3)); object-fit: contain; }
+        .role-badge { position: absolute; font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 12px; color: white; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; }
+        
+        .info-card { background: #ffffff; border-radius: 20px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); }
+        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; float: right; font-weight: bold; }
+        .badge-pending { background: #e2e8f0; color: #64748b; }
+        .badge-submitted { background: #fef08a; color: #854d0e; }
+        .badge-revision { background: #fed7aa; color: #c2410c; }
+        .badge-reviewed { background: #bbf7d0; color: #166534; }
+        .smart-teacher-detail { margin-top: 12px; }
+        .smart-teacher-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .smart-teacher-grid > div { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+        .smart-teacher-grid strong { display: block; color: #0f172a; margin-bottom: 3px; }
+        .smart-teacher-grid span { color: #475569; }
+        @media (max-width: 900px) { .smart-teacher-grid { grid-template-columns: 1fr; } }
+@keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.review-work-page .is-initially-hidden { display: none; }
+.review-work-page .student-icon { width: 60px; height: 60px; min-width: 60px; }
+.review-work-page .student-meta { line-height: 1.4; }
+.review-work-page .display-description { white-space: pre-wrap; line-height: 1.5; }
+.review-work-page .teacher-feedback { resize: none; }
+.review-work-page .student-list-name { max-width: 190px; }
+.review-work-page .tractor-work-layout { height: 100%; display: grid; grid-template-columns: 1fr 260px; gap: 18px; align-items: stretch; }
+.review-work-page .tractor-work-heading { font-weight: 800; color: #1d4ed8; font-size: 26px; margin-bottom: 12px; }
+.review-work-page .tractor-review-grid { display: grid; grid-template-columns: repeat(var(--tractor-cols), 1fr); grid-template-rows: repeat(var(--tractor-rows), 1fr); gap: 6px; height: 340px; }
+.review-work-page .tractor-work-summary { background: white; border: 1px solid #dbe7f3; border-radius: 12px; padding: 18px; overflow: hidden; }
+.review-work-page .tractor-work-title { font-weight: 800; color: #0f172a; font-size: 20px; }
+.review-work-page .tractor-work-note { color: #64748b; margin: 10px 0 14px; }
+.review-work-page .tractor-work-commands { font-size: 22px; line-height: 1.8; word-break: break-word; }
+.review-work-page .tractor-work-validation { margin-top: 16px; font-weight: 800; }
+.review-work-page .tractor-work-validation.is-valid { color: #16a34a; }
+.review-work-page .tractor-work-validation.is-invalid { color: #dc2626; }
+.review-work-page .structured-work-value { white-space: pre-wrap; }

@@ -85,7 +85,13 @@ if (is_super_admin()) {
 $listStmt->execute();
 $list=$listStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 ?>
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>จัดการข้อสอบ</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet"><style>body{font-family:Kanit,sans-serif;background:#f1f5f9}.card{border:0;border-radius:18px}</style></head><body>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>จัดการข้อสอบ</title><?php
+$page_styles = array (
+  0 => 'pages/assessment_manage.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
+</head><body class="app-page assessment-manage-page">
 <nav class="navbar navbar-dark bg-primary"><div class="container"><span class="navbar-brand fw-bold"><i class="bi bi-journal-check"></i> คลังข้อสอบ</span><a class="btn btn-light btn-sm rounded-pill" href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>">กลับ Dashboard</a></div></nav><main class="container py-4">
 <?php if($notice):?><div class="alert alert-success"><?php echo htmlspecialchars($notice);?></div><?php endif;if($error):?><div class="alert alert-danger"><?php echo htmlspecialchars($error);?></div><?php endif;?>
 <div class="card shadow-sm mb-4"><div class="card-body"><h5 class="fw-bold">สร้างชุดข้อสอบใหม่</h5><form method="post" class="row g-2"><input type="hidden" name="csrf_token" value="<?php echo assessment_csrf_token();?>"><input type="hidden" name="action" value="create"><div class="col-md-2"><select name="assessment_type" class="form-select"><option value="pretest">ก่อนเรียน</option><option value="posttest">หลังเรียน</option></select></div><div class="col-md-4"><input name="title" class="form-control" placeholder="ชื่อชุดข้อสอบ" required></div><div class="col-md-2"><input name="version_label" class="form-control" placeholder="เวอร์ชัน"></div><div class="col-md-3"><input name="description" class="form-control" placeholder="คำอธิบาย"></div><div class="col-md-1"><button class="btn btn-success w-100">สร้าง</button></div></form></div></div>

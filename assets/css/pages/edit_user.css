@@ -1,0 +1,5 @@
+/* Extracted from pages/edit_user.php; keep selectors page-local by loading only here. */
+body {
+            font-family: 'Kanit', sans-serif;
+            background: #f1f5f9;
+        }

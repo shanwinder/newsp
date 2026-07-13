@@ -53,45 +53,19 @@ $surveySummary = $surveyReport['summary'];
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($app['teacher_dashboard_title']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f1f5f9;
-        }
 
-        .control-panel {
-            background: #1e293b;
-            color: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
 
-        .btn-control {
-            border-radius: 50px;
-            font-weight: bold;
-            transition: 0.3s;
-        }
 
-        .table-hover tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-        }
 
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            line-height: 32px;
-            text-align: center;
-            border-radius: 50%;
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'pages/dashboard.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page dashboard-page">
 
     <nav class="navbar navbar-dark bg-primary shadow-sm sticky-top">
         <div class="container">
@@ -232,7 +206,7 @@ $surveySummary = $surveyReport['summary'];
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light text-secondary">
                                 <tr>
-                                    <th class="ps-4" style="width: 50px;">
+                                    <th class="dashboard-select-column ps-4">
                                         <input type="checkbox" class="form-check-input" id="select-all">
                                     </th>
                                     <th>รหัสนักเรียน</th>
@@ -304,7 +278,7 @@ $surveySummary = $surveyReport['summary'];
                                     <a href="edit_user.php?id=${std.id}" class="btn btn-outline-warning btn-sm action-btn me-1" title="แก้ไข">
                                         <i class="bi bi-pencil-fill"></i>
                                     </a>
-                                    <a href="delete_user.php?id=${std.id}" class="btn btn-outline-danger btn-sm action-btn" 
+                                    <a href="delete_user.php?id=${std.id}" class="btn btn-outline-danger btn-sm action-btn"
                                        title="ลบ" onclick="return confirm('ยืนยันการลบ ${std.name} ออกจากระบบ?');">
                                         <i class="bi bi-trash-fill"></i>
                                     </a>
@@ -348,9 +322,9 @@ $surveySummary = $surveyReport['summary'];
 
         // โหลดข้อมูลครั้งแรก และตั้งเวลารีเฟรชทุก 5 วินาที
         loadStudents();
-        setInterval(loadStudents, 5000); 
+        setInterval(loadStudents, 5000);
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 </body>
 </html>

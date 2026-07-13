@@ -64,13 +64,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>สร้างห้องเรียน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Kanit', sans-serif; background: #f1f5f9; }</style>
+
+
+
+<?php
+$page_styles = array (
+  0 => 'pages/create_classroom.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page create-classroom-page">
     <div class="container py-5">
-        <div class="mx-auto bg-white rounded-4 shadow-sm p-4" style="max-width: 720px;">
+        <div class="classroom-create-card mx-auto bg-white rounded-4 shadow-sm p-4">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="h4 fw-bold text-success mb-0">สร้างห้องเรียน</h1>
                 <a href="classrooms.php" class="btn btn-outline-secondary rounded-pill">กลับ</a>

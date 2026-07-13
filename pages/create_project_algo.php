@@ -41,167 +41,19 @@ if ($work) {
     <title>สตูดิโอออกแบบเส้นทางรถไถ - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #eef6ff;
-            min-height: 100vh;
-            color: #172033;
-        }
 
-        .studio-header {
-            background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
-            color: #fff;
-            padding: 28px 0 24px;
-        }
 
-        .studio-panel {
-            background: #fff;
-            border: 1px solid #dbe7f3;
-            border-radius: 8px;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
-        }
 
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-        }
 
-        .tool-button {
-            min-height: 78px;
-            border: 2px solid #dbe7f3;
-            border-radius: 8px;
-            background: #f8fbff;
-            transition: border-color .15s, background .15s, transform .15s;
-        }
-
-        .tool-button:hover:not(:disabled),
-        .tool-button.active {
-            border-color: #2563eb;
-            background: #eff6ff;
-            transform: translateY(-1px);
-        }
-
-        .tool-button:disabled {
-            opacity: .45;
-            cursor: not-allowed;
-        }
-
-        .tool-button.tool-erase {
-            grid-column: 1 / -1;
-            border-color: #ef4444;
-            background: #fff1f2;
-            color: #991b1b;
-        }
-
-        .tool-button.tool-erase:hover:not(:disabled),
-        .tool-button.tool-erase.active {
-            border-color: #dc2626;
-            background: #fee2e2;
-            box-shadow: 0 0 0 4px rgba(239, 68, 68, .12);
-            transform: translateY(-1px);
-        }
-
-        .tool-button.tool-erase .erase-label {
-            font-weight: 800;
-        }
-
-        .tool-button.tool-erase .erase-help {
-            font-size: .75rem;
-            color: #b91c1c;
-        }
-
-        .tool-button.tool-erase .count-badge {
-            display: none;
-        }
-
-        #selected-tool-label.erase-mode {
-            background: #dc2626 !important;
-            color: #ffffff !important;
-        }
-
-        #phaser-canvas,
-        #phaser-canvas canvas {
-            touch-action: pan-y;
-        }
-
-        #phaser-canvas {
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #f8fafc;
-            border: 1px solid #dbe7f3;
-            border-radius: 8px;
-        }
-
-        #phaser-canvas canvas {
-            width: min(540px, 100%) !important;
-            height: auto !important;
-            display: block;
-            image-rendering: auto;
-        }
-
-        .command-zone {
-            min-height: 120px;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 8px;
-            padding: 10px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            background: #f8fafc;
-        }
-
-        .command-chip {
-            width: 42px;
-            height: 42px;
-            border: 0;
-            border-radius: 8px;
-            background: #2563eb;
-            color: #fff;
-            font-size: 22px;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
-        }
-
-        .mission-tabs .btn {
-            border-radius: 999px;
-        }
-
-        .count-badge {
-            font-size: .78rem;
-        }
-
-        .studio-checklist {
-            border: 1px solid #dbe7f3;
-        }
-
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 4px 0;
-        }
-
-        .check-item.done {
-            color: #15803d;
-            font-weight: 600;
-        }
-
-        .check-item.missing {
-            color: #b91c1c;
-            font-weight: 600;
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'games/create_project_algo.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page create-project-algo-page">
     <div class="studio-header">
         <div class="container-fluid px-lg-5">
             <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-light btn-sm rounded-pill mb-3">
@@ -290,7 +142,7 @@ if ($work) {
 
                         <div class="flex-grow-1 d-flex flex-column">
                             <label class="form-label fw-bold"><i class="bi bi-chat-text-fill text-primary"></i> คำอธิบายวิธีคิด</label>
-                            <textarea id="thinking-input" class="form-control flex-grow-1" style="min-height: 150px; resize: vertical;" placeholder="อธิบายว่ารถไถเริ่มจากไหน ต้องหลบหรือเก็บอะไร และทำไมลำดับคำสั่งนี้จึงพาไปถึงเป้าหมายได้"><?php echo htmlspecialchars($existingDesc); ?></textarea>
+                            <textarea id="thinking-input" class="algorithm-thinking-input form-control flex-grow-1" placeholder="อธิบายว่ารถไถเริ่มจากไหน ต้องหลบหรือเก็บอะไร และทำไมลำดับคำสั่งนี้จึงพาไปถึงเป้าหมายได้"><?php echo htmlspecialchars($existingDesc); ?></textarea>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -305,7 +157,7 @@ if ($work) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <script>
         const GAME_ID = <?php echo $game_id; ?>;
         const EXISTING_WORK = <?php echo json_encode($existingData, JSON_UNESCAPED_UNICODE); ?>;

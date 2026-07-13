@@ -63,9 +63,25 @@ include $pagePath;
 $html = ob_get_clean();
 
 topbar_smoke_check(strpos($html, 'student-topbar navbar') !== false, "{$page}: missing Top Bar class");
-topbar_smoke_check(strpos($html, '../assets/css/student_topbar.css') !== false, "{$page}: missing Top Bar CSS");
+topbar_smoke_check(strpos($html, '../assets/css/components/student_topbar.css') !== false, "{$page}: missing Top Bar CSS");
 topbar_smoke_check(strpos($html, 'bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js') !== false, "{$page}: missing Bootstrap bundle");
 topbar_smoke_check(strpos($html, 'student-profile-name') !== false && strpos($html, '<strong class="student-profile-name') !== false, "{$page}: student name is not rendered with strong profile class");
 topbar_smoke_check(strpos($html, 'student-profile-title') !== false, "{$page}: missing student title badge");
+
+if ($page === 'play_game.php') {
+    $stageId = intval($_GET['stage_id'] ?? 0);
+    topbar_smoke_check(strpos($html, '../assets/css/games/play_game_shell.css') !== false, 'play_game.php: missing game shell CSS');
+    topbar_smoke_check(strpos($html, '<style') === false, 'play_game.php: generated style block remains');
+    if ($stageId >= 1 && $stageId <= 3) {
+        topbar_smoke_check(strpos($html, '../assets/css/games/farm_logic_missions.css') !== false, 'Logic stage: missing static mission CSS');
+        topbar_smoke_check(strpos($html, 'farm-logic-game') !== false, 'Logic stage: missing namespace');
+    } elseif ($stageId >= 4 && $stageId <= 6) {
+        topbar_smoke_check(strpos($html, '../assets/css/games/farm_missions.css') !== false, 'Sequence stage: missing static mission CSS');
+        topbar_smoke_check(strpos($html, 'farm-missions-game') !== false, 'Sequence stage: missing namespace');
+    } elseif ($stageId >= 7 && $stageId <= 12) {
+        topbar_smoke_check(strpos($html, '../assets/css/games/conveyor_logic.css') !== false, 'Conveyor/debugger stage: missing conveyor CSS');
+        topbar_smoke_check(strpos($html, 'conveyor-game') !== false, 'Conveyor/debugger stage: missing namespace');
+    }
+}
 
 echo "{$page} render smoke passed.\n";

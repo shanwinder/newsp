@@ -9,8 +9,14 @@ $report = survey_report_data($conn, $context);
 $summary = $report['summary'];
 ?>
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>ผลความพึงพอใจ | <?php echo htmlspecialchars($app['app_name']); ?></title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"><link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet"><style>body{font-family:Kanit,sans-serif;background:#f8fafc}.stat-card,.report-card{border:0;border-radius:1.25rem;box-shadow:0 10px 28px rgba(15,23,42,.07)}@media print{nav,.no-print{display:none!important}body{background:#fff}.report-card,.stat-card{box-shadow:none;border:1px solid #ddd}}</style></head>
-<body><nav class="navbar navbar-dark bg-success"><div class="container"><span class="navbar-brand fw-bold"><i class="bi bi-bar-chart-fill"></i> ผลความพึงพอใจ</span><div class="d-flex gap-2"><a class="btn btn-light btn-sm rounded-pill" href="survey_responses.php?classroom_id=<?php echo $context['classroom_id']; ?>">สถานะรายคน</a><a class="btn btn-warning btn-sm rounded-pill" href="export_survey_results.php?classroom_id=<?php echo $context['classroom_id']; ?>">Export</a><a class="btn btn-outline-light btn-sm rounded-pill" href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>">Dashboard</a></div></div></nav>
+<?php
+$page_styles = array (
+  0 => 'pages/survey_report.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
+</head>
+<body class="app-page survey-report-page"><nav class="navbar navbar-dark bg-success"><div class="container"><span class="navbar-brand fw-bold"><i class="bi bi-bar-chart-fill"></i> ผลความพึงพอใจ</span><div class="d-flex gap-2"><a class="btn btn-light btn-sm rounded-pill" href="survey_responses.php?classroom_id=<?php echo $context['classroom_id']; ?>">สถานะรายคน</a><a class="btn btn-warning btn-sm rounded-pill" href="export_survey_results.php?classroom_id=<?php echo $context['classroom_id']; ?>">Export</a><a class="btn btn-outline-light btn-sm rounded-pill" href="dashboard.php?classroom_id=<?php echo $context['classroom_id']; ?>">Dashboard</a></div></div></nav>
 <main class="container py-4"><div class="d-flex justify-content-between align-items-start gap-3 mb-4"><div><h2 class="fw-bold mb-1"><?php echo htmlspecialchars($report['settings']['title'] ?? 'แบบสอบถามความพึงพอใจ'); ?></h2><div class="text-muted"><?php echo htmlspecialchars($context['classroom']['classroom_name']); ?> | <?php echo htmlspecialchars($context['learning_session']['session_name'] ?? 'รอบการเรียนรู้หลัก'); ?></div></div><button onclick="print()" class="btn btn-outline-secondary rounded-pill no-print"><i class="bi bi-printer"></i> พิมพ์รายงาน</button></div>
 <?php render_media_credit_notice(); ?>
 <?php if (empty($report['settings']['survey_id'])): ?><div class="alert alert-warning">ยังไม่ได้กำหนดแบบสอบถามสำหรับรอบการเรียนรู้นี้ <a href="survey_settings.php?classroom_id=<?php echo $context['classroom_id']; ?>">ไปตั้งค่า</a></div><?php endif; ?>

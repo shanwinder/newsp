@@ -57,228 +57,26 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($app['app_name'] . ' - ' . $app['app_subtitle']); ?></title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <style>
-        :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --accent-orange: #e67e22;
-            --light-bg: #f4fdf8;
-        }
 
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: var(--light-bg);
-            color: #2c3e50;
-            overflow-x: hidden;
-        }
 
-        /* --- Hero Section (อลังการด้วย Gradient & วงกลมแสง) --- */
-        .hero-section {
-            position: relative;
-            background: linear-gradient(135deg, #1e8449 0%, #2ecc71 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            z-index: 1;
-        }
 
-        /* วงกลมแสงด้านหลังให้ดูมีมิติ */
-        .glow-circle {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
-            z-index: -1;
-        }
-        .glow-1 { width: 600px; height: 600px; top: -10%; left: -10%; animation: pulse 6s infinite alternate; }
-        .glow-2 { width: 800px; height: 800px; bottom: -20%; right: -10%; animation: pulse 8s infinite alternate-reverse; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.2); opacity: 0.8; }
-        }
 
-        /* คลื่นด้านล่าง Hero (SVG Wave) */
-        .custom-shape-divider-bottom {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            overflow: hidden;
-            line-height: 0;
-            transform: rotate(180deg);
-        }
-        .custom-shape-divider-bottom svg {
-            position: relative;
-            display: block;
-            width: calc(100% + 1.3px);
-            height: 120px;
-        }
-        .custom-shape-divider-bottom .shape-fill { fill: var(--light-bg); }
-
-        /* --- Typography --- */
-        .hero-title {
-            font-weight: 900;
-            color: #ffffff;
-            font-size: 4.5rem;
-            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            line-height: 1.1;
-            margin-bottom: 20px;
-        }
-        .hero-subtitle {
-            font-size: 1.5rem;
-            color: #ecf0f1;
-            font-weight: 300;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* --- Glassmorphism Elements --- */
-        .glass-badge {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            color: white;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            display: inline-block;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(15px);
-            border-radius: 30px;
-            padding: 40px;
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            height: 100%;
-            position: relative;
-            z-index: 2;
-        }
-        .glass-card:hover {
-            transform: translateY(-15px);
-            box-shadow: 0 30px 60px rgba(39, 174, 96, 0.15);
-            border-color: var(--primary-green);
-        }
-
-        /* --- Buttons & Animations --- */
-        .btn-grand {
-            background: linear-gradient(45deg, #f39c12, #d35400);
-            color: white;
-            font-size: 1.6rem;
-            padding: 18px 50px;
-            border-radius: 50px;
-            font-weight: 800;
-            border: none;
-            box-shadow: 0 15px 30px rgba(211, 84, 0, 0.4);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-        }
-        .btn-grand::after {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: 0.5s;
-        }
-        .btn-grand:hover::after { left: 100%; }
-        .btn-grand:hover { transform: scale(1.05); color: white; box-shadow: 0 20px 40px rgba(211, 84, 0, 0.6); }
-
-        .floating-emoji {
-            font-size: 5rem;
-            position: absolute;
-            animation: float-grand 6s ease-in-out infinite;
-            filter: drop-shadow(0 15px 15px rgba(0,0,0,0.2));
-        }
-        @keyframes float-grand {
-            0%, 100% { transform: translateY(0) rotate(-5deg) scale(1); }
-            50% { transform: translateY(-30px) rotate(5deg) scale(1.1); }
-        }
-
-        .icon-wrapper {
-            width: 90px; height: 90px;
-            background: linear-gradient(135deg, #e8f8f5, #a3e4d7);
-            border-radius: 25px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 3rem; margin: 0 auto 25px auto;
-            transform: rotate(-5deg); transition: 0.3s;
-        }
-        .glass-card:hover .icon-wrapper { transform: rotate(0deg) scale(1.1); }
-
-        /* Navbar */
-        .navbar-grand {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            transition: 0.3s;
-        }
-        .navbar-grand.scrolled {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        .nav-link { font-weight: 600; color: white !important; }
-        .navbar-grand.scrolled .nav-link { color: var(--dark-green) !important; }
-        .navbar-brand-text { color: white; transition: 0.3s; }
-        .navbar-grand.scrolled .navbar-brand-text { color: var(--dark-green); }
-
-        /* --- Visitor Counter Pills --- */
-        .visitor-stats {
-            position: relative;
-            z-index: 4;
-        }
-
-        .visitor-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.18);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.45);
-            color: #ffffff;
-            padding: 10px 18px;
-            border-radius: 999px;
-            font-weight: 700;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        .visitor-pill strong {
-            font-size: 1.15rem;
-            font-weight: 900;
-            color: #fff8d6;
-        }
-
-        /* Media Query for Mobile */
-        @media (max-width: 768px) {
-            .hero-title { font-size: 2.8rem; }
-            .hero-subtitle { font-size: 1.2rem; }
-            .hero-section { text-align: center; }
-        }
-
-        @media (max-width: 576px) {
-            .visitor-pill {
-                width: 100%;
-                justify-content: center;
-                font-size: 0.95rem;
-            }
-        }
-    </style>
+<?php
+$asset_prefix = '.';
+$page_styles = array (
+  0 => 'pages/landing.css',
+);
+require __DIR__ . '/includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page landing-page">
 
     <nav class="navbar navbar-expand-lg fixed-top navbar-grand" id="mainNav">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="#">
-                <span style="font-size: 2.2rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));">🏡</span> 
+                <span class="brand-farm-icon">🏡</span>
                 <span class="ms-2 fw-bold navbar-brand-text fs-3"><?php echo htmlspecialchars($app['app_name']); ?></span>
             </a>
             <button class="navbar-toggler border-0 bg-light opacity-75" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -303,11 +101,11 @@ try {
     <section class="hero-section">
         <div class="glow-circle glow-1"></div>
         <div class="glow-circle glow-2"></div>
-        
-        <div class="floating-emoji" style="top: 20%; left: 10%;">🚜</div>
-        <div class="floating-emoji" style="top: 15%; right: 15%; animation-delay: 1s; font-size: 4rem;">🌻</div>
-        <div class="floating-emoji" style="bottom: 30%; left: 20%; animation-delay: 2s; font-size: 3.5rem;">🌽</div>
-        <div class="floating-emoji" style="bottom: 25%; right: 10%; animation-delay: 1.5s;">🍅</div>
+
+        <div class="floating-emoji floating-tractor">🚜</div>
+        <div class="floating-emoji floating-sunflower">🌻</div>
+        <div class="floating-emoji floating-corn">🌽</div>
+        <div class="floating-emoji floating-tomato">🍅</div>
 
         <div class="container position-relative z-3">
             <div class="row align-items-center">
@@ -324,7 +122,7 @@ try {
                         <a href="pages/login.php" class="btn-grand">
                             <i class="bi bi-play-circle-fill me-2 fs-3"></i> เข้าสู่บทเรียน
                         </a>
-                        <a href="pages/guest_start.php" class="btn-grand" style="background: linear-gradient(45deg, #2ecc71, #1e8449); box-shadow: 0 15px 30px rgba(46, 204, 113, 0.4);">
+                        <a href="pages/guest_start.php" class="btn-grand btn-grand-guest">
                             👀 ทดลองใช้งาน
                         </a>
                     </div>
@@ -356,10 +154,10 @@ try {
     <section id="features" class="container py-5 mt-5">
         <div class="text-center mb-5">
             <h6 class="text-warning fw-bold tracking-wide text-uppercase">ภารกิจหลัก</h6>
-            <h2 class="fw-bold display-5" style="color: #2c3e50;">กิจกรรมภารกิจการเรียนรู้</h2>
-            <div style="width: 80px; height: 6px; background: var(--primary-green); margin: 15px auto; border-radius: 10px;"></div>
+            <h2 class="landing-section-title fw-bold display-5">กิจกรรมภารกิจการเรียนรู้</h2>
+            <div class="landing-section-divider"></div>
         </div>
-        
+
         <div class="row g-5 px-lg-4">
             <div class="col-lg-4 col-md-6">
                 <div class="glass-card text-center">
@@ -368,7 +166,7 @@ try {
                     <p class="text-secondary fs-6 mb-0">ฝึกทักษะการใช้เหตุผล (Logic) สังเกตเงื่อนไขเพื่อคัดแยกผลผลิตและกำจัดศัตรูพืชออกจากแปลงให้ถูกต้องแม่นยำ</p>
                 </div>
             </div>
-            
+
             <div class="col-lg-4 col-md-6">
                 <div class="glass-card text-center">
                     <div class="icon-wrapper text-warning">🚜</div>
@@ -394,14 +192,14 @@ try {
                 ออกแบบและพัฒนาระบบโดย <strong>นายณัฐดนัย สุวรรณไตรย์</strong>
             </p>
             <p class="text-muted small mb-4">สำนักงานเขตพื้นที่การศึกษาประถมศึกษามุกดาหาร</p>
-            
+
             <div class="d-inline-flex align-items-center justify-content-center px-4 py-2 bg-light rounded-pill border">
                 <span class="fw-bold text-muted small">&copy; <?php echo date("Y"); ?> <?php echo htmlspecialchars($app['app_name']); ?>. All Rights Reserved.</span>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php $asset_prefix = '.'; require __DIR__ . '/includes/app_scripts.php'; ?>
     <script>
         // สคริปต์เปลี่ยนสี Navbar เวลากรอเลื่อนจอ (Scroll)
         window.addEventListener('scroll', function() {

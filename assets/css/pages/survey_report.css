@@ -1,0 +1,10 @@
+/* Extracted from pages/survey_report.php; loaded only for this page. */
+.survey-report-page { font-family: Kanit, sans-serif; background: #f8fafc; }
+.survey-report-page :is(.stat-card, .report-card) { border: 0; border-radius: 1.25rem; box-shadow: 0 10px 28px rgba(15,23,42,.07); }
+
+@media print {
+    /* Print output must hide navigation even when Bootstrap display utilities are present. */
+    .survey-report-page :is(nav, .no-print) { display: none !important; }
+    .survey-report-page { background: #fff; }
+    .survey-report-page :is(.report-card, .stat-card) { box-shadow: none; border: 1px solid #ddd; }
+}

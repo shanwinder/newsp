@@ -1,0 +1,20 @@
+.create-project-template-page {
+    background: #f8fafc;
+    min-height: 100vh;
+    color: #172033;
+}
+
+.create-project-template-page .hero { background: var(--project-theme, #2563eb); color: white; padding: 36px 0 28px; }
+.create-project-template-page .work-panel { background: white; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 18px 40px rgba(15,23,42,.08); }
+.create-project-template-page .rubric-box { background: #fffbeb; border-left: 5px solid #f59e0b; border-radius: 8px; }
+.create-project-template-page textarea { min-height: 130px; resize: vertical; }
+.create-project-template-page .debug-builder-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.create-project-template-page .debug-builder-choice { border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; background: #fff; cursor: pointer; min-height: 108px; }
+.create-project-template-page .debug-builder-choice input { margin-right: 6px; }
+.create-project-template-page .debug-builder-choice:has(input:checked) { border-color: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,.16); background: #fff7ed; }
+.create-project-template-page .debug-builder-preview { border: 1px solid #fed7aa; background: #fff7ed; border-radius: 8px; padding: 14px; }
+.create-project-template-page .debug-builder-scene { display: inline-flex; align-items: center; min-height: 30px; border-radius: 999px; background: #ffedd5; color: #9a3412; padding: 4px 12px; font-weight: 800; margin-bottom: 10px; }
+
+@media (max-width: 768px) {
+    .create-project-template-page .debug-builder-grid { grid-template-columns: 1fr; }
+}

@@ -19,57 +19,24 @@ if (!$context) {
     <meta charset="UTF-8">
     <title>ห้องตรวจผลงาน - Teacher Studio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
-    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
 
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; height: 100vh; overflow: hidden; }
-        .layout-container { display: flex; height: 100vh; width: 100vw; }
 
-        /* Sidebar (ซ้าย) */
-        .sidebar { width: 340px; background: #ffffff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
-        .student-item { padding: 15px 20px; border-bottom: 1px solid #f8fafc; cursor: pointer; transition: 0.2s; }
-        .student-item:hover { background: #f1f5f9; }
-        .student-item.active { background: #e0f2fe; border-left: 5px solid #0ea5e9; }
 
-        /* Main Stage (ขวา) */
-        .main-stage { flex-grow: 1; background-color: #e2e8f0; display: flex; flex-direction: column; overflow-y: auto; }
-        .content-wrapper { padding: 30px; }
 
-        .bg-grid-pattern {
-            background-color: #ffffff;
-            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
 
-        .canvas-container { display: flex; justify-content: center; margin-bottom: 25px; }
-        #preview-stage {
-            width: 800px; height: 480px; background-color: #fff; position: relative; overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); border: 8px solid #cbd5e1; border-radius: 12px;
-            background-size: cover; background-position: center; transform-origin: top center;
-        }
-        .preview-item { position: absolute; transform: translate(-50%, -50%); filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3)); object-fit: contain; }
-        .role-badge { position: absolute; font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 12px; color: white; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); z-index: 10; }
-        
-        .info-card { background: #ffffff; border-radius: 20px; padding: 25px; border: 1px solid #e2e8f0; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05); }
-        .status-badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; float: right; font-weight: bold; }
-        .badge-pending { background: #e2e8f0; color: #64748b; }
-        .badge-submitted { background: #fef08a; color: #854d0e; }
-        .badge-revision { background: #fed7aa; color: #c2410c; }
-        .badge-reviewed { background: #bbf7d0; color: #166534; }
-        .smart-teacher-detail { margin-top: 12px; }
-        .smart-teacher-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-        .smart-teacher-grid > div { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
-        .smart-teacher-grid strong { display: block; color: #0f172a; margin-bottom: 3px; }
-        .smart-teacher-grid span { color: #475569; }
-        @media (max-width: 900px) { .smart-teacher-grid { grid-template-columns: 1fr; } }
-    </style>
+
+
+<?php
+$page_styles = array (
+  0 => 'games/conveyor_logic.css',
+  1 => 'games/smart_farm_builder.css',
+  2 => 'pages/review_work.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page review-work-page">
 
     <div class="layout-container">
         <div class="sidebar">
@@ -96,12 +63,12 @@ if (!$context) {
 
             </div>
 
-            <div id="presentation-panel" class="content-wrapper" style="display:none;">
+            <div id="presentation-panel" class="content-wrapper is-initially-hidden">
                 <div class="canvas-container">
                     <div id="preview-stage"></div>
                 </div>
 
-                <div id="teacher-smart-farm-tools" class="info-card mb-3" style="display:none;">
+                <div id="teacher-smart-farm-tools" class="info-card mb-3 is-initially-hidden">
                     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                         <div>
                             <h5 class="fw-bold text-success mb-1"><i class="bi bi-controller"></i> เครื่องมือตรวจสอบด่าน</h5>
@@ -123,25 +90,25 @@ if (!$context) {
                     <div class="row">
                         <div class="col-md-7 border-end pe-4">
                             <div class="d-flex align-items-start mb-4">
-                                <div id="icon-bg" class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-3 me-3 shadow-sm" style="width: 60px; height: 60px; min-width: 60px;">
+                                <div id="icon-bg" class="student-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-3 me-3 shadow-sm">
                                     <i id="display-icon" class="bi bi-person-fill"></i>
                                 </div>
                                 <div class="w-100">
                                     <h3 id="display-name" class="fw-bold text-primary mb-1">ชื่อนักเรียน</h3>
-                                    <div class="text-secondary small mb-1" style="line-height: 1.4;"><span id="display-id">-</span></div>
+                                    <div class="student-meta text-secondary small mb-1"><span id="display-id">-</span></div>
                                     <div class="text-secondary small"><i class="bi bi-clock"></i> ส่งเมื่อ: <span id="display-time">-</span></div>
                                 </div>
                             </div>
                             <h6 class="text-dark fw-bold mb-2"><i class="bi bi-chat-quote-fill text-warning"></i> กติกา/เงื่อนไข ที่ผู้เรียนตั้งไว้:</h6>
                             <div class="bg-light p-3 rounded-3 border mb-3">
-                                <p id="display-desc" class="mb-0 fs-6 text-dark" style="white-space: pre-wrap; line-height: 1.5;"></p>
+                                <p id="display-desc" class="display-description mb-0 fs-6 text-dark"></p>
                             </div>
                         </div>
 
                         <div class="col-md-5 ps-4 d-flex flex-column">
                             <h6 class="text-success fw-bold mb-2"><i class="bi bi-pen-fill"></i> ข้อเสนอแนะจากคุณครู:</h6>
-                            <textarea id="teacher-feedback" class="form-control mb-3 flex-grow-1 border-success" placeholder="ชื่นชม หรือแนะนำเพิ่มเติมให้นักเรียนที่นี่..." style="resize: none;"></textarea>
-                            
+                            <textarea id="teacher-feedback" class="teacher-feedback form-control mb-3 flex-grow-1 border-success" placeholder="ชื่นชม หรือแนะนำเพิ่มเติมให้นักเรียนที่นี่..."></textarea>
+
                             <div class="d-flex gap-2" id="action-buttons">
                                 <button id="btn-revision" onclick="markAsReviewed('revision')" class="btn btn-warning btn-lg rounded-pill fw-bold shadow flex-grow-1 text-dark">
                                     <i class="bi bi-arrow-return-left me-2"></i> ให้แก้ไข
@@ -232,7 +199,7 @@ if (!$context) {
 
                         div.innerHTML = `
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="pe-2 text-truncate" style="max-width: 190px;">
+                                <div class="student-list-name pe-2 text-truncate">
                                     <div class="fw-bold text-dark text-truncate">${iconHTML}${titleText}</div>
                                     <small class="text-secondary text-truncate d-block mt-1">${subText}</small>
                                 </div>
@@ -278,7 +245,7 @@ if (!$context) {
 
             document.getElementById('display-time').innerText = data.submitted_at;
             document.getElementById('teacher-feedback').value = data.feedback || "";
-            
+
             let desc = data.description || "";
             let bgType = 'grid';
             const bgMatch = desc.match(/\[ฉากหลัง:\s*(.*?)\]/);
@@ -290,7 +257,7 @@ if (!$context) {
 
             const btnApprove = document.getElementById('btn-approve');
             const btnRevision = document.getElementById('btn-revision');
-            
+
             if (data.work_status === 'reviewed') {
                 btnApprove.className = 'btn btn-secondary btn-lg rounded-pill fw-bold shadow flex-grow-1';
                 btnApprove.innerHTML = '<i class="bi bi-check2-all me-2"></i> ตรวจแล้ว';
@@ -408,8 +375,8 @@ if (!$context) {
         function renderCanvas(jsonData, bgType) {
             const stage = document.getElementById('preview-stage');
             stage.innerHTML = '';
-            stage.className = ''; 
-            stage.style.backgroundImage = ''; 
+            stage.className = '';
+            stage.style.backgroundImage = '';
 
             if (bgType === 'farm') {
                 stage.style.backgroundImage = `url('${ASSET_PATH}bg_farm.webp')`;
@@ -421,7 +388,7 @@ if (!$context) {
                 stage.style.backgroundImage = `url('${ASSET_PATH}bg_v_garden.webp')`;
                 stage.style.backgroundSize = 'cover';
             } else {
-                stage.classList.add('bg-grid-pattern'); 
+                stage.classList.add('bg-grid-pattern');
             }
 
             try {
@@ -451,7 +418,7 @@ if (!$context) {
                     const img = document.createElement('img');
                     img.src = ASSET_PATH + obj.type + '.webp';
                     img.className = 'preview-item';
-                    img.style.width = targetSize + 'px'; 
+                    img.style.width = targetSize + 'px';
                     wrapper.appendChild(img);
 
                     if(obj.role && obj.role !== 'decor') {
@@ -472,7 +439,7 @@ if (!$context) {
                     stage.appendChild(wrapper);
                 });
             } catch (e) { console.error("JSON Error", e); }
-            
+
             setTimeout(adjustScale, 50);
         }
 
@@ -498,16 +465,16 @@ if (!$context) {
             stage.style.padding = '24px';
             stage.style.overflow = 'hidden';
             stage.innerHTML = `
-                <div style="height:100%; display:grid; grid-template-columns: 1fr 260px; gap:18px; align-items:stretch;">
+                <div class="tractor-work-layout">
                     <div>
-                        <div style="font-weight:800; color:#1d4ed8; font-size:26px; margin-bottom:12px;">ภารกิจเส้นทางรถไถ</div>
-                        <div class="tractor-review-grid" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); grid-template-rows:repeat(${rows}, 1fr); gap:6px; height:340px;"></div>
+                        <div class="tractor-work-heading">ภารกิจเส้นทางรถไถ</div>
+                        <div class="tractor-review-grid" style="--tractor-cols:${cols}; --tractor-rows:${rows};"></div>
                     </div>
-                    <div style="background:white; border:1px solid #dbe7f3; border-radius:12px; padding:18px; overflow:hidden;">
-                        <div style="font-weight:800; color:#0f172a; font-size:20px;">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
-                        <div style="color:#64748b; margin:10px 0 14px;">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
-                        <div style="font-size:22px; line-height:1.8; word-break:break-word;">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
-                        <div style="margin-top:16px; color:${data.validated ? '#16a34a' : '#dc2626'}; font-weight:800;">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
+                    <div class="tractor-work-summary">
+                        <div class="tractor-work-title">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
+                        <div class="tractor-work-note">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
+                        <div class="tractor-work-commands">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
+                        <div class="tractor-work-validation ${data.validated ? 'is-valid' : 'is-invalid'}">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
                     </div>
                 </div>
             `;
@@ -552,7 +519,7 @@ if (!$context) {
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).map(key => `
                             <div class="mb-3">
                                 <div class="small fw-bold text-secondary">${STRUCTURED_LABELS[key]}</div>
-                                <div class="fs-6 text-dark" style="white-space: pre-wrap;">${escapeHtml(data[key])}</div>
+                                <div class="structured-work-value fs-6 text-dark">${escapeHtml(data[key])}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -572,7 +539,7 @@ if (!$context) {
             const btnApprove = document.getElementById('btn-approve');
             const btnRevision = document.getElementById('btn-revision');
             const feedbackText = document.getElementById('teacher-feedback').value;
-            
+
             if (statusToSave === 'reviewed') {
                 btnApprove.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
             } else {
@@ -617,10 +584,6 @@ if (!$context) {
                 stage.style.transform = `scale(1)`;
             }
         }
-
-        const style = document.createElement('style');
-        style.innerHTML = `@keyframes popIn { from {transform: scale(0); opacity: 0;} to {transform: scale(1); opacity: 1;} }`;
-        document.head.appendChild(style);
 
         window.addEventListener('resize', adjustScale);
         loadStudents();

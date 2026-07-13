@@ -41,21 +41,21 @@
     grid-column: 1 / -1;
 }
 
-.panel-head {
+.smart-builder-page .panel-head {
     display: flex;
     gap: 12px;
     align-items: flex-start;
     margin-bottom: 14px;
 }
 
-.panel-head h2 {
+.smart-builder-page .panel-head h2 {
     font-size: 1.18rem;
     line-height: 1.25;
     margin: 0;
     font-weight: 800;
 }
 
-.panel-head p {
+.smart-builder-page .panel-head p {
     color: #668074;
     margin: 2px 0 0;
 }

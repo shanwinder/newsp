@@ -75,19 +75,23 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
     <meta charset="UTF-8">
     <title>เล่นด่านฟาร์มของเพื่อน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
-    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background:#eef7f1; color:#163025; min-height:100vh; }
-        .play-header { background: linear-gradient(135deg, #126d56 0%, #2f8f62 100%); color:#fff; padding:28px 0 24px; }
-        .play-panel { background:#fff; border:1px solid #d8e6dc; border-radius:8px; box-shadow:0 12px 28px rgba(22,48,37,.08); }
-    </style>
+
+
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'games/conveyor_logic.css',
+  1 => 'games/smart_farm_builder.css',
+  2 => 'games/play_smart_farm_work.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page play-smart-farm-work-page">
     <div class="play-header">
         <div class="container-fluid px-lg-5">
             <a href="showcase.php?game_id=3" class="btn btn-light btn-sm rounded-pill mb-3">
@@ -121,7 +125,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                         <?php elseif (($work['mode'] ?? '') === 'group'): ?>
                             <div class="small text-muted mb-2">สมาชิกทีม: <?php echo htmlspecialchars($work['member_names'] ?? '-'); ?></div>
                         <?php endif; ?>
-                        <div class="text-secondary" style="white-space: pre-wrap;"><?php echo htmlspecialchars($workData['mission'] ?? ''); ?></div>
+                        <div class="work-description text-secondary"><?php echo htmlspecialchars($workData['mission'] ?? ''); ?></div>
                     </div>
                 </div>
                 <div class="col-lg-4">
@@ -148,7 +152,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>

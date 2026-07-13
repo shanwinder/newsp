@@ -42,20 +42,26 @@ $ratingLabels = [1 => 'เห็นด้วยน้อยที่สุด', 
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ตอบแบบสอบถามความพึงพอใจ | <?php echo htmlspecialchars($app['app_name']); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/survey.css">
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'modules/survey.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body class="survey-page">
+<body class="survey-page app-page survey-take-page">
 <main class="container survey-shell py-3 py-md-4">
-    <div class="card survey-card sticky-top mb-3" style="top:8px; z-index:1000">
+    <div class="card survey-card sticky-top mb-3">
         <div class="card-body p-3">
             <div class="d-flex justify-content-between align-items-center gap-3">
                 <div><div class="fw-bold text-success">แบบสอบถามความพึงพอใจ</div><small id="section-label" class="text-muted"></small></div>
                 <div class="badge bg-success fs-6 rounded-pill px-3 py-2"><span id="answered-count">0</span>/15 ข้อ</div>
             </div>
-            <div class="progress survey-progress mt-3"><div id="progress-bar" class="progress-bar bg-success" style="width:0%"></div></div>
+            <div class="progress survey-progress mt-3"><div id="progress-bar" class="progress-bar bg-success"></div></div>
         </div>
     </div>
 

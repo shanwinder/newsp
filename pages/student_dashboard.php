@@ -26,11 +26,11 @@ $team_data = [];
 if (!empty($team_members)) {
     // แปลง Array ของ ID ให้เป็น String เพื่อใช้ใน SQL IN()
     $ids = implode(',', array_map('intval', $team_members));
-    
+
     // เรียงลำดับตามคนที่ล็อกอินเข้ามาก่อน
     $sql_names = "SELECT name, team_role FROM users WHERE user_id IN ($ids) AND classroom_id = {$context['classroom_id']} ORDER BY FIELD(user_id, $ids)";
     $res_names = $conn->query($sql_names);
-    
+
     if ($res_names) {
         while ($row = $res_names->fetch_assoc()) {
             $team_data[] = $row;
@@ -50,126 +50,35 @@ $result = $conn->query($sql);
     <title>ศูนย์ฝึกทักษะการแก้ปัญหา - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <?php require '../includes/student_topbar_head.php'; ?>
 
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: #f0fdf4;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-            color: #334155;
-            min-height: 100vh;
-        }
 
-        .pair-status-banner {
-            background: white;
-            border-radius: 20px;
-            padding: 20px 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            border: 3px dashed #a7f3d0;
-            display: inline-block;
-            margin-bottom: 2rem;
-            min-width: 50%;
-        }
-        .pair-status-banner.mode-solo { border-color: #86efac; }
-        .pair-status-banner.mode-pair { border-color: #93c5fd; }
-        .pair-status-banner.mode-group { border-color: #fcd34d; }
 
-        .farm-card {
-            background: #ffffff;
-            border: 2px solid #e2e8f0;
-            border-bottom: 8px solid #8b4513;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .farm-card:hover {
-            transform: translateY(-8px);
-            border-color: #34d399;
-            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
-        }
-
-        .mission-icon {
-            font-size: 4rem;
-            margin-bottom: 10px;
-            animation: bounce 2s infinite ease-in-out;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .btn-play {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border: none;
-            border-radius: 50px;
-            padding: 12px 25px;
-            font-weight: bold;
-            width: 100%;
-            transition: all 0.3s;
-            color: white !important;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 6px rgba(217, 119, 6, 0.3);
-        }
-
-        .btn-play:hover {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            transform: scale(1.05);
-            box-shadow: 0 8px 15px rgba(217, 119, 6, 0.4);
-        }
-
-        .progress-bar-custom {
-            height: 12px;
-            border-radius: 10px;
-            background-color: #e2e8f0;
-            overflow: hidden;
-            position: relative;
-            border: 1px solid #cbd5e1;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #34d399, #10b981);
-            width: 0%;
-            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .star-score {
-            color: #eab308;
-            font-weight: 800;
-            font-size: 1.1rem;
-        }
-
-        .heartbeat-badge {
-            animation: pulse-danger 1.5s infinite;
-        }
-        @keyframes pulse-danger {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
-        }
-
-    </style>
+<?php
+$page_styles = array (
+  0 => 'components/rank_badges.css',
+  1 => 'components/student_topbar.css',
+  2 => 'components/class_control.css',
+  3 => 'pages/student_dashboard.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page student-dashboard-page">
 
     <?php require_once '../includes/student_navbar.php'; ?>
 
     <div class="container py-4 text-center">
-        
+
         <?php if ($is_visitor): ?>
-        <div class="alert alert-info text-center shadow-sm fw-bold border-0 mb-4" style="border-radius: 15px; background: #e0f2fe; color: #0284c7;">
+        <div class="visitor-mode-notice alert alert-info text-center shadow-sm fw-bold border-0 mb-4">
             <i class="bi bi-info-circle-fill me-2"></i> โหมดผู้เยี่ยมชม: คุณสามารถทดลองเล่นได้ แต่คะแนนและผลงานจะไม่ถูกบันทึกถาวร
         </div>
         <?php endif; ?>
 
         <div class="pair-status-banner mode-<?php echo $mode; ?>">
             <h6 class="mb-2 text-secondary fw-bold">รูปแบบการเรียนรู้ปัจจุบัน</h6>
-            
+
             <?php if ($is_visitor): ?>
                 <h3 class="fw-bold text-info mb-3">👋 <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-info rounded-pill px-4 py-2 fs-6 shadow-sm text-dark">
@@ -180,14 +89,14 @@ $result = $conn->query($sql);
                 <span class="badge bg-success rounded-pill px-4 py-2 fs-6 shadow-sm">
                     <i class="bi bi-person-fill"></i> เรียนรู้รายบุคคล (Solo)
                 </span>
-                
+
             <?php elseif ($mode === 'group'): ?>
-                <h3 class="fw-bold mb-3" style="color:#d35400;">👨‍👩‍👧‍👦 ทีม<?php echo htmlspecialchars($app['student_role']); ?> <?php echo htmlspecialchars($display_name); ?></h3>
+                <h3 class="student-team-title fw-bold mb-3">👨‍👩‍👧‍👦 ทีม<?php echo htmlspecialchars($app['student_role']); ?> <?php echo htmlspecialchars($display_name); ?></h3>
                 <span class="badge bg-warning text-dark rounded-pill px-4 py-2 fs-6 shadow-sm mb-3">
                     <i class="bi bi-diagram-3-fill"></i> ทำงานเป็นกลุ่ม (Group)
                 </span>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
-                    <?php 
+                    <?php
                     foreach($team_data as $index => $member) {
                         echo "<div class='bg-light px-3 py-1 rounded-pill border'><i class='bi bi-person-check-fill text-success'></i> <span class='fw-bold'>{$member['name']}</span></div>";
                     }
@@ -197,7 +106,7 @@ $result = $conn->query($sql);
         </div>
 
         <div class="mb-5">
-            <h1 class="display-5 fw-bold" style="color: #166534;">
+            <h1 class="student-dashboard-title display-5 fw-bold">
                 เลือกภารกิจการเรียนรู้
             </h1>
             <p class="text-muted fs-5">สะสม<?php echo htmlspecialchars($app['mission_stars']); ?>เพื่อเป็นนักแก้ปัญหาอย่างเป็นขั้นตอน</p>
@@ -223,7 +132,7 @@ $result = $conn->query($sql);
                     $sql_total = "SELECT COUNT(*) as total FROM stages WHERE game_id = $gameId";
                     $res_total = $conn->query($sql_total);
                     $total_stages = $res_total->fetch_assoc()['total'];
-                    $max_score = $total_stages * 3; 
+                    $max_score = $total_stages * 3;
 
                     // หาคะแนนที่ทำได้
                     if ($is_visitor) {
@@ -234,9 +143,9 @@ $result = $conn->query($sql);
                             $current_score += $_SESSION['visitor_progress'][$s['id']]['score'] ?? 0;
                         }
                     } else {
-                        $sql_score = "SELECT SUM(p.score) as earned 
-                                      FROM progress p 
-                                      JOIN stages s ON p.stage_id = s.id 
+                        $sql_score = "SELECT SUM(p.score) as earned
+                                      FROM progress p
+                                      JOIN stages s ON p.stage_id = s.id
                                       WHERE p.user_id = $user_id AND s.game_id = $gameId AND p.learning_session_id = {$context['learning_session_id']}";
                         $res_score = $conn->query($sql_score);
                         $current_score = $res_score->fetch_assoc()['earned'];
@@ -256,7 +165,7 @@ $result = $conn->query($sql);
             ?>
                     <div class="col-md-6 col-lg-5">
                         <div class="farm-card p-4 h-100 d-flex flex-column <?php echo ($project_status === 'revision') ? 'border-danger border-3 bg-danger bg-opacity-10' : ''; ?>">
-                            
+
                             <?php if ($project_status === 'revision'): ?>
                             <div class="position-absolute top-0 end-0 mt-3 me-3 z-3">
                                 <span class="badge bg-danger fs-6 shadow heartbeat-badge"><i class="bi bi-exclamation-triangle-fill"></i> ครูส่งกลับให้แก้ไข</span>
@@ -266,7 +175,7 @@ $result = $conn->query($sql);
                             <div class="text-center">
                                 <div class="mission-icon"><?php echo $icon; ?></div>
                                 <h4 class="fw-bold mb-2 text-dark"><?php echo htmlspecialchars($row['title']); ?></h4>
-                                <p class="text-muted small mb-3" style="min-height: 48px;">
+                                <p class="mission-description text-muted small mb-3">
                                     <?php echo htmlspecialchars($row['description']); ?>
                                 </p>
                             </div>
@@ -284,7 +193,7 @@ $result = $conn->query($sql);
                                 <?php
                                 $btn_text = "▶️ เข้าสู่บทเรียน";
                                 $btn_class = "btn-play";
-                                
+
                                 if ($project_status === 'revision') {
                                     $btn_text = "⚠️ เข้าไปแก้ไขงานด่วน";
                                     $btn_class = "btn btn-danger w-100 rounded-pill py-2 fw-bold shadow heartbeat-badge text-white";
@@ -309,7 +218,7 @@ $result = $conn->query($sql);
 
     <?php render_media_credit_footer('about_media.php'); ?>
 
-    <?php require '../includes/student_topbar_scripts.php'; ?>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <?php include '../includes/class_control_script.php'; ?>
 </body>
 </html>

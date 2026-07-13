@@ -1,0 +1,17 @@
+html {
+    font-family: "Kanit", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body.app-page {
+    color: var(--app-text);
+    font-family: "Kanit", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body.app-page img {
+    max-width: 100%;
+}
+
+.app-focus-ring:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--app-primary) 65%, white);
+    outline-offset: 3px;
+}

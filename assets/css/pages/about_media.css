@@ -1,0 +1,59 @@
+/* Extracted from pages/about_media.php; keep selectors page-local by loading only here. */
+body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Kanit', sans-serif;
+            color: #163124;
+            background:
+                linear-gradient(135deg, rgba(240,253,244,.94), rgba(255,251,235,.92)),
+                url('../../img/bg_farm.webp') center/cover fixed;
+        }
+
+        .about-hero {
+            background: linear-gradient(135deg, #14532d, #22c55e);
+            color: #fff;
+            border-radius: 26px;
+            padding: clamp(28px, 5vw, 54px);
+            box-shadow: 0 24px 70px rgba(20, 83, 45, .22);
+        }
+
+        .about-card {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 16px 46px rgba(15, 23, 42, .08);
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: minmax(170px, .34fr) 1fr;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(20, 83, 45, .10);
+        }
+
+        .info-row:last-child {
+            border-bottom: 0;
+        }
+
+        .info-label {
+            color: #166534;
+            font-weight: 800;
+        }
+
+        .copyright-box {
+            white-space: pre-line;
+            background: #f0fdf4;
+            border: 1px solid rgba(22, 101, 52, .18);
+            border-left: 6px solid #16a34a;
+            border-radius: 16px;
+            padding: 20px;
+            color: #14532d;
+            line-height: 1.8;
+        }
+
+        @media (max-width: 720px) {
+            .info-row {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }

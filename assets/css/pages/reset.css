@@ -1,0 +1,4 @@
+/* Extracted from reset.php; keep selectors page-local by loading only here. */
+body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
+        .reset-box { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.reset-page .reset-instructions { font-size: 1.1rem; }

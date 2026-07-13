@@ -17,10 +17,18 @@ $attempt = $item['attempt'] ?? null;
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($label); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
-    <?php require '../includes/student_topbar_head.php'; ?>
-    <link rel="stylesheet" href="../assets/css/assessment.css">
+
+
+<?php
+$page_styles = array (
+  0 => 'components/rank_badges.css',
+  1 => 'components/student_topbar.css',
+  2 => 'modules/assessment.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body class="assessment-page">
+<body class="assessment-page app-page assessment-intro-page">
 <?php require '../includes/student_navbar.php'; ?>
 <main class="container assessment-shell py-5">
     <section class="assessment-hero p-4 p-md-5 mb-4 text-center">
@@ -70,7 +78,7 @@ $attempt = $item['attempt'] ?? null;
         </div>
     </div>
 </main>
-<?php require '../includes/student_topbar_scripts.php'; ?>
+<?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 <script>
 const startButton = document.getElementById('start-btn');
 if (startButton) {

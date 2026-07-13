@@ -41,14 +41,21 @@ if ($work) {
     <meta charset="UTF-8">
     <title>สร้างด่านฟาร์มอัจฉริยะของฉัน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/conveyor_logic.css">
-    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
+
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'games/conveyor_logic.css',
+  1 => 'games/smart_farm_builder.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body class="smart-builder-page">
+<body class="smart-builder-page app-page create-project-condition-page">
     <header class="builder-hero">
         <div class="container-fluid px-lg-5">
             <a href="game_select.php?game_id=<?php echo $game_id; ?>" class="btn btn-light btn-sm rounded-pill mb-3">
@@ -225,7 +232,7 @@ if ($work) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <script src="../assets/js/logic_game/conveyor_drag_drop.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>

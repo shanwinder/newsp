@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $student_id = trim($_POST['solo_student_id'] ?? '');
             $u_pw = trim($_POST['solo_pw'] ?? '');
             $user = $all_valid ? verifyStudentByJoinCode($conn, $join_code, $student_id, $u_pw) : false;
-            
+
             if ($user) {
                 $members_data[] = ['id' => $user['user_id'], 'role' => 'solo'];
                 $names[] = $user['name'];
@@ -76,10 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $group_number = intval($_POST['group_number']);
             $group_ids = $_POST['group_student_ids'] ?? [];
             $group_pws = $_POST['group_pws'] ?? [];
-            
+
             // กรองเอาเฉพาะคนที่เลือกชื่อมาจริงๆ (ป้องกันช่องว่าง)
             $selected_ids = array_filter($group_ids);
-            
+
             // เช็คว่าเลือกคนซ้ำหรือไม่
             if (count($selected_ids) !== count(array_unique($selected_ids))) {
                 $all_valid = false;
@@ -90,10 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 foreach ($group_ids as $index => $g_id) {
                     if (empty($g_id)) continue; // ข้ามช่องที่ไม่ได้เลือก
-                    
+
                     $g_pw = trim($group_pws[$index] ?? '');
                     $member = verifyStudentByJoinCode($conn, $join_code, trim($g_id), $g_pw);
-                    
+
                     if ($member) {
                         $members_data[] = ['id' => $member['user_id'], 'role' => 'member'];
                         $names[] = $member['name'];
@@ -111,10 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // หากทุกอย่างถูกต้อง ให้ Update ลงฐานข้อมูล และสร้าง Session
         if ($all_valid && !empty($members_data)) {
             $member_ids = [];
-            
+
             // ล้างข้อมูลเก่าก่อนอัปเดตใหม่
             $stmt_update = $conn->prepare("UPDATE users SET mode = ?, team_id = ?, team_role = ?, group_number = ? WHERE user_id = ?");
-            
+
             foreach ($members_data as $m) {
                 $g_num = ($mode === 'group') ? $group_number : NULL;
                 $stmt_update->bind_param("sssii", $mode, $team_id, $m['role'], $g_num, $m['id']);
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['teacher_id'] = intval($login_context['teacher_id']);
             $_SESSION['learning_session_id'] = intval($login_context['learning_session_id']);
             $_SESSION['join_code'] = $join_code;
-            
+
             // จัดการชื่อที่จะแสดงในระบบตามโหมด
             if ($mode === 'solo') {
                 $_SESSION['name'] = $names[0];
@@ -191,523 +191,18 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
     <meta charset="UTF-8">
     <title>เข้าสู่บทเรียน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        :root {
-            --leaf: #1f8f4a;
-            --leaf-dark: #0f5132;
-            --leaf-soft: #dff7dc;
-            --sun: #f5a524;
-            --soil: #7a4f27;
-            --water: #1d9bd7;
-            --cream: #fff9ed;
-            --ink: #19312a;
-        }
 
-        * {
-            box-sizing: border-box;
-        }
 
-        body {
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Kanit', sans-serif;
-            color: var(--ink);
-            background:
-                linear-gradient(120deg, rgba(14, 82, 45, .82), rgba(31, 143, 74, .28) 44%, rgba(245, 165, 36, .24)),
-                url('../assets/img/bg_farm.webp') center/cover fixed;
-            overflow-x: hidden;
-        }
 
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            pointer-events: none;
-            z-index: 0;
-        }
 
-        body::before {
-            inset: auto -8vw -16vh -8vw;
-            height: 34vh;
-            background:
-                radial-gradient(ellipse at 18% 100%, rgba(122, 79, 39, .8) 0 16%, transparent 17%),
-                repeating-linear-gradient(105deg, rgba(122, 79, 39, .72) 0 28px, rgba(91, 57, 28, .72) 28px 56px);
-            opacity: .9;
-            transform: skewY(-2deg);
-        }
-
-        body::after {
-            width: 460px;
-            height: 460px;
-            top: -180px;
-            right: -120px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 226, 126, .95), rgba(245, 165, 36, .14) 58%, transparent 70%);
-            filter: blur(2px);
-        }
-
-        .login-page {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 36px 18px;
-        }
-
-        .login-shell {
-            width: min(1180px, 100%);
-            display: grid;
-            grid-template-columns: minmax(330px, .92fr) minmax(420px, 1fr);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, .72);
-            border-radius: 28px;
-            background: rgba(255, 255, 255, .76);
-            box-shadow: 0 34px 90px rgba(10, 48, 31, .34);
-            backdrop-filter: blur(22px);
-        }
-
-        .farm-hero-panel {
-            position: relative;
-            min-height: 720px;
-            padding: 42px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #fff;
-            background:
-                linear-gradient(180deg, rgba(8, 68, 44, .18), rgba(8, 68, 44, .84)),
-                url('../assets/img/ori_bg_farm.webp') center/cover;
-            overflow: hidden;
-        }
-
-        .farm-hero-panel::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(90deg, rgba(255,255,255,.16) 1px, transparent 1px),
-                linear-gradient(0deg, rgba(255,255,255,.1) 1px, transparent 1px);
-            background-size: 42px 42px;
-            mask-image: linear-gradient(to bottom, rgba(0,0,0,.62), transparent 72%);
-        }
-
-        .farm-hero-panel::after {
-            content: "";
-            position: absolute;
-            left: -14%;
-            right: -14%;
-            bottom: -6%;
-            height: 32%;
-            background:
-                repeating-linear-gradient(102deg, rgba(105, 67, 30, .92) 0 24px, rgba(67, 102, 42, .88) 24px 48px);
-            border-top: 8px solid rgba(247, 209, 126, .65);
-            transform: rotate(-2deg);
-            opacity: .95;
-        }
-
-        .hero-content,
-        .hero-footer,
-        .tractor-scene {
-            position: relative;
-            z-index: 2;
-        }
-
-        .farm-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            width: fit-content;
-            padding: 9px 15px;
-            border: 1px solid rgba(255, 255, 255, .5);
-            border-radius: 999px;
-            background: rgba(9, 69, 45, .38);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, .16);
-            backdrop-filter: blur(10px);
-            font-weight: 700;
-        }
-
-        .farm-hero-panel h1 {
-            margin: 24px 0 12px;
-            font-size: clamp(2.4rem, 5vw, 4.6rem);
-            line-height: 1.02;
-            font-weight: 800;
-            text-shadow: 0 10px 30px rgba(0, 0, 0, .28);
-            letter-spacing: 0;
-        }
-
-        .farm-hero-panel p {
-            max-width: 440px;
-            margin: 0;
-            color: rgba(255, 255, 255, .88);
-            font-size: 1.12rem;
-            line-height: 1.7;
-        }
-
-        .tractor-scene {
-            min-height: 230px;
-        }
-
-        .orchard-tree {
-            position: absolute;
-            left: 2%;
-            bottom: -36px;
-            width: min(265px, 58%);
-            filter: drop-shadow(0 20px 20px rgba(0, 0, 0, .28));
-            animation: orchard-bob 5s ease-in-out infinite;
-        }
-
-        .floating-crop {
-            position: absolute;
-            display: grid;
-            place-items: center;
-            width: clamp(72px, 10vw, 120px);
-            height: clamp(72px, 10vw, 120px);
-            animation: crop-float 4.5s ease-in-out infinite;
-        }
-
-        .floating-crop img {
-            width: clamp(56px, 8vw, 96px);
-            height: clamp(56px, 8vw, 96px);
-            object-fit: contain;
-        }
-
-        .crop-1 { right: 12%; bottom: 126px; }
-        .crop-2 { right: 28%; bottom: 42px; animation-delay: .8s; }
-        .crop-3 { right: 4%; bottom: 26px; animation-delay: 1.4s; }
-
-        .hero-footer {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .field-chip {
-            min-height: 88px;
-            padding: 14px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, .18);
-            border: 1px solid rgba(255, 255, 255, .35);
-            backdrop-filter: blur(10px);
-        }
-
-        .field-chip strong {
-            display: block;
-            font-size: 1.42rem;
-            line-height: 1;
-        }
-
-        .field-chip span {
-            display: block;
-            margin-top: 8px;
-            color: rgba(255, 255, 255, .82);
-            font-size: .86rem;
-        }
-
-        .auth-panel {
-            padding: clamp(26px, 4vw, 48px);
-            background:
-                linear-gradient(180deg, rgba(255, 249, 237, .94), rgba(255, 255, 255, .94)),
-                radial-gradient(circle at 92% 8%, rgba(29, 155, 215, .13), transparent 28%);
-        }
-
-        .brand-lockup {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            margin-bottom: 22px;
-            text-align: left;
-        }
-
-        .brand-mark {
-            width: 66px;
-            height: 66px;
-            display: grid;
-            place-items: center;
-            flex: 0 0 auto;
-            border-radius: 21px;
-            background: linear-gradient(145deg, #fff7d4, #c8efc5);
-            box-shadow: inset 0 -6px 12px rgba(31, 143, 74, .16), 0 16px 32px rgba(31, 143, 74, .18);
-            font-size: 2rem;
-        }
-
-        .brand-title {
-            margin: 0;
-            color: var(--leaf-dark);
-            font-size: clamp(1.7rem, 3vw, 2.5rem);
-            font-weight: 800;
-            line-height: 1.12;
-        }
-
-        .brand-subtitle {
-            margin: 6px 0 0;
-            color: #647067;
-            font-size: .98rem;
-        }
-
-        .farm-tabs {
-            padding: 6px;
-            border-radius: 18px;
-            background: rgba(31, 143, 74, .1);
-            border: 1px solid rgba(31, 143, 74, .18);
-        }
-
-        .farm-tabs .nav-link {
-            min-height: 56px;
-            border: 0;
-            border-radius: 14px;
-            color: #496356;
-            font-weight: 800;
-            transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
-        }
-
-        .farm-tabs .nav-link:hover {
-            transform: translateY(-1px);
-        }
-
-        .farm-tabs .nav-link.active {
-            color: #fff;
-            background: linear-gradient(135deg, var(--leaf), #39b86d);
-            box-shadow: 0 12px 24px rgba(31, 143, 74, .25);
-        }
-
-        .role-box {
-            margin: 0 auto;
-            padding: 22px;
-            border-radius: 22px;
-            border: 1px solid rgba(31, 143, 74, .22);
-            background: rgba(255, 255, 255, .72);
-            box-shadow: 0 18px 40px rgba(25, 49, 42, .08);
-        }
-
-        .role-box.solo {
-            max-width: 470px;
-            background:
-                linear-gradient(180deg, rgba(223, 247, 220, .72), rgba(255, 255, 255, .84));
-        }
-
-        .role-box.group {
-            background:
-                linear-gradient(180deg, rgba(255, 241, 214, .82), rgba(255, 255, 255, .9));
-            border-color: rgba(245, 165, 36, .36);
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            color: var(--leaf-dark);
-            font-size: 1.22rem;
-            font-weight: 800;
-        }
-
-        .role-box.group .section-title {
-            color: #a6510f;
-        }
-
-        .form-label {
-            color: #314b40;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .input-shell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-height: 54px;
-            padding: 0 14px;
-            border: 1px solid rgba(31, 143, 74, .18);
-            border-radius: 16px;
-            background: rgba(255, 255, 255, .94);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9);
-            transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-        }
-
-        .input-shell:focus-within {
-            border-color: var(--sun);
-            box-shadow: 0 0 0 .24rem rgba(245, 165, 36, .18), 0 12px 24px rgba(31, 143, 74, .09);
-            transform: translateY(-1px);
-        }
-
-        .input-shell i {
-            flex: 0 0 auto;
-            color: var(--leaf);
-            font-size: 1.08rem;
-        }
-
-        .input-shell .form-control,
-        .input-shell .form-select {
-            min-height: 52px;
-            padding: 0;
-            border: 0;
-            border-radius: 0;
-            background: transparent;
-            box-shadow: none;
-        }
-
-        .form-control::placeholder {
-            color: #9aa89f;
-        }
-
-        .btn-game {
-            min-height: 60px;
-            border: 0;
-            border-radius: 18px;
-            color: #fff;
-            background: linear-gradient(135deg, #e76f22, var(--sun));
-            box-shadow: 0 18px 30px rgba(198, 91, 22, .28);
-            font-size: 1.16rem;
-            font-weight: 800;
-            transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
-        }
-
-        .btn-game:hover,
-        .btn-game:focus {
-            color: #fff;
-            transform: translateY(-2px);
-            filter: saturate(1.08);
-            box-shadow: 0 24px 42px rgba(198, 91, 22, .34);
-        }
-
-        .member-tile {
-            height: 100%;
-            padding: 13px;
-            border: 1px solid rgba(122, 79, 39, .12);
-            border-radius: 18px;
-            background: rgba(255, 255, 255, .78);
-        }
-
-        .member-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 10px;
-            padding: 6px 10px;
-            border-radius: 999px;
-            color: #fff;
-            background: linear-gradient(135deg, var(--soil), #b47435);
-            font-size: .82rem;
-            font-weight: 700;
-        }
-
-        .teacher-gate {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(31, 143, 74, .16);
-        }
-
-        .teacher-toggle {
-            border-color: rgba(15, 81, 50, .28);
-            color: var(--leaf-dark);
-            background: rgba(255, 255, 255, .72);
-            font-weight: 700;
-        }
-
-        .teacher-toggle:hover {
-            border-color: var(--leaf);
-            color: var(--leaf-dark);
-            background: var(--leaf-soft);
-        }
-
-        .teacher-panel {
-            max-width: 380px;
-            margin: 0 auto;
-            padding: 18px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, .74);
-            border: 1px solid rgba(31, 143, 74, .16);
-        }
-
-        .alert {
-            border: 0;
-            border-radius: 18px;
-            box-shadow: 0 12px 28px rgba(167, 42, 42, .12);
-        }
-
-        @keyframes orchard-bob {
-            0%, 100% { transform: translateY(0) rotate(-1deg); }
-            50% { transform: translateY(-8px) rotate(1deg); }
-        }
-
-        @keyframes crop-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-        }
-
-        @media (max-width: 991px) {
-            .login-shell {
-                grid-template-columns: 1fr;
-            }
-
-            .farm-hero-panel {
-                min-height: 360px;
-                padding: 30px;
-            }
-
-            .tractor-scene {
-                min-height: 120px;
-            }
-
-            .orchard-tree {
-                width: 210px;
-                bottom: -58px;
-            }
-
-            .hero-footer {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-        }
-
-        @media (max-width: 575px) {
-            .login-page {
-                padding: 14px;
-                align-items: flex-start;
-            }
-
-            .login-shell {
-                border-radius: 22px;
-            }
-
-            .farm-hero-panel {
-                min-height: 300px;
-                padding: 24px;
-            }
-
-            .farm-hero-panel p,
-            .hero-footer {
-                display: none;
-            }
-
-            .brand-lockup {
-                align-items: flex-start;
-            }
-
-            .brand-mark {
-                width: 56px;
-                height: 56px;
-                border-radius: 18px;
-            }
-
-            .farm-tabs .nav-link {
-                min-height: 50px;
-                font-size: .98rem;
-            }
-
-            .role-box {
-                padding: 16px;
-            }
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'pages/login.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page login-page">
     <div class="login-page">
         <main class="login-shell" aria-label="เข้าสู่ระบบบทเรียนฟาร์ม">
             <section class="farm-hero-panel" aria-hidden="true">
@@ -748,7 +243,7 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                         <p class="brand-subtitle"><?php echo htmlspecialchars($app['app_subtitle']); ?></p>
                     </div>
                 </div>
-                
+
                 <?php if (!empty($message)): ?>
                     <div class="alert alert-danger text-start mb-4"><?php echo $message; ?></div>
                 <?php endif; ?>
@@ -814,7 +309,7 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                                         <input type="text" class="form-control text-uppercase" name="join_code" placeholder="เช่น DEMO4" required>
                                     </div>
                                 </div>
-                                
+
                                 <div class="row align-items-end g-3 mb-3">
                                     <div class="col-md-4">
                                         <label class="form-label mb-md-2">เลือกกลุ่มที่</label>
@@ -833,7 +328,7 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                                 </div>
 
                                 <p class="text-center text-muted small mb-3">เลือกสมาชิกอย่างน้อย 2 คน</p>
-                                
+
                                 <div class="row g-3">
                                     <?php for($i=1; $i<=4; $i++): ?>
                                     <div class="col-md-6">
@@ -902,13 +397,13 @@ $showAdminLogin = $selectedLoginType === 'admin' && $message !== '';
                 let pwInput = document.querySelectorAll('input[name="group_pws[]"]')[index];
                 if (this.value.trim() !== "") {
                     pwInput.setAttribute('required', 'required');
-                } else if (index >= 2) { 
+                } else if (index >= 2) {
                     pwInput.removeAttribute('required');
                     pwInput.value = '';
                 }
             });
         });
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 </body>
 </html>

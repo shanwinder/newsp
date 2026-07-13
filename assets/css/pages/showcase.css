@@ -1,0 +1,218 @@
+/* Extracted from pages/showcase.php; keep selectors page-local by loading only here. */
+body {
+            font-family: 'Kanit', sans-serif;
+            background: #f0fdf4;
+            min-height: 100vh;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+            color: white;
+            padding: 60px 0 40px;
+            margin-bottom: 40px;
+            border-bottom-left-radius: 50px;
+            border-bottom-right-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .work-card {
+            border: 3px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            background: white;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .work-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
+            border-color: #34d399;
+        }
+
+        .work-card.reviewed-card {
+            border: 4px solid #fbbf24;
+            background: #fffbeb;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
+        }
+        .work-card.reviewed-card:hover {
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
+            border-color: #f59e0b;
+        }
+
+        .badge-reviewed {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            z-index: 20;
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.4);
+            pointer-events: none;
+        }
+
+        .lesson-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 20;
+            background: rgba(37, 99, 235, .95);
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: .78rem;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+            pointer-events: none;
+        }
+
+        .project-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .preview-box {
+            position: relative;
+            width: 100%;
+            padding-top: 60%;
+            background-color: #f8fafc;
+            overflow: hidden;
+            border-bottom: 3px dashed #e2e8f0;
+            cursor: pointer;
+        }
+
+        .preview-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-grid-pattern {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: 0.3s;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .preview-box:hover .zoom-hint { opacity: 1; }
+
+        .btn-like {
+            border: 2px solid #eee;
+            background: #f8f9fa;
+            color: #ccc;
+            border-radius: 50px;
+            padding: 5px 15px;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .btn-like:hover { background: #ffebee; color: #ff5252; border-color: #ff5252; }
+        .btn-like.liked { background: #ff5252; color: white; border-color: #ff5252; }
+        
+        .member-list-box {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-top: 8px;
+            border: 1px dashed #cbd5e1;
+        }
+
+        /* 🟢 สไตล์สำหรับกล่องข้อเสนอแนะจากครู */
+        .feedback-box {
+            background-color: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        /* 🟢 Debug Mode preview card */
+        .debug-preview-card {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 14px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .debug-preview-card .debug-title {
+            font-weight: 800;
+            color: #9a3412;
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+        .debug-preview-card .debug-field {
+            margin-bottom: 6px;
+            font-size: 16px;
+            color: #451a03;
+        }
+        .debug-preview-card .debug-field strong {
+            color: #c2410c;
+        }
+
+        /* 🟢 Fallback card */
+        .fallback-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 24px;
+            color: #94a3b8;
+        }
+.showcase-page .showcase-modal-content { border-radius: 20px; overflow: hidden; }
+.showcase-page .modal-preview-box { border-radius: 0; cursor: default; }
+.showcase-page .modal-description { white-space: pre-wrap; line-height: 1.6; }
+.showcase-page .work-owner-copy { width: calc(100% - 70px); }
+.showcase-page .group-work-title { color: #d35400; }
+.showcase-page .work-card-description { max-height: 60px; overflow: hidden; text-overflow: ellipsis; }
+.showcase-page .tractor-work-layout { height: 100%; display: grid; grid-template-columns: 1fr 260px; gap: 18px; align-items: stretch; }
+.showcase-page .tractor-work-heading { font-weight: 800; color: #1d4ed8; font-size: 26px; margin-bottom: 12px; }
+.showcase-page .tractor-preview-grid { display: grid; grid-template-columns: repeat(var(--tractor-cols), 1fr); grid-template-rows: repeat(var(--tractor-rows), 1fr); gap: 6px; height: 340px; }
+.showcase-page .tractor-work-summary { background: white; border: 1px solid #dbe7f3; border-radius: 12px; padding: 18px; overflow: hidden; }
+.showcase-page .tractor-work-title { font-weight: 800; color: #0f172a; font-size: 20px; }
+.showcase-page .tractor-work-note { color: #64748b; margin: 10px 0 14px; }
+.showcase-page .tractor-work-commands { font-size: 22px; line-height: 1.8; word-break: break-word; }
+.showcase-page .tractor-work-validation { margin-top: 16px; font-weight: 800; }
+.showcase-page .tractor-work-validation.is-valid { color: #16a34a; }
+.showcase-page .tractor-work-validation.is-invalid { color: #dc2626; }
+.showcase-page .tractor-path-step { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.showcase-page .tractor-path-icon { font-size: 16px; }
+.showcase-page .tractor-path-number { font-size: 12px; font-weight: 800; color: #1d4ed8; }
+.showcase-page .structured-preview-layout { height: 100%; display: flex; align-items: center; justify-content: center; }
+.showcase-page .structured-preview-card { background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 24px; width: 90%; max-height: 88%; overflow: hidden; box-shadow: 0 10px 25px rgba(15,23,42,.08); }
+.showcase-page .structured-preview-title { font-weight: 800; color: #166534; font-size: 28px; margin-bottom: 14px; }
+.showcase-page .structured-preview-field { margin-bottom: 12px; }
+.showcase-page .structured-preview-label { font-weight: 700; color: #64748b; font-size: 16px; }
+.showcase-page .structured-preview-value { white-space: pre-wrap; color: #1f2937; font-size: 20px; line-height: 1.35; }

@@ -3,7 +3,7 @@
     box-sizing: border-box;
 }
 
-#game-container {
+.debugger-game #game-container {
     width: min(1120px, 96vw);
 }
 

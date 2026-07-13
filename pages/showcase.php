@@ -36,208 +36,22 @@ $current_game = [
     <meta charset="UTF-8">
     <title>ลานโชว์ผลงาน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../assets/css/smart_farm_builder.css">
 
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f0fdf4;
-            min-height: 100vh;
-        }
 
-        .header-section {
-            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
-            color: white;
-            padding: 60px 0 40px;
-            margin-bottom: 40px;
-            border-bottom-left-radius: 50px;
-            border-bottom-right-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
 
-        .work-card {
-            border: 3px solid #e2e8f0;
-            border-radius: 20px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
-            background: white;
-            height: 100%;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
 
-        .work-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
-            border-color: #34d399;
-        }
 
-        .work-card.reviewed-card {
-            border: 4px solid #fbbf24;
-            background: #fffbeb;
-            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.15);
-        }
-        .work-card.reviewed-card:hover {
-            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.3);
-            border-color: #f59e0b;
-        }
 
-        .badge-reviewed {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 0.85rem;
-            z-index: 20;
-            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.4);
-            pointer-events: none;
-        }
-
-        .lesson-badge {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 20;
-            background: rgba(37, 99, 235, .95);
-            color: #ffffff;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: .78rem;
-            font-weight: 800;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
-            pointer-events: none;
-        }
-
-        .project-summary {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .preview-box {
-            position: relative;
-            width: 100%;
-            padding-top: 60%;
-            background-color: #f8fafc;
-            overflow: hidden;
-            border-bottom: 3px dashed #e2e8f0;
-            cursor: pointer;
-        }
-
-        .preview-content {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .bg-grid-pattern {
-            background-color: #ffffff;
-            background-image: 
-                linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        .zoom-hint {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            opacity: 0;
-            transition: 0.3s;
-            pointer-events: none;
-            z-index: 15;
-        }
-        .preview-box:hover .zoom-hint { opacity: 1; }
-
-        .btn-like {
-            border: 2px solid #eee;
-            background: #f8f9fa;
-            color: #ccc;
-            border-radius: 50px;
-            padding: 5px 15px;
-            transition: 0.3s;
-            font-weight: bold;
-        }
-        .btn-like:hover { background: #ffebee; color: #ff5252; border-color: #ff5252; }
-        .btn-like.liked { background: #ff5252; color: white; border-color: #ff5252; }
-        
-        .member-list-box {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 0.8rem;
-            line-height: 1.4;
-            margin-top: 8px;
-            border: 1px dashed #cbd5e1;
-        }
-
-        /* 🟢 สไตล์สำหรับกล่องข้อเสนอแนะจากครู */
-        .feedback-box {
-            background-color: #ecfdf5;
-            border-left: 4px solid #10b981;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-top: 10px;
-        }
-
-        /* 🟢 Debug Mode preview card */
-        .debug-preview-card {
-            background: #fff7ed;
-            border: 1px solid #fed7aa;
-            border-radius: 14px;
-            padding: 20px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .debug-preview-card .debug-title {
-            font-weight: 800;
-            color: #9a3412;
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-        .debug-preview-card .debug-field {
-            margin-bottom: 6px;
-            font-size: 16px;
-            color: #451a03;
-        }
-        .debug-preview-card .debug-field strong {
-            color: #c2410c;
-        }
-
-        /* 🟢 Fallback card */
-        .fallback-preview {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            padding: 24px;
-            color: #94a3b8;
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'games/smart_farm_builder.css',
+  1 => 'pages/showcase.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page showcase-page">
 
     <div class="header-section text-center">
         <div class="container">
@@ -289,24 +103,24 @@ $current_game = [
 
     <div class="modal fade" id="presentationModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+            <div class="showcase-modal-content modal-content border-0 shadow-lg">
                 <div class="modal-header bg-success text-white border-0 py-3">
                     <h4 class="modal-title fw-bold" id="modal-title-text"><i class="bi bi-easel-fill me-2"></i> นำเสนอผลงาน</h4>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0 bg-light">
-                    <div class="preview-box border-bottom border-5 border-success" style="border-radius: 0; cursor: default;">
+                    <div class="modal-preview-box preview-box border-bottom border-5 border-success">
                         <div id="modal-canvas-content" class="preview-content"></div>
                     </div>
                     <div class="p-4 bg-white">
                         <div id="modal-members-area"></div>
                         <div id="modal-project-summary" class="mb-3"></div>
-                        
+
                         <div class="row align-items-start">
                             <div class="col-md-8">
                                 <h5 class="fw-bold text-success mb-2" id="modal-section-title">📜 กติกาและเงื่อนไขของด่าน:</h5>
-                                <p id="modal-desc" class="text-dark fs-5 mb-3" style="white-space: pre-wrap; line-height: 1.6;"></p>
-                                
+                                <p id="modal-desc" class="modal-description text-dark fs-5 mb-3"></p>
+
                                 <div id="modal-feedback-area"></div>
                             </div>
                             <div class="col-md-4 text-end">
@@ -320,14 +134,14 @@ $current_game = [
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <script src="../assets/js/logic_game/smart_farm_builder_validation.js"></script>
     <script src="../assets/js/logic_game/smart_farm_builder_preview.js"></script>
     <script>
         const ASSET_PATH = '../assets/img/';
         const GAME_ID = <?php echo $game_id; ?>;
         const GAME_META = <?php echo json_encode($current_game, JSON_UNESCAPED_UNICODE); ?>;
-        
+
         const ITEM_SIZES = {
             'basket': 160, 'weed_spiky': 120, 'weed_round': 120, 'bug_red': 100, 'bug_blue': 100,
             'newseed': 100, 'fert_green_bag': 120, 'fert_red_bag': 120, 'fert_green_round': 100,
@@ -673,7 +487,7 @@ $current_game = [
             correctFix: 'วิธีซ่อมที่ถูกต้อง'
         };
 
-        let worksList = {}; 
+        let worksList = {};
         let lastDataHash = ''; // 🟢 สำหรับเทียบว่าข้อมูลเปลี่ยนหรือยัง
 
         function parseWorkData(jsonData) {
@@ -701,7 +515,7 @@ $current_game = [
 
                     const grid = document.getElementById('gallery-grid');
                     grid.innerHTML = '';
-                    worksList = {}; 
+                    worksList = {};
 
                     if (data.length === 0) {
                         grid.innerHTML = `
@@ -715,7 +529,7 @@ $current_game = [
                     }
 
                     data.forEach(work => {
-                        worksList[work.id] = work; 
+                        worksList[work.id] = work;
 
                         // 🟢 ใช้ game_id จาก API response (ไม่เดาจาก data)
                         const workGameId = Number(work.game_id || GAME_ID);
@@ -725,17 +539,17 @@ $current_game = [
                         col.className = 'col-md-6 col-lg-4 d-flex align-items-stretch';
 
                         const isLikedClass = (work.is_liked > 0) ? 'liked' : '';
-                        
+
                         let descText = work.description || '-';
-                        let bgType = 'grid'; 
-                        
+                        let bgType = 'grid';
+
                         const bgMatch = descText.match(/\[ฉากหลัง:\s*(.*?)\]/);
                         if (bgMatch) {
                             bgType = bgMatch[1];
-                            descText = descText.replace(/\[ฉากหลัง:\s*.*?\]\s*\n*/, ''); 
+                            descText = descText.replace(/\[ฉากหลัง:\s*.*?\]\s*\n*/, '');
                         }
-                        work.cleanDesc = descText; 
-                        work.bgType = bgType; 
+                        work.cleanDesc = descText;
+                        work.bgType = bgType;
 
                         const isReviewed = work.status === 'reviewed';
                         const reviewedClass = isReviewed ? 'reviewed-card' : '';
@@ -767,8 +581,8 @@ $current_game = [
                         let teamInfoHTML = '';
                         if (work.mode === 'group') {
                             teamInfoHTML = `
-                                <div style="width: calc(100% - 70px);">
-                                    <h5 class="fw-bold mb-0" style="color: #d35400;"><i class="bi bi-people-fill"></i> กลุ่มที่ ${work.group_number}</h5>
+                                <div class="work-owner-copy">
+                                    <h5 class="group-work-title fw-bold mb-0"><i class="bi bi-people-fill"></i> กลุ่มที่ ${work.group_number}</h5>
                                     <div class="member-list-box text-muted">
                                         <strong>สมาชิก:</strong> ${escapeHtml(work.member_names || '-')}
                                     </div>
@@ -776,7 +590,7 @@ $current_game = [
                             `;
                         } else {
                             teamInfoHTML = `
-                                <div style="width: calc(100% - 70px);">
+                                <div class="work-owner-copy">
                                     <h5 class="fw-bold text-success mb-0 text-truncate"><i class="bi bi-person-circle"></i> ${escapeHtml(work.student_name)}</h5>
                                     <small class="text-muted d-block mt-1">รหัสนักเรียน: ${escapeHtml(work.student_id)}</small>
                                 </div>
@@ -810,7 +624,7 @@ $current_game = [
                                     </div>
                                     ${summaryHTML}
                                     <div class="bg-light p-2 rounded flex-grow-1 border d-flex flex-column">
-                                        <p class="text-secondary small mb-0" style="max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
+                                        <p class="work-card-description text-secondary small mb-0">
                                             <strong>📜 คำอธิบาย:</strong><br>${escapeHtml(descText)}
                                         </p>
                                         ${feedbackHTML}
@@ -863,7 +677,7 @@ $current_game = [
                             container.appendChild(stage);
                         }
                     });
-                    
+
                     setTimeout(resizeCanvases, 100);
                 })
                 .catch(err => {
@@ -900,7 +714,7 @@ $current_game = [
                     ${GAME_META.lesson_no}: ${GAME_META.title}
                 </div>
             `;
-            
+
             // 🟢 หัวข้อ modal เฉพาะบท
             document.getElementById('modal-section-title').textContent = renderer.getModalTitle();
 
@@ -908,21 +722,21 @@ $current_game = [
             if (work.mode === 'group') {
                 membersHtml = `
                     <div class="alert alert-warning py-2 small mb-3 border-0 shadow-sm rounded-3">
-                        <strong class="text-dark"><i class="bi bi-people-fill text-warning fs-5 align-middle me-1"></i> สมาชิกทีม:</strong> 
+                        <strong class="text-dark"><i class="bi bi-people-fill text-warning fs-5 align-middle me-1"></i> สมาชิกทีม:</strong>
                         <span class="text-secondary ms-1">${escapeHtml(work.member_names || '-')}</span>
                     </div>`;
             }
             document.getElementById('modal-members-area').innerHTML = membersHtml;
 
             const parsedModalData = parseWorkData(work.work_data);
-            
+
             // 🟢 Modal summary ใช้ renderer
             const modalSummaryHTML = parsedModalData ? renderer.renderModal(work, parsedModalData) : '';
             document.getElementById('modal-project-summary').innerHTML = modalSummaryHTML;
 
             document.getElementById('modal-desc').innerText = work.cleanDesc;
             document.getElementById('modal-time').innerHTML = `<i class="bi bi-clock"></i> ${timeAgo(work.submitted_at)}`;
-            
+
             // 🟢 ปุ่มเล่นใน modal ใช้ renderer
             const modalActionArea = document.getElementById('modal-action-area');
             if (modalActionArea && parsedModalData) {
@@ -942,13 +756,13 @@ $current_game = [
             } else if (modalActionArea) {
                 modalActionArea.innerHTML = '';
             }
-            
+
             // 🟢 แสดงคอมเมนต์คุณครูในหน้าจอใหญ่ด้วย
             let feedbackModalHtml = '';
             if (work.status === 'reviewed' && work.feedback && work.feedback.trim() !== '') {
                 feedbackModalHtml = `
                     <div class="alert alert-success py-2 mt-2 border-0 shadow-sm rounded-3">
-                        <strong class="text-success"><i class="bi bi-chat-heart-fill fs-5 align-middle me-1"></i> ข้อเสนอแนะจากคุณครู:</strong> 
+                        <strong class="text-success"><i class="bi bi-chat-heart-fill fs-5 align-middle me-1"></i> ข้อเสนอแนะจากคุณครู:</strong>
                         <span class="text-dark ms-1">${escapeHtml(work.feedback)}</span>
                     </div>`;
             }
@@ -1023,7 +837,7 @@ $current_game = [
                 img.src = ASSET_PATH + obj.type + '.webp';
                 img.style.width = targetSize + 'px';
                 img.style.position = 'absolute';
-                img.style.transform = 'translate(-50%, -50%)'; 
+                img.style.transform = 'translate(-50%, -50%)';
                 img.style.filter = 'drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.3))';
                 wrapper.appendChild(img);
 
@@ -1104,16 +918,16 @@ $current_game = [
             stage.style.padding = '24px';
             stage.style.overflow = 'hidden';
             stage.innerHTML = `
-                <div style="height:100%; display:grid; grid-template-columns: 1fr 260px; gap:18px; align-items:stretch;">
+                <div class="tractor-work-layout">
                     <div>
-                        <div style="font-weight:800; color:#1d4ed8; font-size:26px; margin-bottom:12px;">ภารกิจเส้นทางรถไถ</div>
-                        <div class="tractor-preview-grid" style="display:grid; grid-template-columns:repeat(${cols}, 1fr); grid-template-rows:repeat(${rows}, 1fr); gap:6px; height:340px;"></div>
+                        <div class="tractor-work-heading">ภารกิจเส้นทางรถไถ</div>
+                        <div class="tractor-preview-grid" style="--tractor-cols:${cols}; --tractor-rows:${rows};"></div>
                     </div>
-                    <div style="background:white; border:1px solid #dbe7f3; border-radius:12px; padding:18px; overflow:hidden;">
-                        <div style="font-weight:800; color:#0f172a; font-size:20px;">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
-                        <div style="color:#64748b; margin:10px 0 14px;">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
-                        <div style="font-size:22px; line-height:1.8; word-break:break-word;">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
-                        <div style="margin-top:16px; color:${data.validated ? '#16a34a' : '#dc2626'}; font-weight:800;">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
+                    <div class="tractor-work-summary">
+                        <div class="tractor-work-title">${missionLabels[data.mission_type] || 'เส้นทางรถไถ'}</div>
+                        <div class="tractor-work-note">วิธีตัวอย่างของผู้ออกแบบ ${Array.isArray(data.commands) ? data.commands.length : 0} คำสั่ง</div>
+                        <div class="tractor-work-commands">${(data.commands || []).map(cmd => ({UP:'⬆️',DOWN:'⬇️',LEFT:'⬅️',RIGHT:'➡️'}[cmd] || '')).join(' ')}</div>
+                        <div class="tractor-work-validation ${data.validated ? 'is-valid' : 'is-invalid'}">${data.validated ? 'ทดสอบผ่านแล้ว' : 'ยังไม่ผ่านการทดสอบ'}</div>
                     </div>
                 </div>
             `;
@@ -1140,9 +954,9 @@ $current_game = [
                         cell.textContent = objectIcon;
                     } else if (pathStep) {
                         cell.innerHTML = `
-                            <div style="display:flex; flex-direction:column; align-items:center; line-height:1;">
-                                <span style="font-size:16px;">${pathStep.icon || ''}</span>
-                                <span style="font-size:12px; font-weight:800; color:#1d4ed8;">${pathStep.step}</span>
+                            <div class="tractor-path-step">
+                                <span class="tractor-path-icon">${pathStep.icon || ''}</span>
+                                <span class="tractor-path-number">${pathStep.step}</span>
                             </div>
                         `;
                     }
@@ -1168,19 +982,19 @@ $current_game = [
             stage.style.background = '#f8fafc';
             stage.style.padding = '28px';
             stage.style.overflow = 'hidden';
-            
+
             let titleText = 'ชิ้นงานแก้ปัญหา';
             if (data.project_type === 'smart_farm_debug_challenge') titleText = 'โจทย์ซ่อมกฎฟาร์ม';
             if (data.project_type === 'smart_farm_debug_mode') titleText = 'โจทย์ซ่อมกฎฟาร์ม (โหมดใหม่)';
 
             stage.innerHTML = `
-                <div style="height:100%; display:flex; align-items:center; justify-content:center;">
-                    <div style="background:white; border:1px solid #e2e8f0; border-radius:18px; padding:24px; width:90%; max-height:88%; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,.08);">
-                        <div style="font-weight:800; color:#166534; font-size:28px; margin-bottom:14px;">${titleText}</div>
+                <div class="structured-preview-layout">
+                    <div class="structured-preview-card">
+                        <div class="structured-preview-title">${titleText}</div>
                         ${Object.keys(STRUCTURED_LABELS).filter(key => data[key]).slice(0, 3).map(key => `
-                            <div style="margin-bottom:12px;">
-                                <div style="font-weight:700; color:#64748b; font-size:16px;">${STRUCTURED_LABELS[key]}</div>
-                                <div style="white-space:pre-wrap; color:#1f2937; font-size:20px; line-height:1.35;">${escapeHtml(data[key])}</div>
+                            <div class="structured-preview-field">
+                                <div class="structured-preview-label">${STRUCTURED_LABELS[key]}</div>
+                                <div class="structured-preview-value">${escapeHtml(data[key])}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -1201,7 +1015,7 @@ $current_game = [
             document.querySelectorAll('.preview-content').forEach(container => {
                 const stage = container.querySelector('.scalable-canvas');
                 if (stage) {
-                    const scale = container.clientWidth / 800; 
+                    const scale = container.clientWidth / 800;
                     stage.style.transform = `scale(${scale})`;
                 }
             });
@@ -1227,12 +1041,12 @@ $current_game = [
 
         function timeAgo(dateString) {
             if (!dateString) return "เมื่อสักครู่";
-            
+
             // 🟢 แก้ปัญหา NaN: เปลี่ยนขีดกลาง (-) ให้เป็นทับ (/) เพื่อให้ Safari และมือถืออ่านออก
             let safeDateString = dateString.replace(/-/g, '/');
-            
+
             const date = new Date(safeDateString);
-            
+
             // ดักจับกรณีถ้ายังแปลงไม่สำเร็จอีก ให้แสดงวันที่ดั้งเดิมไปเลย
             if (isNaN(date.getTime())) return dateString;
 
@@ -1241,7 +1055,7 @@ $current_game = [
 
             // 🟢 ดักกรณีเวลาติดลบ (เวลาในคอมพิวเตอร์ของเด็กเดินช้ากว่าเวลาเซิร์ฟเวอร์นิดหน่อย)
             if (seconds < 0 || seconds < 60) return "เมื่อสักครู่";
-            
+
             const minutes = Math.floor(seconds / 60);
             if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
             const hours = Math.floor(minutes / 60);
@@ -1271,15 +1085,15 @@ $current_game = [
         document.addEventListener('scroll', resetInteraction, {passive: true});
 
         // 🟢 ปรับเป็น 30 วินาที (จากเดิม 10 วินาที) เพื่อลดการรบกวนผู้ใช้
-        setInterval(() => { 
+        setInterval(() => {
             // เช็คว่ามีกล่องพรีเซนต์งาน (Modal) เปิดค้างอยู่ไหม
             const isModalOpen = document.body.classList.contains('modal-open');
-            
+
             // ถ้าไม่ได้เปิด Modal ค้างไว้ และไม่ได้กำลังถูหน้าจออยู่ -> โหลดผลงานใหม่!
             if (!isModalOpen && !isInteracting) {
-                loadShowcase(); 
+                loadShowcase();
             }
-        }, 30000); 
+        }, 30000);
 
         // โหลดครั้งแรกตอนเปิดหน้าเว็บ
         loadShowcase();

@@ -1,0 +1,105 @@
+/* Static game styles extracted from JavaScript. Root namespace: .farm-logic-game. */
+.farm-logic-game { --game-module-ready: 1; }
+
+.farm-logic-game #game-container {
+                width: min(1000px, 94vw);
+            }
+
+            .farm-logic-game #phaser-canvas,
+            /* Phaser writes canvas dimensions inline; these two declarations are the runtime-library exception. */
+            .farm-logic-game #phaser-canvas canvas {
+                touch-action: pan-y;
+            }
+
+            .logic-shell * {
+                box-sizing: border-box;
+            }
+
+            .logic-mission,
+            .logic-card {
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 12px 28px rgba(15,23,42,.08);
+                padding: 16px;
+            }
+
+            .logic-mission {
+                margin-bottom: 14px;
+            }
+
+            .logic-layout {
+                display: grid;
+                grid-template-columns: minmax(360px, 1fr) 300px;
+                gap: 18px;
+                align-items: stretch;
+            }
+
+            .farm-logic-game #phaser-canvas {
+                width: 100%;
+                min-height: 420px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .farm-logic-game #phaser-canvas canvas {
+                width: min(640px, 100%) !important;
+                height: auto !important;
+                max-width: 100%;
+                image-rendering: auto;
+                display: block;
+                border-radius: 8px;
+                box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+            }
+
+            .logic-side-panel {
+                display: grid;
+                gap: 12px;
+                align-content: start;
+            }
+
+            .logic-stat-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .logic-stat {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                background: #f8fafc;
+                padding: 10px;
+                font-weight: 700;
+                color: #1f2937;
+            }
+
+            @media (max-width: 900px) {
+                .logic-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .farm-logic-game #phaser-canvas {
+                    min-height: 360px;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .farm-logic-game #game-container {
+                    width: 100%;
+                }
+
+                .logic-mission,
+                .logic-card {
+                    padding: 12px;
+                }
+
+                .logic-layout {
+                    gap: 12px;
+                }
+
+                .farm-logic-game #phaser-canvas {
+                    min-height: 320px;
+                }
+            }

@@ -1,0 +1,5 @@
+/* Extracted from pages/play_smart_farm_work.php; keep selectors page-local by loading only here. */
+body { font-family: 'Kanit', sans-serif; background:#eef7f1; color:#163025; min-height:100vh; }
+        .play-header { background: linear-gradient(135deg, #126d56 0%, #2f8f62 100%); color:#fff; padding:28px 0 24px; }
+        .play-panel { background:#fff; border:1px solid #d8e6dc; border-radius:8px; box-shadow:0 12px 28px rgba(22,48,37,.08); }
+.play-smart-farm-work-page .work-description { white-space: pre-wrap; }

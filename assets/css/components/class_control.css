@@ -1,0 +1,30 @@
+.class-control-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+}
+
+.class-control-overlay.is-visible { display: flex; }
+.class-control-stop-icon { font-size: 5rem; animation: class-control-pulse 1.5s infinite; }
+.class-control-title { font-size: 3rem; margin-top: 20px; font-weight: bold; }
+.class-control-message { font-size: 1.5rem; color: #ccc; }
+
+@keyframes class-control-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@media (max-width: 576px) {
+    .class-control-stop-icon { font-size: 3.5rem; }
+    .class-control-title { font-size: 2rem; }
+    .class-control-message { font-size: 1.1rem; padding-inline: 1rem; }
+}

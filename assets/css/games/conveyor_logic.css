@@ -145,7 +145,7 @@
   overflow: hidden;
 }
 
-.toolbox-panel {
+.conveyor-shell .toolbox-panel {
   grid-area: toolbox;
   max-height: none;
   min-width: 0;
@@ -163,7 +163,7 @@
   padding: 12px;
 }
 
-.program-panel {
+.conveyor-shell .program-panel {
   grid-area: program;
   min-width: 0;
   padding: 12px;
@@ -199,7 +199,7 @@
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(241, 249, 243, 0.86), rgba(232, 244, 236, 0.94)),
-    url("../img/bg_farm.webp") center/cover;
+    url("../../img/bg_farm.webp") center/cover;
 }
 
 /* BOARD SAFE AREA NOTE:
@@ -210,7 +210,7 @@
 .farm-stage.greenhouse {
   background:
     linear-gradient(180deg, rgba(235, 249, 250, 0.88), rgba(238, 247, 232, 0.95)),
-    url("../img/bg_v_garden.webp") center/cover;
+    url("../../img/bg_v_garden.webp") center/cover;
 }
 
 .farm-skyline {
@@ -475,7 +475,7 @@
 .toolbox-head h4,
 .program-head h4,
 .palette-group h4,
-.control-panel h4 {
+.conveyor-shell .control-panel h4 {
   margin: 0;
   color: #18392b;
   font-size: 17px;
@@ -499,7 +499,7 @@
 }
 
 .palette-group,
-.control-panel,
+.conveyor-shell .control-panel,
 .feedback-card,
 .block-trash {
   padding: 10px;
@@ -508,7 +508,7 @@
   background: #f8fafc;
 }
 
-.toolbox-panel {
+.conveyor-shell .toolbox-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
@@ -1176,7 +1176,7 @@
       "toolbox";
   }
 
-  .toolbox-panel {
+  .conveyor-shell .toolbox-panel {
     max-height: none;
     overflow: visible;
   }
@@ -1219,7 +1219,7 @@
   .mission-list,
   .board-status,
   .control-grid,
-  .toolbox-panel,
+  .conveyor-shell .toolbox-panel,
   .result-metrics {
     grid-template-columns: 1fr;
   }

@@ -1,0 +1,5 @@
+/* Extracted from pages/play_debug_work.php; keep selectors page-local by loading only here. */
+body { font-family: 'Kanit', sans-serif; background:#fff7ed; color:#2f1f12; min-height:100vh; }
+        .play-header { background:#d97706; color:#fff; padding:28px 0 24px; }
+        .play-panel { background:#fff; border:1px solid #fed7aa; border-radius:8px; box-shadow:0 12px 28px rgba(120,53,15,.08); }
+        #debug-work-player .debug-game-shell { box-shadow:none; margin:0; }

@@ -14,10 +14,18 @@ $settings = $status['settings'] ?? [];
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>แบบสอบถามความพึงพอใจ | <?php echo htmlspecialchars($app['app_name']); ?></title>
-    <?php require '../includes/student_topbar_head.php'; ?>
-    <link rel="stylesheet" href="../assets/css/survey.css">
+
+
+<?php
+$page_styles = array (
+  0 => 'components/rank_badges.css',
+  1 => 'components/student_topbar.css',
+  2 => 'modules/survey.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body class="survey-page">
+<body class="survey-page app-page survey-start-page">
 <?php require '../includes/student_navbar.php'; ?>
 <main class="container survey-shell py-5">
     <section class="survey-hero p-4 p-md-5 mb-4 text-center">
@@ -69,7 +77,7 @@ $settings = $status['settings'] ?? [];
         </div>
     </div>
 </main>
-<?php require '../includes/student_topbar_scripts.php'; ?>
+<?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 <script>
 const startButton = document.getElementById('start-btn');
 if (startButton) {

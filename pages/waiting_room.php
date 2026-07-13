@@ -25,18 +25,24 @@ if (is_visitor_mode()) {
     <meta charset="UTF-8">
     <title>สรุปผลคะแนน - <?php echo $stage['title']; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php require '../includes/student_topbar_head.php'; ?>
-    <style>
-        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; min-height: 100vh; }
-    </style>
+
+
+<?php
+$page_styles = array (
+  0 => 'components/rank_badges.css',
+  1 => 'components/student_topbar.css',
+  2 => 'pages/waiting_room.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page waiting-room-page">
 <?php require_once '../includes/student_navbar.php'; ?>
 <div class="container py-5 text-center">
     <h1 class="display-4 fw-bold mb-4">🏆 ทดลองเล่นสำเร็จ!</h1>
     <h3 class="text-info mb-5"><?php echo $stage['title']; ?></h3>
-    
-    <div class="card bg-dark text-white shadow-lg border-0 rounded-4 mx-auto mb-5" style="max-width: 500px;">
+
+    <div class="visitor-score-card card bg-dark text-white shadow-lg border-0 rounded-4 mx-auto mb-5">
         <div class="card-body p-5">
             <div class="fs-1 mb-3">⭐ <?php echo $visitor_score; ?></div>
             <h4 class="mb-4">คะแนนนี้เก็บเฉพาะในโหมดทดลองใช้เท่านั้น</h4>
@@ -47,7 +53,7 @@ if (is_visitor_mode()) {
         </div>
     </div>
 </div>
-<?php require '../includes/student_topbar_scripts.php'; ?>
+<?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 </body>
 </html>
 <?php
@@ -61,37 +67,16 @@ if (is_visitor_mode()) {
     <meta charset="UTF-8">
     <title>สรุปผลคะแนน - <?php echo $stage['title']; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php require '../includes/student_topbar_head.php'; ?>
-    
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            min-height: 100vh;
-        }
-        .rank-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: 0.3s;
-        }
-        .rank-1 { background: linear-gradient(45deg, #FFD700, #FDB931); color: #000; transform: scale(1.05); font-weight: bold; border: none; }
-        .rank-2 { background: linear-gradient(45deg, #E0E0E0, #BDBDBD); color: #333; font-weight: bold; border: none; }
-        .rank-3 { background: linear-gradient(45deg, #CD7F32, #A0522D); color: #fff; font-weight: bold; border: none; }
-        
-        .waiting-pulse {
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-    </style>
+<?php
+$page_styles = [
+    'components/rank_badges.css',
+    'components/student_topbar.css',
+    'pages/waiting_room.css',
+];
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page waiting-room-page">
 <?php require_once '../includes/student_navbar.php'; ?>
 
 <div class="container py-5">
@@ -135,8 +120,8 @@ if (is_visitor_mode()) {
                 let html = '<div class="d-flex flex-column gap-2">';
                 data.forEach((player, index) => {
                     let rankClass = '';
-                    let icon = `<span class="badge bg-secondary rounded-circle" style="width:30px">${index+1}</span>`;
-                    
+                    let icon = `<span class="leaderboard-rank badge bg-secondary rounded-circle">${index+1}</span>`;
+
                     if(index === 0) { rankClass = 'rank-1'; icon = '🥇'; }
                     else if(index === 1) { rankClass = 'rank-2'; icon = '🥈'; }
                     else if(index === 2) { rankClass = 'rank-3'; icon = '🥉'; }
@@ -146,11 +131,11 @@ if (is_visitor_mode()) {
                             <div class="fs-4 me-3">${icon}</div>
                             <div class="flex-grow-1 text-start">
                                 <div class="fw-bold">${player.name}</div>
-                                <small style="opacity:0.8">${player.class_level}</small>
+                                <small class="leaderboard-class-level">${player.class_level}</small>
                             </div>
                             <div class="text-end">
                                 <div class="fw-bold">${player.score} ⭐</div>
-                                <small style="font-size:0.75rem">${player.duration}s</small>
+                                <small class="leaderboard-duration">${player.duration}s</small>
                             </div>
                         </div>
                     `;
@@ -172,7 +157,7 @@ if (is_visitor_mode()) {
                     // ถ้าครูปลดล็อกแล้ว
                     statusMsg.classList.add('d-none'); // ซ่อนข้อความรอ
                     btnNext.classList.remove('d-none'); // โชว์ปุ่มไปต่อ
-                    
+
                     // Optional: Auto Redirect เลยก็ได้
                     // window.location.href = btnNext.href;
                 } else {
@@ -186,11 +171,11 @@ if (is_visitor_mode()) {
     // ทำงานทุกๆ 3 วินาที
     setInterval(loadLeaderboard, 3000);
     setInterval(checkNavigationStatus, 3000);
-    
+
     // โหลดครั้งแรกทันที
     loadLeaderboard();
 </script>
 
-<?php require '../includes/student_topbar_scripts.php'; ?>
+<?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 </body>
 </html>

@@ -1,0 +1,6 @@
+/* Extracted from pages/assessment_report.php; keep selectors page-local by loading only here. */
+body{font-family:Kanit,sans-serif;background:#f1f5f9}.card{border:0;border-radius:18px}.metric{font-size:2rem;font-weight:700}.bar{height:10px;border-radius:8px;background:#e2e8f0;overflow:hidden}.bar>span{display:block;height:100%;background:#10b981}
+.assessment-report-page .comparison-bar { height: 22px; }
+.assessment-report-page .pretest-bar { background: #10b981; }
+.assessment-report-page .posttest-bar { background: #2563eb; }
+.assessment-report-page .lesson-overview-column { min-width: 180px; }

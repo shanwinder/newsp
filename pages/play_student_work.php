@@ -79,95 +79,19 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
     <title>ลองเล่นโจทย์ของเพื่อน - <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background: #f3f8ff;
-            min-height: 100vh;
-            color: #172033;
-        }
 
-        .play-header {
-            background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
-            color: #ffffff;
-            padding: 28px 0 24px;
-        }
 
-        .play-panel {
-            background: #ffffff;
-            border: 1px solid #dbe7f3;
-            border-radius: 8px;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
-        }
 
-        #phaser-canvas,
-        #phaser-canvas canvas {
-            touch-action: pan-y;
-        }
 
-        #phaser-canvas {
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: #f8fafc;
-            border: 1px solid #dbe7f3;
-            border-radius: 8px;
-        }
-
-        #phaser-canvas canvas {
-            width: min(540px, 100%) !important;
-            height: auto !important;
-            display: block;
-            image-rendering: auto;
-        }
-
-        .command-zone {
-            min-height: 120px;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-            gap: 8px;
-            padding: 10px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            background: #f8fafc;
-        }
-
-        .command-chip,
-        .sample-chip {
-            width: 42px;
-            height: 42px;
-            border: 0;
-            border-radius: 8px;
-            background: #2563eb;
-            color: #ffffff;
-            font-size: 22px;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
-        }
-
-        .sample-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 5px 7px 0;
-            background: #0f766e;
-        }
-
-        .stat-box {
-            border: 1px solid #dbe7f3;
-            border-radius: 8px;
-            background: #f8fafc;
-            padding: 12px;
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'games/play_student_work.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
 
-<body>
+<body class="app-page play-student-work-page">
     <div class="play-header">
         <div class="container-fluid px-lg-5">
             <a href="showcase.php?game_id=2" class="btn btn-light btn-sm rounded-pill mb-3">
@@ -205,7 +129,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
                             </div>
                         <?php endif; ?>
                         <?php if (trim($cleanDescription) !== ''): ?>
-                            <div class="text-secondary" style="white-space: pre-wrap;"><?php echo htmlspecialchars($cleanDescription); ?></div>
+                            <div class="work-description text-secondary"><?php echo htmlspecialchars($cleanDescription); ?></div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -277,7 +201,7 @@ $isOwnWork = $work && intval($work['user_id']) === intval($_SESSION['user_id']);
     </div>
 
     <?php if (!$error): ?>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
         <script>
             const WORK_DATA = <?php echo json_encode($workData, JSON_UNESCAPED_UNICODE); ?>;
             const MAX_COMMANDS = 30;

@@ -1,0 +1,84 @@
+/* Extracted from pages/play_student_work.php; keep selectors page-local by loading only here. */
+body {
+            font-family: 'Kanit', sans-serif;
+            background: #f3f8ff;
+            min-height: 100vh;
+            color: #172033;
+        }
+
+        .play-header {
+            background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+            color: #ffffff;
+            padding: 28px 0 24px;
+        }
+
+        .play-panel {
+            background: #ffffff;
+            border: 1px solid #dbe7f3;
+            border-radius: 8px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, .08);
+        }
+
+        #phaser-canvas,
+        /* Phaser writes canvas dimensions inline at runtime. */
+        #phaser-canvas canvas {
+            touch-action: pan-y;
+        }
+
+        #phaser-canvas {
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            border: 1px solid #dbe7f3;
+            border-radius: 8px;
+        }
+
+        #phaser-canvas canvas {
+            width: min(540px, 100%) !important;
+            height: auto !important;
+            display: block;
+            image-rendering: auto;
+        }
+
+        .command-zone {
+            min-height: 120px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 8px;
+            padding: 10px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+
+        .command-chip,
+        .sample-chip {
+            width: 42px;
+            height: 42px;
+            border: 0;
+            border-radius: 8px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 22px;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, .25);
+        }
+
+        .sample-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px 7px 0;
+            background: #0f766e;
+        }
+
+        .stat-box {
+            border: 1px solid #dbe7f3;
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 12px;
+        }
+.play-student-work-page .work-description { white-space: pre-wrap; }

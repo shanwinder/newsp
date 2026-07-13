@@ -51,7 +51,7 @@ $total_stages = 0;
 
 if ($is_visitor) {
     $visitorProgress = $_SESSION['visitor_progress'] ?? [];
-    
+
     $sql_stages = "SELECT * FROM stages WHERE game_id = ? ORDER BY stage_number ASC";
     $stmt_stages = $conn->prepare($sql_stages);
     $stmt_stages->bind_param("i", $game_id);
@@ -69,10 +69,10 @@ if ($is_visitor) {
     }
 } else {
     // ใช้ LEFT JOIN progress เพื่อดูว่าเคยได้ดาวไหม
-    $sql_stages = "SELECT s.*, p.score, p.completed_at 
-                   FROM stages s 
+    $sql_stages = "SELECT s.*, p.score, p.completed_at
+                   FROM stages s
                    LEFT JOIN progress p ON s.id = p.stage_id AND p.user_id = ? AND p.learning_session_id = ?
-                   WHERE s.game_id = ? 
+                   WHERE s.game_id = ?
                    ORDER BY s.stage_number ASC";
     $stmt_stages = $conn->prepare($sql_stages);
     $stmt_stages->bind_param("iii", $user_id, $context['learning_session_id'], $game_id);
@@ -191,122 +191,18 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
     <meta charset="UTF-8">
     <title>เลือกด่าน - <?php echo htmlspecialchars($game['title']); ?> | <?php echo htmlspecialchars($app['app_name']); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <?php require '../includes/student_topbar_head.php'; ?>
-
-    <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: <?php echo $theme['bg']; ?>;
-            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-            min-height: 100vh;
-            <?php if ($can_create_project): ?>padding-bottom: 96px;<?php endif; ?>
-        }
-
-        .stage-card {
-            border: 2px solid transparent;
-            border-radius: 20px;
-            transition: all 0.3s;
-            background: white;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .stage-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .stage-locked {
-            filter: grayscale(100%);
-            opacity: 0.7;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
-
-        .lock-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4rem;
-            color: #555;
-            z-index: 10;
-        }
-
-        .star-rating {
-            color: #ffd700;
-            font-size: 1.5rem;
-            text-shadow: 1px 1px 0 #d4af37;
-        }
-
-        .btn-back {
-            background-color: #ff6f61;
-            color: white;
-            border-radius: 50px;
-            padding: 10px 25px;
-            font-weight: bold;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .btn-back:hover {
-            background-color: #ff4757;
-            color: white;
-        }
-
-        .pulse-icon i {
-            animation: trophy-pulse 2s infinite;
-            display: inline-block;
-        }
-
-        @keyframes trophy-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3) rotate(10deg); color: #b45309; }
-            100% { transform: scale(1); }
-        }
-
-        .project-completion-hero {
-            border: 0;
-            border-radius: 18px;
-            color: #1f2937;
-            overflow: hidden;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, .14);
-        }
-
-        .project-hero-new { background: linear-gradient(135deg, #facc15 0%, #fb923c 100%); }
-        .project-hero-submitted { background: linear-gradient(135deg, #86efac 0%, #38bdf8 100%); }
-        .project-hero-reviewed { background: linear-gradient(135deg, #bbf7d0 0%, #22c55e 100%); }
-        .project-hero-revision { background: linear-gradient(135deg, #fed7aa 0%, #f87171 100%); }
-
-        .project-sticky-cta {
-            position: fixed;
-            left: 50%;
-            bottom: 16px;
-            transform: translateX(-50%);
-            z-index: 1050;
-            max-width: 720px;
-            width: calc(100% - 24px);
-            border-radius: 999px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-        }
-
-        .project-sticky-cta.is-hidden {
-            display: none !important;
-        }
-
-        @media (max-width: 576px) {
-            .project-sticky-cta {
-                border-radius: 18px;
-            }
-        }
-    </style>
+    <?php
+    $page_styles = [
+        'components/rank_badges.css',
+        'components/student_topbar.css',
+        'components/class_control.css',
+        'games/game_select.css',
+    ];
+    require __DIR__ . '/../includes/app_head.php';
+    ?>
 </head>
 
-<body>
+<body class="app-page game-select-page game-theme-<?php echo intval($game_id); ?><?php echo $can_create_project ? ' has-project-cta' : ''; ?>">
     <?php require_once '../includes/student_navbar.php'; ?>
 
     <div class="container py-5">
@@ -324,11 +220,11 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 <h1 class="fw-bold <?php echo $theme['text']; ?> mb-0"><?php echo htmlspecialchars($game['title']); ?></h1>
                 <p class="text-muted fs-5"><?php echo htmlspecialchars($game['learning_topic']); ?></p>
             </div>
-            <div style="width: 120px;" class="d-none d-md-block"></div>
+            <div class="game-select-spacer d-none d-md-block"></div>
         </div>
 
         <?php if ($is_visitor): ?>
-        <div class="alert alert-info text-center border-0 shadow-sm fw-bold mb-4" style="border-radius: 15px; background: #e0f2fe; color: #0284c7;">
+        <div class="alert alert-info visitor-mode-notice text-center border-0 shadow-sm fw-bold mb-4">
             <i class="bi bi-info-circle-fill"></i> โหมดทดลองใช้: ทุกด่านเปิดให้ทดลองเล่น คะแนนจะถูกเก็บชั่วคราวใน session นี้เท่านั้น
         </div>
         <?php endif; ?>
@@ -338,7 +234,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
                 <div class="card-body p-4 p-lg-5">
                     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
                         <div class="d-flex align-items-start gap-3">
-                            <div class="bg-white bg-opacity-75 rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 64px; height: 64px; min-width: 64px;">
+                            <div class="project-icon bg-white bg-opacity-75 rounded-circle d-flex align-items-center justify-content-center shadow-sm">
                                 <i class="bi <?php echo htmlspecialchars($project_cta['icon']); ?> fs-2 text-dark"></i>
                             </div>
                             <div>
@@ -479,7 +375,7 @@ $theme = $theme_colors[$game_id] ?? $theme_colors[1];
         <?php endif; ?>
     <?php endif; ?>
 
-    <?php require '../includes/student_topbar_scripts.php'; ?>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
     <?php if ($can_create_project && $project_status === null): ?>
         <script>
             const completionModalKey = 'completion-modal-seen-<?php echo $game_id; ?>-<?php echo intval($context['learning_session_id']); ?>';

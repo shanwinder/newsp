@@ -1,5 +1,5 @@
 .student-topbar {
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.95);
   border-bottom: 4px solid #10b981;
   backdrop-filter: blur(10px);
   font-family: "Kanit", sans-serif;
@@ -113,27 +113,27 @@
 .student-topbar .student-profile-name {
   max-width: 190px;
   overflow: hidden;
-  color: #212529 !important;
+  color: #212529;
   font-size: 0.95rem;
-  font-weight: 800 !important;
+  font-weight: 800;
   line-height: 1.25;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .student-topbar .student-profile-title {
-  display: inline-block !important;
+  display: inline-block;
   max-width: 190px;
   margin-top: 3px;
   overflow: hidden;
-  color: #fff !important;
+  color: #fff;
   background: #198754;
-  font-size: 0.75rem !important;
-  font-weight: 800 !important;
+  font-size: 0.75rem;
+  font-weight: 800;
   line-height: 1.25;
-  opacity: 1 !important;
+  opacity: 1;
   text-overflow: ellipsis;
-  visibility: visible !important;
+  visibility: visible;
   white-space: nowrap;
 }
 

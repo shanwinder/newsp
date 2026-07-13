@@ -10,22 +10,26 @@ require_once 'includes/db.php';
     <meta charset="UTF-8">
     <title>System Reset - ล้างข้อมูลระบบ</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
-        .reset-box { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    </style>
+
+
+
+
+<?php
+$asset_prefix = '.';
+$page_styles = array (
+  0 => 'pages/reset.css',
+);
+require __DIR__ . '/includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page reset-page">
 
 <div class="container">
     <div class="reset-box text-center">
         <h2 class="text-danger fw-bold mb-3"><i class="bi bi-exclamation-triangle-fill"></i> System Reset</h2>
         <p class="text-secondary mb-4">ระบบกำลังทำการกวาดล้างข้อมูลนักเรียนและกิจกรรมทั้งหมดเพื่อเริ่มต้นใหม่</p>
-        
-        <div class="text-start bg-light p-4 rounded-3 border mb-4" style="font-size: 1.1rem;">
+
+        <div class="reset-instructions text-start bg-light p-4 rounded-3 border mb-4">
             <?php
             // 1. ลบข้อมูล "ยอดไลก์" ทั้งหมด และรีเซ็ต AUTO_INCREMENT
             if ($conn->query("DELETE FROM project_likes")) {
@@ -65,7 +69,7 @@ require_once 'includes/db.php';
 
         <h4 class="text-success fw-bold mb-3">🎉 รีเซ็ตระบบเสร็จสมบูรณ์!</h4>
         <p class="text-muted">ฐานข้อมูลของคุณกลับมาสะอาดเอี่ยม พร้อมสำหรับการเรียนการสอนรอบใหม่แล้วครับ</p>
-        
+
         <a href="pages/login.php" class="btn btn-primary rounded-pill px-5 py-2 mt-2 fw-bold shadow-sm">
             <i class="bi bi-box-arrow-in-right"></i> กลับไปหน้า login
         </a>

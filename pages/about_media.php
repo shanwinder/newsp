@@ -35,71 +35,18 @@ $mediaRows = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>เกี่ยวกับสื่อ | <?php echo media_credit_html($app['app_name']); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body {
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Kanit', sans-serif;
-            color: #163124;
-            background:
-                linear-gradient(135deg, rgba(240,253,244,.94), rgba(255,251,235,.92)),
-                url('../assets/img/bg_farm.webp') center/cover fixed;
-        }
 
-        .about-hero {
-            background: linear-gradient(135deg, #14532d, #22c55e);
-            color: #fff;
-            border-radius: 26px;
-            padding: clamp(28px, 5vw, 54px);
-            box-shadow: 0 24px 70px rgba(20, 83, 45, .22);
-        }
 
-        .about-card {
-            border: 0;
-            border-radius: 18px;
-            box-shadow: 0 16px 46px rgba(15, 23, 42, .08);
-        }
 
-        .info-row {
-            display: grid;
-            grid-template-columns: minmax(170px, .34fr) 1fr;
-            gap: 14px;
-            padding: 14px 0;
-            border-bottom: 1px solid rgba(20, 83, 45, .10);
-        }
 
-        .info-row:last-child {
-            border-bottom: 0;
-        }
-
-        .info-label {
-            color: #166534;
-            font-weight: 800;
-        }
-
-        .copyright-box {
-            white-space: pre-line;
-            background: #f0fdf4;
-            border: 1px solid rgba(22, 101, 52, .18);
-            border-left: 6px solid #16a34a;
-            border-radius: 16px;
-            padding: 20px;
-            color: #14532d;
-            line-height: 1.8;
-        }
-
-        @media (max-width: 720px) {
-            .info-row {
-                grid-template-columns: 1fr;
-                gap: 4px;
-            }
-        }
-    </style>
+<?php
+$page_styles = array (
+  0 => 'pages/about_media.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body>
+<body class="app-page about-media-page">
     <main class="container py-4 py-lg-5">
         <section class="about-hero mb-4">
             <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
@@ -141,6 +88,6 @@ $mediaRows = [
     </main>
 
     <?php render_media_credit_footer('about_media.php'); ?>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <?php require __DIR__ . '/../includes/app_scripts.php'; ?>
 </body>
 </html>

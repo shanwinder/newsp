@@ -38,20 +38,26 @@ $deadline = $startedAt + (intval($attempt['time_limit_minutes']) * 60);
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?php echo htmlspecialchars($attempt['title']); ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../assets/css/assessment.css">
+
+
+
+
+<?php
+$page_styles = array (
+  0 => 'modules/assessment.css',
+);
+require __DIR__ . '/../includes/app_head.php';
+?>
 </head>
-<body class="assessment-page">
+<body class="assessment-page app-page assessment-take-page">
 <main class="container assessment-shell py-3 py-md-4">
-    <div class="card assessment-card sticky-top mb-3" style="top:8px; z-index:1000">
+    <div class="card assessment-card sticky-top mb-3">
         <div class="card-body p-3">
             <div class="d-flex justify-content-between align-items-center gap-3">
                 <div><div class="fw-bold text-success"><?php echo htmlspecialchars($attempt['title']); ?></div><small id="page-label" class="text-muted"></small></div>
                 <div class="badge bg-dark fs-6 rounded-pill px-3 py-2"><i class="bi bi-clock"></i> <span id="timer">--:--</span></div>
             </div>
-            <div class="progress assessment-progress mt-3"><div id="progress-bar" class="progress-bar bg-success" style="width:0%"></div></div>
+            <div class="progress assessment-progress mt-3"><div id="progress-bar" class="progress-bar bg-success"></div></div>
         </div>
     </div>
 

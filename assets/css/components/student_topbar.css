@@ -95,6 +95,19 @@
   animation: survey-nav-pulse 1.8s infinite;
 }
 
+.student-topbar .visitor-restricted-nav-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.visitor-restricted-modal-icon {
+  width: 72px;
+  height: 72px;
+  color: #b45309;
+  background: #fef3c7;
+  font-size: 2rem;
+}
+
 .student-topbar .student-profile-item {
   flex: 0 0 auto;
 }
@@ -198,7 +211,8 @@
   }
 
   .student-topbar .manual-nav-button,
-  .student-topbar .survey-nav-button {
+  .student-topbar .survey-nav-button,
+  .student-topbar .visitor-restricted-nav-button {
     width: 100%;
     min-height: 44px;
   }

@@ -157,7 +157,19 @@ $badge_color = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', (string) $badge_color);
                     </a>
                 </li>
 
-                <?php if (!is_visitor_mode() && !empty($navbarAssessmentStatus['configured'])): ?>
+                <?php if (is_visitor_mode()): ?>
+                <li class="nav-item assessment-nav-item">
+                    <button type="button"
+                            class="btn btn-outline-success rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center gap-2 visitor-restricted-nav-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#visitorStudentOnlyModal"
+                            data-feature-label="แบบทดสอบ"
+                            title="แบบทดสอบสำหรับนักเรียน">
+                        <i class="bi bi-clipboard2-check-fill"></i>
+                        <span>แบบทดสอบ</span>
+                    </button>
+                </li>
+                <?php elseif (!empty($navbarAssessmentStatus['configured'])): ?>
                 <li class="nav-item assessment-nav-item">
                     <details class="assessment-nav-details">
                         <summary class="btn <?php echo $assessmentButtonClass; ?> rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center gap-2">
@@ -199,7 +211,19 @@ $badge_color = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', (string) $badge_color);
                 </li>
                 <?php endif; ?>
 
-                <?php if (!is_visitor_mode() && !empty($navbarSurveyStatus['configured'])): ?>
+                <?php if (is_visitor_mode()): ?>
+                <li class="nav-item survey-nav-item">
+                    <button type="button"
+                            class="btn btn-outline-secondary survey-nav-button rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center gap-2 visitor-restricted-nav-button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#visitorStudentOnlyModal"
+                            data-feature-label="แบบสอบถาม"
+                            title="แบบสอบถามสำหรับนักเรียน">
+                        <i class="bi bi-chat-heart-fill"></i>
+                        <span>แบบสอบถาม</span>
+                    </button>
+                </li>
+                <?php elseif (!empty($navbarSurveyStatus['configured'])): ?>
                 <li class="nav-item survey-nav-item">
                     <a href="<?php echo htmlspecialchars($surveyButtonUrl); ?>"
                        class="btn <?php echo $surveyButtonClass; ?> survey-nav-button rounded-pill fw-bold px-3 shadow-sm d-flex align-items-center justify-content-center gap-2"
@@ -243,3 +267,29 @@ $badge_color = preg_replace('/[^a-zA-Z0-9_\-\s]/', '', (string) $badge_color);
         </div>
     </div>
 </nav>
+
+<?php if (is_visitor_mode()): ?>
+<div class="modal fade" id="visitorStudentOnlyModal" tabindex="-1" aria-labelledby="visitorStudentOnlyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-body p-4 p-sm-5 text-center">
+                <div class="visitor-restricted-modal-icon d-inline-flex align-items-center justify-content-center rounded-circle mb-3" aria-hidden="true">
+                    <i class="bi bi-person-lock"></i>
+                </div>
+                <h2 class="h4 fw-bold mb-3" id="visitorStudentOnlyModalLabel">สงวนสิทธิ์สำหรับนักเรียน</h2>
+                <p class="text-muted mb-4">
+                    เมนู<span class="fw-bold text-dark" data-visitor-feature-name>นี้</span>สามารถเข้าใช้งานได้เฉพาะนักเรียนเท่านั้น
+                    กรุณาเข้าสู่ระบบด้วยบัญชีนักเรียนเพื่อดำเนินการต่อ
+                </p>
+                <button type="button" class="btn btn-success rounded-pill fw-bold px-5" data-bs-dismiss="modal">เข้าใจแล้ว</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('visitorStudentOnlyModal')?.addEventListener('show.bs.modal', function (event) {
+    const featureLabel = event.relatedTarget?.dataset.featureLabel || 'นี้';
+    this.querySelector('[data-visitor-feature-name]').textContent = featureLabel;
+});
+</script>
+<?php endif; ?>

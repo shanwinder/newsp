@@ -967,6 +967,13 @@ ALTER TABLE `site_visits`
   ADD KEY `idx_visit_date` (`visit_date`);
 
 --
+-- Indexes for table `stages`
+--
+ALTER TABLE `stages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_stages_game` (`game_id`);
+
+--
 -- Indexes for table `student_works`
 --
 ALTER TABLE `student_works`

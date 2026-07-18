@@ -50,6 +50,13 @@ $stmt->bind_param(
 $stmt->execute();
 $result = $stmt->get_result();
 $data = [];
+$member_stmt = $conn->prepare(
+    "SELECT user_id AS id, student_id, name
+     FROM users
+     WHERE team_id = ? AND team_id IS NOT NULL AND team_id != ''
+       AND role = 'student' AND school_id = ? AND classroom_id = ? AND teacher_id = ?
+     ORDER BY student_id"
+);
 
 // ตัวแปรเก็บประวัติเพื่อป้องกันการแสดงผลซ้ำซ้อน
 $seen_users = [];
@@ -77,6 +84,22 @@ if ($result) {
         // จัดการรองรับระบบเก่า (ถ้างานชิ้นนั้นไม่มี mode ระบุไว้ ให้ถือว่าเป็น solo)
         if (empty($row['mode'])) {
             $row['mode'] = 'solo';
+        }
+
+        if ($row['mode'] === 'group' && !empty($row['team_id'])) {
+            $team_id = (string) $row['team_id'];
+            $school_id = (int) $context['school_id'];
+            $classroom_id = (int) $context['classroom_id'];
+            $teacher_id = (int) $context['teacher_id'];
+            $member_stmt->bind_param('siii', $team_id, $school_id, $classroom_id, $teacher_id);
+            $member_stmt->execute();
+            $row['members'] = $member_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        } else {
+            $row['members'] = [[
+                'id' => (int) $row['id'],
+                'student_id' => $row['student_id'],
+                'name' => $row['name'],
+            ]];
         }
         
         $data[] = $row;

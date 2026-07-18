@@ -109,6 +109,8 @@ require __DIR__ . '/../includes/app_head.php';
                             <h6 class="text-success fw-bold mb-2"><i class="bi bi-pen-fill"></i> ข้อเสนอแนะจากคุณครู:</h6>
                             <textarea id="teacher-feedback" class="teacher-feedback form-control mb-3 flex-grow-1 border-success" placeholder="ชื่นชม หรือแนะนำเพิ่มเติมให้นักเรียนที่นี่..."></textarea>
 
+                            <div id="assessment-links" class="mb-3"></div>
+
                             <div class="d-flex gap-2" id="action-buttons">
                                 <button id="btn-revision" onclick="markAsReviewed('revision')" class="btn btn-warning btn-lg rounded-pill fw-bold shadow flex-grow-1 text-dark">
                                     <i class="bi bi-arrow-return-left me-2"></i> ให้แก้ไข
@@ -132,6 +134,7 @@ require __DIR__ . '/../includes/app_head.php';
         let currentWorkId = null;
         let currentGameId = 1;
         let currentSmartFarmWork = null;
+        let currentStudentData = null;
 
         // ⚙️ ตั้งค่าขนาดไอเทม
         const ITEM_SIZES = {
@@ -219,6 +222,7 @@ require __DIR__ . '/../includes/app_head.php';
 
         function selectStudent(data, el) {
             currentWorkId = data.work_id;
+            currentStudentData = data;
 
             document.getElementById('empty-state').style.display = 'none';
             document.getElementById('presentation-panel').style.display = 'block';
@@ -245,6 +249,7 @@ require __DIR__ . '/../includes/app_head.php';
 
             document.getElementById('display-time').innerText = data.submitted_at;
             document.getElementById('teacher-feedback').value = data.feedback || "";
+            renderAssessmentLinks(data);
 
             let desc = data.description || "";
             let bgType = 'grid';
@@ -281,6 +286,20 @@ require __DIR__ . '/../includes/app_head.php';
 
             document.querySelectorAll('.student-item').forEach(e => e.classList.remove('active'));
             el.classList.add('active');
+        }
+
+        function renderAssessmentLinks(data) {
+            const container = document.getElementById('assessment-links');
+            const members = Array.isArray(data.members) && data.members.length ? data.members : [{ id: data.id, student_id: data.student_id, name: data.name }];
+            const heading = data.mode === 'group'
+                ? '<div class="small fw-bold text-warning mb-2"><i class="bi bi-people-fill"></i> ประเมินสมาชิกเป็นรายบุคคล</div>'
+                : '<div class="small fw-bold text-primary mb-2"><i class="bi bi-clipboard2-heart-fill"></i> แบบประเมินทักษะ</div>';
+            const buttons = members.map(member => {
+                const label = data.mode === 'group' ? `${escapeHtml(member.name)} (${escapeHtml(member.student_id)})` : 'ประเมินทักษะนักเรียนคนนี้';
+                const url = `problem_solving_assessment.php?classroom_id=<?php echo (int) $context['classroom_id']; ?>&lesson_id=${Number(currentGameId)}&student_id=${Number(member.id)}`;
+                return `<a class="btn btn-outline-primary btn-sm rounded-pill me-1 mb-1" href="${url}"><i class="bi bi-clipboard2-check"></i> ${label}</a>`;
+            }).join('');
+            container.innerHTML = heading + buttons;
         }
 
         function setupSmartFarmTeacherReview(jsonData) {

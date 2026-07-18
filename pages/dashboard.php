@@ -162,6 +162,12 @@ require __DIR__ . '/../includes/app_head.php';
                         <a href="review_work.php" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
                             <i class="bi bi-easel2-fill"></i> ตรวจชิ้นงาน
                         </a>
+                        <a href="problem_solving_assessment.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                            <i class="bi bi-clipboard2-heart-fill"></i> ประเมินทักษะ
+                        </a>
+                        <a href="problem_solving_report.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                            <i class="bi bi-graph-up-arrow"></i> รายงานทักษะ
+                        </a>
                         <a href="add_user.php?classroom_id=<?php echo $context['classroom_id']; ?>" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
                             <i class="bi bi-person-plus-fill"></i> เพิ่มนักเรียน
                         </a>
